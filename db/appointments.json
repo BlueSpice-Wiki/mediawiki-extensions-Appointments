@@ -1,0 +1,76 @@
+[
+	{
+		"name": "appointments",
+		"columns": [
+			{
+				"name": "app_guid",
+				"type": "string",
+				"options": {
+					"length": 32,
+					"notnull": true
+				}
+			},
+			{
+				"name": "app_calendar_guid",
+				"type": "string",
+				"options": {
+					"length": 32,
+					"notnull": true
+				}
+			},
+			{
+				"name": "app_title",
+				"type": "string",
+				"options": {
+					"length": 255,
+					"notnull": true
+				}
+			},
+			{
+				"name": "app_start",
+				"type": "mwtimestamp",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "app_end",
+				"type": "mwtimestamp",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "app_is_all_day",
+				"type": "mwtinyint",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "app_recurring",
+				"type": "string",
+				"options": {
+					"length": 100,
+					"notnull": false
+				}
+			},
+			{
+				"name": "app_creator",
+				"type": "integer",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "app_created_at",
+				"type": "mwtimestamp",
+				"options": {
+					"notnull": true
+				}
+			}
+		],
+		"indexes": [],
+		"pk": [ "app_guid" ]
+	}
+]

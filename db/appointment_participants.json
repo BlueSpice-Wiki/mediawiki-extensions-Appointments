@@ -1,0 +1,39 @@
+[
+	{
+		"name": "appointment_participants",
+		"columns": [
+			{
+				"name": "ap_id",
+				"type": "integer",
+				"options": {
+					"autoincrement": true,
+					"notnull": true
+				}
+			},
+			{
+				"name": "ap_key",
+				"type": "string",
+				"options": {
+					"length": 255,
+					"notnull": true
+				}
+			},
+			{
+				"name": "ap_value",
+				"type": "string",
+				"options": {
+					"length": 255,
+					"notnull": true
+				}
+			}
+		],
+		"indexes": [
+			{
+				"name": "ap_key_value_idx",
+				"columns": [ "ap_key", "ap_value" ],
+				"unique": true
+			}
+		],
+		"pk": [ "ap_id" ]
+	}
+]

@@ -1,0 +1,54 @@
+[
+	{
+		"name": "calendars",
+		"columns": [
+			{
+				"name": "cal_guid",
+				"type": "string",
+				"options": {
+					"length": 32,
+					"notnull": true
+				}
+			},
+			{
+				"name": "cal_name",
+				"type": "string",
+				"options": {
+					"length": 255,
+					"notnull": true
+				}
+			},
+			{
+				"name": "cal_description",
+				"type": "text",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "cal_created_at",
+				"type": "mwtimestamp",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "cal_creator",
+				"type": "integer",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "cal_wiki_id",
+				"type": "string",
+				"options": {
+					"length": 255,
+					"notnull": true
+				}
+			}
+		],
+		"indexes": [],
+		"pk": [ "cal_guid" ]
+	}
+]

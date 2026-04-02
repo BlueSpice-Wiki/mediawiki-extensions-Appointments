@@ -1,0 +1,76 @@
+{
+	"name": "Appointments",
+	"version": "1.0.0-alpha",
+	"license-name": "GPL-3.0-only",
+	"author": [
+		"[https://www.hallowelt.com Hallo Welt! GmbH]"
+	],
+	"url": "https://www.mediawiki.org/wiki/Extension:Appointments",
+	"descriptionmsg": "appointments-desc",
+	"requires": {
+		"MediaWiki": ">= 1.43.0"
+	},
+	"attributes": {
+	},
+	"callback": "mwsInitComponents",
+	"MessagesDirs": {
+		"Appointments": "i18n"
+	},
+	"ExtensionMessagesFiles": {
+		"AppointmentsAlias": "Appointments.alias.php"
+	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\Appointments\\": "src/",
+		"MediaWiki\\Extension\\Appointments\\Tests\\": "tests/phpunit"
+	},
+	"ResourceModules": {
+		"ext.appointments.bootstrap": {
+			"scripts": [
+				"bootstrap.js"
+			]
+		},
+		"ext.appointments.lib.calendarjs": {
+			"packageFiles": [
+				"lib/calendarjs/index.min.js",
+				"lib/calendarjs/lemonade.min.js"
+			],
+			"styles": [
+				"lib/calendarjs/style.min.css"
+			]
+		},
+		"ext.appointments.special": {
+			"packageFiles": [
+				"specialPage.js"
+			],
+			"dependencies": [
+				"ext.appointments.bootstrap",
+				"ext.appointments.lib.calendarjs"
+			],
+			"styles": [
+				"styles.less"
+			]
+		}
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "resources",
+		"remoteExtPath": "Appointments/resources"
+	},
+	"Hooks": {
+		"LoadExtensionSchemaUpdates": "runDatabaseUpdates"
+	},
+	"HookHandlers": {
+		"runDatabaseUpdates": {
+			"class": "MediaWiki\\Extension\\Appointments\\Hook\\RunDatabaseUpdates"
+		}
+	},
+	"ServiceWiringFiles": [
+		"includes/ServiceWiring.php"
+	],
+	"SpecialPages": {
+		"Appointments": {
+			"class": "MediaWiki\\Extension\\Appointments\\AppointmentsSpecial"
+		}
+	},
+	"manifest_version": 2,
+	"load_composer_autoloader": true
+}
