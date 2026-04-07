@@ -9,5 +9,6 @@ CREATE TABLE calendars (
   cal_created_at TIMESTAMPTZ NOT NULL,
   cal_creator INT NOT NULL,
   cal_wiki_id VARCHAR(255) NOT NULL,
+  cal_data TEXT NOT NULL,
   PRIMARY KEY(cal_guid)
 );

@@ -1,5 +1,4 @@
 ( function () {
-	const calendarjs = require( 'ext.appointments.lib.calendarjs' );
 
 	$( '#oojsplus-skeleton-cnt' ).remove();
 
@@ -7,6 +6,14 @@
 	if ( !app ) {
 		return;
 	}
+
+	const scheduler = new ext.appointments.ui.Scheduler( {
+		onlyPersonal: false
+	} );
+	app.replaceChildren( scheduler.$element[ 0 ] );
+	return;
+
+	const calendarjs = require( 'ext.appointments.lib.calendarjs' );
 
 	// Container for the calendar date picker
 	const calendarEl = document.createElement( 'div' );

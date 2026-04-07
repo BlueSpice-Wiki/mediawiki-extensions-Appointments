@@ -3,10 +3,10 @@
 		"name": "appointment_participants",
 		"columns": [
 			{
-				"name": "ap_id",
-				"type": "integer",
+				"name": "ap_app",
+				"type": "string",
 				"options": {
-					"autoincrement": true,
+					"length": 32,
 					"notnull": true
 				}
 			},
@@ -27,13 +27,7 @@
 				}
 			}
 		],
-		"indexes": [
-			{
-				"name": "ap_key_value_idx",
-				"columns": [ "ap_key", "ap_value" ],
-				"unique": true
-			}
-		],
-		"pk": [ "ap_id" ]
+		"indexes": [],
+		"pk": []
 	}
 ]

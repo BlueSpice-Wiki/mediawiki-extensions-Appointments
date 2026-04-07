@@ -12,5 +12,6 @@ CREATE TABLE appointments (
   app_recurring VARCHAR(100) DEFAULT NULL,
   app_creator INT NOT NULL,
   app_created_at TIMESTAMPTZ NOT NULL,
+  app_data TEXT NOT NULL,
   PRIMARY KEY(app_guid)
 );

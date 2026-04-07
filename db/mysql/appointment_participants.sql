@@ -3,9 +3,7 @@
 -- Do not modify this file directly.
 -- See https://www.mediawiki.org/wiki/Manual:Schema_changes
 CREATE TABLE /*_*/appointment_participants (
-  ap_id INT AUTO_INCREMENT NOT NULL,
+  ap_app VARCHAR(32) NOT NULL,
   ap_key VARCHAR(255) NOT NULL,
-  ap_value VARCHAR(255) NOT NULL,
-  UNIQUE INDEX ap_key_value_idx (ap_key, ap_value),
-  PRIMARY KEY(ap_id)
+  ap_value VARCHAR(255) NOT NULL
 ) /*$wgDBTableOptions*/;

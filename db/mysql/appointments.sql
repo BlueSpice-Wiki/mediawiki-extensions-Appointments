@@ -12,5 +12,6 @@ CREATE TABLE /*_*/appointments (
   app_recurring VARCHAR(100) DEFAULT NULL,
   app_creator INT NOT NULL,
   app_created_at BINARY(14) NOT NULL,
+  app_data LONGTEXT NOT NULL,
   PRIMARY KEY(app_guid)
 ) /*$wgDBTableOptions*/;

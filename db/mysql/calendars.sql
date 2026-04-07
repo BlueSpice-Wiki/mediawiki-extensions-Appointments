@@ -9,5 +9,6 @@ CREATE TABLE /*_*/calendars (
   cal_created_at BINARY(14) NOT NULL,
   cal_creator INT NOT NULL,
   cal_wiki_id VARCHAR(255) NOT NULL,
+  cal_data LONGTEXT NOT NULL,
   PRIMARY KEY(cal_guid)
 ) /*$wgDBTableOptions*/;

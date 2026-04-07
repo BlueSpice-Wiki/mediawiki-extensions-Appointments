@@ -68,6 +68,13 @@
 				"options": {
 					"notnull": true
 				}
+			},
+			{
+				"name": "app_data",
+				"type": "text",
+				"options": {
+					"notnull": true
+				}
 			}
 		],
 		"indexes": [],

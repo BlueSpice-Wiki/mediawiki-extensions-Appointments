@@ -24,9 +24,35 @@
 		"MediaWiki\\Extension\\Appointments\\Tests\\": "tests/phpunit"
 	},
 	"ResourceModules": {
-		"ext.appointments.bootstrap": {
-			"scripts": [
-				"bootstrap.js"
+		"ext.appointments.main": {
+			"packageFiles": [
+				"bootstrap.js",
+				"api.js",
+				"ui/Scheduler.js",
+				"ui/CalendarMultiselect.js",
+				"ui/CalendarPicker.js",
+				"ui/EditorDialog.js",
+				"ui/CalendarEditor.js",
+				"ui/AppointmentEditor.js",
+				"ui/util/NewCalendarMenuOption.js",
+				"ui/util/CalendarMenuOption.js",
+				"object/PeriodDefinition.js",
+				"object/Participant.js",
+				"object/Calendar.js",
+				"object/Appointment.js"
+			],
+			"messages": [
+				"appointments-ui-create-new-calendar",
+				"appointments-ui-field-calendar-name",
+				"appointments-ui-field-calendar-description",
+				"appointments-ui-edit-calendar",
+				"appointments-ui-create-calendar",
+				"appointments-ui-save",
+				"appointments-ui-cancel"
+			],
+			"dependencies": [
+				"oojs-ui",
+				"ext.appointments.lib.calendarjs"
 			]
 		},
 		"ext.appointments.lib.calendarjs": {
@@ -43,8 +69,7 @@
 				"specialPage.js"
 			],
 			"dependencies": [
-				"ext.appointments.bootstrap",
-				"ext.appointments.lib.calendarjs"
+				"ext.appointments.main"
 			],
 			"styles": [
 				"styles.less"
@@ -71,6 +96,55 @@
 			"class": "MediaWiki\\Extension\\Appointments\\AppointmentsSpecial"
 		}
 	},
+	"RestRoutes": [
+		{
+			"method": "GET",
+			"path": "/appointments/v0/appointments",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentGetHandler",
+			"services": [ "Appointments.CalendarStore", "Appointments.AppointmentStore" ]
+		},
+		{
+			"method": "GET",
+			"path": "/appointments/v0/calendars",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\CalendarGetHandler",
+			"services": [ "Appointments.CalendarStore" ]
+		},
+		{
+			"method": "POST",
+			"path": "/appointments/v0/appointment",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentSaveHandler",
+			"services": [
+				"Appointments.AppointmentStore", "Appointments._UserInterface",
+				"Appointments._Permissions", "Appointments._ParticipantResolver",
+				"HookContainer", "Appointments._Logger"
+			]
+		},
+		{
+			"method": "POST",
+			"path": "/appointments/v0/appointment/delete/{appointment}",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentDeleteHandler",
+			"services": [
+				"Appointments.AppointmentStore", "Appointments._Permissions", "HookContainer", "Appointments._Logger"
+			]
+		},
+		{
+			"method": "POST",
+			"path": "/appointments/v0/calendar",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\CalendarSaveHandler",
+			"services": [
+				"Appointments.CalendarStore", "Appointments._Permissions", "HookContainer", "Appointments._Logger"
+			]
+		},
+		{
+			"method": "POST",
+			"path": "/appointments/v0/calendar/delete/{calendar}",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\CalendarDeleteHandler",
+			"services": [
+				"Appointments.CalendarStore", "Appointments.AppointmentStore",
+				"Appointments._Permissions", "HookContainer", "Appointments._Logger"
+			]
+		}
+	],
 	"manifest_version": 2,
 	"load_composer_autoloader": true
 }

@@ -21,15 +21,51 @@ readonly class ParticipantResolver {
 	 * @param Participant $participant
 	 * @return array
 	 */
-	public function resolveToUsers( Participant $participant ) {
+	public function resolveToUsers( Participant $participant ): array {
 		if ( $participant->getKey() === 'user' ) {
-			return $this->getValidatedUsers( [ $participant->get() ] );
+			return $this->getValidatedUsers( [ $participant->getValue() ] );
 		}
 		if ( $participant->getKey() === 'group' ) {
 			$users = $this->getUsersInGroup( $participant->getValue() );
 			return $this->getValidatedUsers( $users );
 		}
 		return [];
+	}
+
+	/**
+	 * @param array $participantData
+	 * @return array
+	 */
+	public function participantsFromData( array $participantData ): array {
+		$participants = [];
+		foreach ( $participantData as $p ) {
+			$this->assertValidParticipantData( $p );
+			$participants[] = new Participant(
+				$p['key'],
+				$p['value']
+			);
+		}
+
+		return $participants;
+	}
+
+	/**
+	 * @param array $oldParticipants
+	 * @param array $newParticipants
+	 * @return array
+	 */
+	public function getParticipantDifference( array $oldParticipants, array $newParticipants ): array {
+		$oldUsers = array_reduce( $oldParticipants, function ( $carry, Participant $p ) {
+			return array_merge( $carry, $this->resolveToUsers( $p ) );
+		}, [] );
+		$newUsers = array_reduce( $newParticipants, function ( $carry, Participant $p ) {
+			return array_merge( $carry, $this->resolveToUsers( $p ) );
+		}, [] );
+
+		$removed = array_diff( $oldUsers, $newUsers );
+		$added = array_diff( $newUsers, $oldUsers );
+
+		return [ $removed, $added ];
 	}
 
 	/**
@@ -71,5 +107,15 @@ readonly class ParticipantResolver {
 		}
 		return $users;
 
+	}
+
+	/**
+	 * @param mixed $data
+	 * @return void
+	 */
+	private function assertValidParticipantData( mixed $data ): void {
+		if ( !is_array( $data ) || !isset( $data['key'] ) || !isset( $data['value'] ) ) {
+			throw new \InvalidArgumentException( 'Invalid participant data' );
+		}
 	}
 }

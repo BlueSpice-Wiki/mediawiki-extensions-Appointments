@@ -5,5 +5,22 @@
 		]
 	},
 	"appointments-desc": "Appointment management system for MediaWiki",
-	"appointments": "Appointments"
+	"appointments": "Appointments",
+	"appointments-error-calendar-not-found": "Calendar not found.",
+	"appointments-error-no-permission": "You do not have permission to perform this action.",
+	"appointments-error-invalid-data": "Invalid data provided.",
+	"appointments-error-appointment-not-found": "Appointment not found.",
+	"appointments-error-invalid-date-time": "Invalid date or time provided.",
+	"appointments-error-data-must-be-array": "Data field must be an array.",
+	"appointments-error-data-not-serializable": "Data field is not serializable.",
+	"appointments-error-end-before-start": "End date and time must be after start date and time.",
+	"appointments-error-multiday-not-allday": "Multi-day appointments must be all-day appointments.",
+	"appointments-error-multiday-too-long-for-recurrence": "Multi-day appointment is too long for the selected recurrence.",
+	"appointments-ui-create-new-calendar": "Create new calendar",
+	"appointments-ui-field-calendar-name": "Calendar name",
+	"appointments-ui-field-calendar-description": "Calendar description",
+	"appointments-ui-edit-calendar": "Edit calendar",
+	"appointments-ui-create-calendar": "Create calendar",
+	"appointments-ui-save": "Save",
+	"appointments-ui-cancel": "Cancel"
 }

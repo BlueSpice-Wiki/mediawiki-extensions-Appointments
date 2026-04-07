@@ -21,6 +21,6 @@ readonly final class GuidGenerator {
 	 * @return string
 	 */
 	public function generateCalendarGuid(): string {
-		return md5( uniqid( $this->wikiId . '-' ), true );
+		return md5( uniqid( $this->wikiId . '-' ) );
 	}
 }

@@ -12,13 +12,15 @@ readonly class Calendar {
 	 * @param string $description
 	 * @param UserIdentity $creator
 	 * @param string $wikiId
+	 * @param array $data
 	 */
 	public function __construct(
 		public string $guid,
 		public string $name,
 		public string $description,
 		public UserIdentity $creator,
-		public string $wikiId
+		public string $wikiId,
+		public array $data = []
 	) {
 	}
 }

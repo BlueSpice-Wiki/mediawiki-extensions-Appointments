@@ -9,5 +9,6 @@ CREATE TABLE /*_*/calendars (
   cal_created_at BLOB NOT NULL,
   cal_creator INTEGER NOT NULL,
   cal_wiki_id VARCHAR(255) NOT NULL,
+  cal_data CLOB NOT NULL,
   PRIMARY KEY(cal_guid)
 );

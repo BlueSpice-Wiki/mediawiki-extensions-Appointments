@@ -4,5 +4,21 @@
 			"HalloWelt! GbmH"
 		]
 	},
-	"appointments-desc": "{{desc|name=Appointments|url=https://www.mediawiki.org/wiki/Extension:Appointments}}"
+	"appointments-desc": "{{desc|name=Appointments|url=https://www.mediawiki.org/wiki/Extension:Appointments}}",
+	"appointments-error-calendar-not-found": "Error shown when a requested calendar does not exist.",
+	"appointments-error-no-permission": "Error shown when the current user is not allowed to perform the requested action.",
+	"appointments-error-invalid-data": "Error shown when request payload is invalid.",
+	"appointments-error-appointment-not-found": "Error shown when a requested appointment does not exist.",
+	"appointments-error-invalid-date-time": "Error shown when appointment date or time values are invalid.",
+	"appointments-error-data-must-be-array": "Error shown when the generic appointment data payload is not an array.",
+	"appointments-error-data-not-serializable": "Error shown when appointment data cannot be serialized to storage format.",
+	"appointments-error-end-before-start": "Error shown when period end date/time is not after start date/time.",
+	"appointments-error-multiday-not-allday": "Error shown when a multi-day period is defined without all-day flag enabled.",
+	"appointments-error-multiday-too-long-for-recurrence": "Error shown when multi-day period exceeds duration allowed by recurrence interval.",
+	"appointments-ui-create-new-calendar": "Label for action in calendar picker that opens calendar creation dialog.",
+	"appointments-ui-field-calendar-name": "Label for calendar name input field.",
+	"appointments-ui-field-calendar-description": "Label for calendar description input field.",
+	"appointments-ui-edit-calendar": "Dialog title for creating or editing a calendar.",
+	"appointments-ui-save": "Label for primary save action button in dialogs.",
+	"appointments-ui-cancel": "Label for cancel/close dialog action button."
 }

@@ -5,6 +5,8 @@ namespace MediaWiki\Extension\Appointments\Store;
 use MediaWiki\Extension\Appointments\Entity\Appointment;
 use MediaWiki\Extension\Appointments\Entity\Participant;
 use MediaWiki\User\UserIdentity;
+use Wikimedia\Rdbms\Database;
+use Wikimedia\Rdbms\IDatabase;
 use Wikimedia\Rdbms\ILoadBalancer;
 use Wikimedia\Rdbms\IResultWrapper;
 
@@ -18,8 +20,17 @@ class ParticipantStore {
 	) {
 	}
 
+	/**
+	 * @param string $appointmentId
+	 * @return array
+	 */
 	public function getAppointmentParticipants( string $appointmentId ): array {
-		$raw = $this->queryParticipants( [ 'apa_app' => $appointmentId ] );
+		$raw = $this->lb->getConnection( DB_REPLICA )->newSelectQueryBuilder()
+			->select( [ 'ap_key', 'ap_value' ] )
+			->from( 'appointment_participants' )
+			->where( [ 'ap_app' => $appointmentId ] )
+			->caller( __METHOD__ )
+			->fetchResultSet();
 
 		$participants = [];
 		foreach ( $raw as $p ) {
@@ -31,7 +42,33 @@ class ParticipantStore {
 		return $participants;
 	}
 
+	/**
+	 * @param UserIdentity $user
+	 * @return array
+	 */
 	public function getAppointmentIdsForUser( UserIdentity $user ): array {
+		$db = $this->lb->getConnection( DB_REPLICA );
+		$res = $db->newSelectQueryBuilder()
+			->select( 'apa_app' )
+			->from( 'appointment_participants' )
+			->where( $this->getParticipantCondition( $user, $db ) )
+			->caller( __METHOD__ )
+			->fetchResultSet();
+
+		$appointmentIds = [];
+		foreach ( $res as $row ) {
+			$appointmentIds[] = $row->apa_app;
+		}
+		return $appointmentIds;
+	}
+
+	/**
+	 * Get condition to select appointments where the user is a participant.
+	 * @param UserIdentity $user
+	 * @param Database $db
+	 * @return string
+	 */
+	public function getParticipantCondition( UserIdentity $user, IDatabase $db ): string {
 		$rows = [
 			[
 				'ap_key' => 'user',
@@ -46,29 +83,28 @@ class ParticipantStore {
 			];
 		}
 
-		$db = $this->lb->getConnection( DB_REPLICA );
-		$participantRows = $db->newSelectQueryBuilder()
-			->select( 'apa_id' )
-			->from( 'appointment_participant_assignments', 'apa' )
-			->from( 'appointment_participants', 'ap' )
-			->join( 'appointment_participants', 'ap', [ 'ap.ap_id = apa.apa_participant' ] )
-			->where( $db->makeList( [
-				'apa.apa_key' => array_column( $rows, 'ap_key' ),
-				'apa.apa_value' => array_column( $rows, 'ap_value' )
-			], LIST_OR ) )
-			->caller( __METHOD__ )
-			->fetchResultSet();
+		return $db->makeList( $rows, LIST_OR );
 
-		$appointmentIds = [];
-		foreach ( $participantRows as $row ) {
-			$appointmentIds[] = $row->apa_id;
-		}
-		return $appointmentIds;
 	}
 
-	public function storeParticipants( Appointment $appointment ) {
-
-
+	/**
+	 * @param Appointment $appointment
+	 * @return void
+	 */
+	public function storeParticipants( Appointment $appointment ): void {
+		$rows = [];
+		foreach ( $appointment->participants as $participant ) {
+			$rows[] = [
+				'ap_app' => $appointment->guid,
+				'ap_key' => $participant->key,
+				'ap_value' => $participant->value,
+			];
+		}
+		$this->lb->getConnection( DB_PRIMARY )->newInsertQueryBuilder()
+			->insertInto( 'appointment_participants' )
+			->rows( $rows )
+			->caller( __METHOD__ )
+			->execute();
 	}
 
 	/**
@@ -85,5 +121,18 @@ class ParticipantStore {
 			] )
 			->caller( __METHOD__ )
 			->fetchResultSet();
+	}
+
+	/**
+	 * @param Appointment $appointment
+	 * @return void
+	 */
+	public function clearForAppointment( Appointment $appointment ): void {
+		$db = $this->lb->getConnection( DB_PRIMARY );
+		$db->newDeleteQueryBuilder()
+			->deleteFrom( 'appointment_participants' )
+			->where( [ 'ap_app' => $appointment->guid ] )
+			->caller( __METHOD__ )
+			->execute();
 	}
 }

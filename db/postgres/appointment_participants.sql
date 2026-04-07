@@ -3,10 +3,7 @@
 -- Do not modify this file directly.
 -- See https://www.mediawiki.org/wiki/Manual:Schema_changes
 CREATE TABLE appointment_participants (
-  ap_id SERIAL NOT NULL,
+  ap_app VARCHAR(32) NOT NULL,
   ap_key VARCHAR(255) NOT NULL,
-  ap_value VARCHAR(255) NOT NULL,
-  PRIMARY KEY(ap_id)
+  ap_value VARCHAR(255) NOT NULL
 );
-
-CREATE UNIQUE INDEX ap_key_value_idx ON appointment_participants (ap_key, ap_value);

@@ -12,5 +12,6 @@ CREATE TABLE /*_*/appointments (
   app_recurring VARCHAR(100) DEFAULT NULL,
   app_creator INTEGER NOT NULL,
   app_created_at BLOB NOT NULL,
+  app_data CLOB NOT NULL,
   PRIMARY KEY(app_guid)
 );
