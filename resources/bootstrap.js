@@ -14,9 +14,15 @@ window.ext.appointments = {
 	},
 	util: {
 		openDialog: function ( dialog ) {
-			const windowManager = OO.ui.getWindowManager();
+			const windowManager = new OO.ui.WindowManager();
+			$( document.body ).append( windowManager.$element );
 			windowManager.addWindows( [ dialog ] );
-			return windowManager.openWindow( dialog ).closed;
+			const promise = windowManager.openWindow( dialog ).closed;
+
+			promise.then( () => {
+				windowManager.destroy();
+			} );
+			return promise;
 		},
 		openCalendarEditorDialog: function ( calendar ) {
 			const dialog = new editorClass( {
@@ -30,7 +36,8 @@ window.ext.appointments = {
 			const dialog = new editorClass( {
 				entity: new ( require( './ui/AppointmentEditor.js' ) )( {
 					appointment: appointment
-				} )
+				} ),
+				size: 'larger'
 			} );
 
 			return this.openDialog( dialog );

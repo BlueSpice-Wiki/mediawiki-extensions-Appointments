@@ -1,3 +1,7 @@
+const appointmentTime = require( './util/AppointmentTime.js' );
+const Appointment = require( '../object/Appointment.js' );
+const Participant = require( '../object/Participant.js' );
+
 const appointmentEditor = function ( config ) {
 	appointmentEditor.parent.call( this, $.extend( {
 		expanded: false,
@@ -13,6 +17,10 @@ OO.inheritClass( appointmentEditor, OO.ui.PanelLayout );
 
 appointmentEditor.prototype.setDialog = function ( dialog ) {
 	this.dialog = dialog;
+};
+
+appointmentEditor.prototype.onReady = function () {
+	this.setAbilities();
 };
 
 appointmentEditor.prototype.getLabel = function () {
@@ -32,10 +40,49 @@ appointmentEditor.prototype.init = function () {
 		required: true,
 		value: this.calendar ? this.calendar.name : '',
 	} );
+	this.name.connect( this, { change: 'onInputChange' } );
+
 	this.calendar = new ( require( './CalendarPicker.js' ) )( {
-		$overlay: this.dialog ? this.dialog.$overlay : true
+		$overlay: this.dialog ? this.dialog.$overlay : true,
+		value: this.appointment ? this.appointment.calendar : null,
 	} );
+	this.calendar.connect( this, { change: 'onInputChange' } );
 	this.calendar.load();
+
+	this.location = new OO.ui.TextInputWidget( {
+		icon: 'mapPin',
+		value: this.appointment ? this.appointment.data.location || '' : '',
+	} );
+	this.location.connect( this, { change: 'onInputChange' } );
+
+	this.videoLink = new OO.ui.TextInputWidget( {
+		icon: 'camera',
+		value: this.appointment ? this.appointment.data.videoLink || '' : '',
+	} );
+	this.videoLink.connect( this, { change: 'onInputChange' } );
+
+	this.participants = new OOJSPlus.ui.widget.UserGroupMultiselectWidget( {
+		$overlay: this.dialog ? this.dialog.$overlay : true,
+		placeholder: mw.message( 'appointments-ui-field-participants-placeholder' ).text(),
+	} );
+	this.participants.connect( this, {
+		change: ( value ) => {
+			this.dialog.updateSize();
+			this.onInputChange();
+		}
+	} );
+
+	this.time = new appointmentTime(
+		this.appointment ? this.appointment.periodDefinition : null, {
+			dialog: this.dialog
+		}
+	);
+	this.time.connect( this, {
+		change: () => {
+			console.log( this.time.getValue() );
+			this.onInputChange();
+		}
+	} );
 
 
 	this.$element.append(
@@ -44,8 +91,22 @@ appointmentEditor.prototype.init = function () {
 		} ).$element,
 		new OO.ui.FieldLayout( this.calendar, {
 			label: mw.message( 'appointments-ui-field-calendar-name' ).text(),
+		} ).$element,
+		new OO.ui.FieldLayout( this.participants, {
+			label: mw.message( 'appointments-ui-field-participants' ).text(),
+		} ).$element,
+		new OO.ui.FieldLayout( this.location, {
+			label: mw.message( 'appointments-ui-field-location' ).text(),
+		} ).$element,
+		new OO.ui.FieldLayout( this.videoLink, {
+			label: mw.message( 'appointments-ui-field-video-link' ).text(),
+		} ).$element,
+		new OO.ui.FieldLayout( this.time, {
+			label: mw.message( 'appointments-ui-field-time' ).text()
 		} ).$element
 	);
+
+	this.setAbilities();
 };
 
 appointmentEditor.prototype.isDirty = function () {
@@ -58,19 +119,40 @@ appointmentEditor.prototype.save = async function ( entity ) {
 
 appointmentEditor.prototype.getUpdatedEntity = function () {
 	if ( !this.appointment ) {
-		this.appointment = new ( require( '../object/Appointment.js' ) )();
+		this.appointment = new Appointment(null );
 	}
 
-	if ( this.name.getValue() !== this.appointment.name ) {
-		this.dirty = true;
-		this.appointment.name = this.name.getValue();
-	}
-	if ( this.calendar.getValue() !== this.appointment.calendar ) {
-		this.dirty = true;
-		this.appointment.calendar = this.calendar.getValue();
-	}
+	this.appointment.name = this.name.getValue();
+	this.appointment.calendar = this.calendar.getValue();
+	const data = this.appointment.data || {};
+	data.location = this.location.getValue();
+	data.videoLink = this.videoLink.getValue();
+	this.appointment.data = data;
+
+	this.appointment.participants = this.participants.getValue()
+		.map( item => new Participant( item.type, item.key ) );
+	this.appointment.periodDefinition = this.time.getValue();
 
 	return this.appointment;
+};
+
+appointmentEditor.prototype.onInputChange = function () {
+	this.dirty = true;
+	this.setAbilities();
+};
+
+appointmentEditor.prototype.setAbilities = function () {
+	if ( this.dialog ) {
+		if (
+			this.name.getValue() &&
+			this.calendar.getValue() &&
+			this.time.isValid()
+		) {
+			this.dialog.actions.setAbilities( { save: true } );
+		} else {
+			this.dialog.actions.setAbilities( { save: false } );
+		}
+	}
 };
 
 module.exports = appointmentEditor;

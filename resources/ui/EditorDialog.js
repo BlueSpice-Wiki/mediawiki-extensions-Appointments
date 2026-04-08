@@ -32,6 +32,7 @@ editorDialog.prototype.getSetupProcess = function (data ) {
 		.next( () => {
 			this.title.setLabel( this.entity.getLabel() );
 			this.entity.focus();
+			this.entity.onReady();
 		} );
 };
 

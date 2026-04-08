@@ -36,6 +36,8 @@
 				"ui/AppointmentEditor.js",
 				"ui/util/NewCalendarMenuOption.js",
 				"ui/util/CalendarMenuOption.js",
+				"ui/util/AppointmentTime.js",
+				"ui/util/TimePicker.js",
 				"object/PeriodDefinition.js",
 				"object/Participant.js",
 				"object/Calendar.js",
@@ -43,16 +45,42 @@
 			],
 			"messages": [
 				"appointments-ui-create-new-calendar",
+				"appointments-ui-new-appointment",
+				"appointments-ui-calendars",
 				"appointments-ui-field-calendar-name",
 				"appointments-ui-field-calendar-description",
+				"appointments-ui-field-appointment-name",
+				"appointments-ui-field-participants",
+				"appointments-ui-field-location",
+				"appointments-ui-field-video-link",
+				"appointments-ui-field-time",
+				"appointments-ui-date",
+				"appointments-ui-time-start",
+				"appointments-ui-time-end",
+				"appointments-ui-date-start",
+				"appointments-ui-date-end",
+				"appointments-ui-all-day",
+				"appointments-ui-recurrence",
+				"appointments-ui-recurrence-none",
+				"appointments-ui-recurrence-daily",
+				"appointments-ui-recurrence-weekly",
+				"appointments-ui-recurrence-monthly",
 				"appointments-ui-edit-calendar",
 				"appointments-ui-create-calendar",
+				"appointments-ui-edit-appointment",
+				"appointments-ui-create-appointment",
 				"appointments-ui-save",
-				"appointments-ui-cancel"
+				"appointments-ui-cancel",
+				"appointments-ui-field-participants-placeholder"
 			],
 			"dependencies": [
 				"oojs-ui",
-				"ext.appointments.lib.calendarjs"
+				"ext.appointments.lib.calendarjs",
+				"oojs-ui.styles.icons-location",
+				"oojs-ui.styles.icons-media",
+				"oojs-ui.styles.icons-interactions",
+				"oojs-ui.styles.icons-editing-advanced",
+				"ext.oOJSPlus.widgets"
 			]
 		},
 		"ext.appointments.lib.calendarjs": {

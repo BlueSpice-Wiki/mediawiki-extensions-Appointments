@@ -48,7 +48,7 @@ const api = {
 		console.log( res );
 	},
 	saveAppointment: function ( appointment ) {
-		return ext.appointments.api._post( 'appointments', {
+		return ext.appointments.api._post( 'appointment', {
 			guid: appointment.guid || null,
 			title: appointment.title,
 			participants: appointment.participants.map( p => p.serialize() ),

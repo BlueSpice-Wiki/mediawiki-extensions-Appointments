@@ -1,7 +1,13 @@
-const newCalendarMenuOptionClass = require( './util/NewCalendarMenuOption.js' );
-
 const calendarPicker = function ( config ) {
 	calendarPicker.parent.call( this, $.extend( {}, config ) );
+
+	this.value = config.value || null;
+
+	this.menu.connect( this, {
+		select: ( item ) => {
+			this.value = item.getData();
+		}
+	} );
 };
 
 OO.inheritClass( calendarPicker, OO.ui.DropdownWidget );
@@ -13,18 +19,18 @@ calendarPicker.prototype.load = async function () {
 	calendars.forEach( calendar => {
 		this.menu.addItems( [ new ( require( './util/CalendarMenuOption.js' ))( calendar ) ] );
 	} );
-	this.menu.addItems( [
-		new newCalendarMenuOptionClass()
-	] );
-
+	if ( this.value ) {
+		this.menu.selectItemByData( this.value );
+	} else {
+		this.value = calendars[0] ? calendars[0].guid : null;
+		if ( this.value ) {
+			this.menu.selectItemByData( this.value );
+		}
+	}
 };
 
-calendarPicker.prototype.onMenuSelect = function ( item ) {
-	if ( item && item instanceof newCalendarMenuOptionClass ) {
-		item.onSelect();
-		return;
-	}
-	return calendarPicker.parent.prototype.onMenuSelect.call( this, item );
+calendarPicker.prototype.getValue = function () {
+	return this.value;
 };
 
 module.exports = calendarPicker;

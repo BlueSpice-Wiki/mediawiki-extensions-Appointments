@@ -15,6 +15,10 @@ calendarEditor.prototype.setDialog = function ( dialog ) {
 	this.dialog = dialog;
 };
 
+calendarEditor.prototype.onReady = function () {
+	// NOOP
+};
+
 calendarEditor.prototype.getLabel = function () {
 	if ( this.calendar ) {
 		return mw.message( 'appointments-ui-edit-calendar' ).text()

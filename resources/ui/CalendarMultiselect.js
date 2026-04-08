@@ -48,7 +48,7 @@ calendarMultiselect.prototype.load = async function () {
 	const newCalendarOption = new newCalendarMenuOptionClass();
 	newCalendarOption.connect( this, {
 		calendarCreated: ( calendar ) => {
-			this.emit( 'createCalendar', calendar );
+			this.emit( 'calendarCreated', calendar );
 		}
 	} );
 	this.menu.addItems( [ newCalendarOption ] );

@@ -17,6 +17,7 @@ scheduler.prototype.buildControls = async function () {
 	this.calendarPicker = new calendarPickerClass( {} );
 	this.calendarPicker.connect( this, {
 		calendarCreated: async () => {
+			console.log( "CR" );
 			await this.calendarPicker.load();
 		},
 		select: async ( calendarGuids ) => {
