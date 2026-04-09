@@ -59,7 +59,7 @@ class AppointmentSaveHandler extends SimpleHandler {
 		$oldAppointment = null;
 		if ( $body['guid'] ) {
 			$oldAppointment = $this->appointmentStore->getAppointment( $body['guid'] );
-			if ( $oldAppointment ) {
+			if ( !$oldAppointment ) {
 				throw new HttpException( Message::newFromKey( 'appointments-error-appointment-not-found' )->text() );
 			}
 			if ( !$this->permissions->canModifyAppointment( $user, $oldAppointment, $calendar ) ) {

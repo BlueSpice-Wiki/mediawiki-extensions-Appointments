@@ -3,7 +3,7 @@ const periodDefinition = require( './../../object/PeriodDefinition.js' );
 
 const appointmentTime = function ( period, cfg ) {
 	cfg = cfg || {};
-	appointmentTime.parent.apply( this, arguments );
+	appointmentTime.parent.apply( this, cfg );
 	this.dialog = cfg.dialog;
 
 	this.period = period;
@@ -75,9 +75,9 @@ appointmentTime.prototype.makeRecurrence = function () {
 	this.recurrenceSelect = new OO.ui.DropdownInputWidget( {
 		options: [
 			{ data: 'none', label: mw.msg( 'appointments-ui-recurrence-none' ) },
-			{ data: 'daily', label: mw.msg( 'appointments-ui-recurrence-daily' ) },
 			{ data: 'weekly', label: mw.msg( 'appointments-ui-recurrence-weekly' ) },
 			{ data: 'monthly', label: mw.msg( 'appointments-ui-recurrence-monthly' ) },
+			{ data: 'yearly', label: mw.msg( 'appointments-ui-recurrence-yearly' ) },
 		],
 		$overlay: this.dialog ? this.dialog.$overlay : true,
 	} );
@@ -118,7 +118,7 @@ appointmentTime.prototype.onAllDayChange = function ( checked ) {
 appointmentTime.prototype.getValue = function () {
 	const isAllDay = this.allDayCheck.isSelected();
 	let startDate, endDate;
-	let startTime, endTime = '00:00';
+	let startTime = '00:00', endTime = '00:00';
 	let recurrenceRule = null;
 
 	if ( isAllDay ) {
@@ -151,12 +151,12 @@ appointmentTime.prototype.setValue = function ( value ) {
 	}
 	this.allDayCheck.setValue( value.isAllDay() );
 	if ( value.isAllDay() ) {
-		this.dateStart.setValue( value.getStart() );
-		this.dateEnd.setValue( value.getEnd() );
+		this.dateStart.setValue( value.getStartDate() );
+		this.dateEnd.setValue( value.getEndDate() );
 	} else {
-		this.date.setValue( value.getStart());
-		this.startTime.setValue( value.getStart() );
-		this.endTime.setValue( value.getEnd() );
+		this.date.setValue( value.getStartDate());
+		this.startTime.setValue( value.getStartTime() );
+		this.endTime.setValue( value.getEndTime() );
 	}
 	if ( value.getRecurrenceRule() ) {
 		this.recurrenceSelect.setValue( value.getRecurrenceRule() );

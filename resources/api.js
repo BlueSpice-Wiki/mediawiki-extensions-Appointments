@@ -9,7 +9,9 @@ const api = {
 				calendarData.guid,
 				calendarData.name,
 				calendarData.description,
-				calendarData.data
+				calendarData.data,
+				calendarData.wikiId,
+				calendarData.permissions || {}
 			);
 			calendars.push( calendar );
 		}
@@ -27,7 +29,6 @@ const api = {
 		return ext.appointments.api._post( `calendar/delete/${guid}`, {
 			appointment_move_to: moveAppointmentsTo || null
 		} );
-
 	},
 
 	getAppointments: async function ( calendarId, onlyPersonal, startDate, endDate ) {
@@ -45,7 +46,25 @@ const api = {
 			params.append( 'endDate', endDate );
 		}
 		const res = await ext.appointments.api._get( `appointments?${ params.toString() }` );
-		console.log( res );
+		const appointments = [];
+		for ( let i = 0; i < res.length; i++ ) {
+			const appointmentData = res[ i ];
+
+			const appointment = new ext.appointments.objects.Appointment(
+				appointmentData.guid,
+				appointmentData.title,
+				appointmentData.participants.map( p => new ext.appointments.objects.Participant( p.key, p.value ) ),
+				new ext.appointments.objects.Calendar( ...Object.values( appointmentData.calendar ) ),
+				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodDefinition ) ),
+				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodUTC ) ),
+				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.userPeriod ) ),
+				appointmentData.creator,
+				appointmentData.data,
+				appointmentData.permissions
+			);
+			appointments.push( appointment );
+		}
+		return appointments;
 	},
 	saveAppointment: function ( appointment ) {
 		return ext.appointments.api._post( 'appointment', {
@@ -59,7 +78,7 @@ const api = {
 			end_time: appointment.periodDefinition.getEndTime(),
 			is_all_day: appointment.periodDefinition.isAllDay(),
 			recurrence: appointment.periodDefinition.getRecurrenceRule(),
-			data: JSON.stringify( appointment.data )
+			data: appointment.data
 		} );
 	},
 	deleteAppointment: function ( guid ) {
@@ -84,12 +103,14 @@ const api = {
 	_post: function ( path, params ) {
 		const url = mw.util.wikiScript( 'rest' ) + '/appointments/v0/' + path;
 		const options = {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify( params )
+			method: 'POST'
 		};
+		if ( params !== undefined ) {
+			options.headers = {
+				'Content-Type': 'application/json'
+			}
+			options.body = JSON.stringify( params );
+		}
 		return fetch(url, options).then(async (res) => {
 			const data = await res.json().catch(() => null); // handle non-JSON safely
 

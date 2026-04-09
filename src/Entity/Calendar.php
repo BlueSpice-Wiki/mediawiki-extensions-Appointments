@@ -4,7 +4,7 @@ namespace MediaWiki\Extension\Appointments\Entity;
 
 use MediaWiki\User\UserIdentity;
 
-readonly class Calendar {
+readonly class Calendar implements \JsonSerializable {
 
 	/**
 	 * @param string $guid
@@ -22,5 +22,16 @@ readonly class Calendar {
 		public string $wikiId,
 		public array $data = []
 	) {
+	}
+
+	public function jsonSerialize(): array {
+		return [
+			'guid' => $this->guid,
+			'name' => $this->name,
+			'description' => $this->description,
+			'creator' => $this->creator->getName(),
+			'wikiId' => $this->wikiId,
+			'data' => $this->data
+		];
 	}
 }

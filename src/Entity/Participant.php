@@ -2,7 +2,7 @@
 
 namespace MediaWiki\Extension\Appointments\Entity;
 
-readonly class Participant {
+readonly class Participant implements \JsonSerializable {
 
 	/**
 	 * @param string $key
@@ -26,5 +26,12 @@ readonly class Participant {
 	 */
 	public function getValue(): string {
 		return $this->value;
+	}
+
+	public function jsonSerialize(): array {
+		return [
+			'key' => $this->key,
+			'value' => $this->value
+		];
 	}
 }

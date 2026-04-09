@@ -54,7 +54,6 @@ class AppointmentDeleteHandler extends SimpleHandler {
 		return $this->getResponseFactory()->createJson( [ 'success' => true ] );
 	}
 
-
 	public function getParamSettings(): array {
 		return [
 			'appointment' => [

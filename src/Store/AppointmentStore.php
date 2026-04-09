@@ -208,13 +208,25 @@ readonly class AppointmentStore {
 			participants: $participants,
 			calendar: $calendar,
 			periodDefinition: new PeriodDefinition(
-				start: DateTime::createFromFormat( 'YmdHis', $row->app_start ),
-				end: DateTime::createFromFormat( 'YmdHis', $row->app_end ),
+				start: $this->utcTime( $row->app_start ),
+				end: $this->utcTime( $row->app_end ),
 				isAllDay: (bool)$row->app_is_all_day,
 				recurrenceRule: $row->app_recurring ? new RecurrenceRule( $row->app_recurring ) : null,
 			),
 			creator: $this->userFactory->newFromId( $row->app_creator ),
 			data: json_decode( $row->app_data, true ) ?? []
 		);
+	}
+
+	/**
+	 * @param string $time
+	 * @return DateTime
+	 */
+	private function utcTime( string $time ): DateTime {
+		$dateTime = DateTime::createFromFormat( 'YmdHis', $time, new \DateTimeZone( 'UTC' ) );
+		if ( !$dateTime ) {
+			throw new \UnexpectedValueException( "Invalid time format: $time" );
+		}
+		return $dateTime;
 	}
 }

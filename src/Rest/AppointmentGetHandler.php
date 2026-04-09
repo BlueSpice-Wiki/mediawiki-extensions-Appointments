@@ -6,6 +6,8 @@ use MediaWiki\Context\RequestContext;
 use MediaWiki\Extension\Appointments\Entity\PeriodDefinition;
 use MediaWiki\Extension\Appointments\Store\AppointmentStore;
 use MediaWiki\Extension\Appointments\Store\CalendarStore;
+use MediaWiki\Extension\Appointments\UserInterface;
+use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Message\Message;
 use MediaWiki\Rest\Response;
 use MediaWiki\Rest\SimpleHandler;
@@ -16,10 +18,14 @@ class AppointmentGetHandler extends SimpleHandler {
 	/**
 	 * @param CalendarStore $calendarStore
 	 * @param AppointmentStore $appointmentStore
+	 * @param UserInterface $userInterface
+	 * @param Permissions $permissions
 	 */
 	public function __construct(
 		private readonly CalendarStore $calendarStore,
-		private readonly AppointmentStore $appointmentStore
+		private readonly AppointmentStore $appointmentStore,
+		private readonly UserInterface $userInterface,
+		private readonly Permissions $permissions
 	) {
 	}
 
@@ -48,19 +54,50 @@ class AppointmentGetHandler extends SimpleHandler {
 				end: \DateTime::createFromFormat( 'Y-m-d', $endDate ),
 			);
 		}
+		$user = RequestContext::getMain()->getUser();
 		$query = $this->appointmentStore->newQuery();
 
 		if ( $calendar ) {
 			$query->forCalendar( $calendar );
 		}
 		if ( $personalOnly ) {
-			$query->forUser( RequestContext::getMain()->getUser() );
+			$query->forUser( $user );
 		}
 		if ( $period ) {
 			$query->forPeriod( $period );
 		}
 
-		return $this->getResponseFactory()->createJson( $query->execute() );
+		$appointments = $query->execute();
+		$data = [];
+		foreach( $appointments as $appointment ) {
+			$calendar = $appointment->calendar->jsonSerialize();
+			$calendar['permissions'] = [
+				'edit' => $this->permissions->canModifyCalendar( $user, $appointment->calendar ),
+				'delete' => $this->permissions->canDeleteCalendar( $user, $appointment->calendar ),
+			];
+			$data[] = [
+				'guid' => $appointment->guid,
+				'title' => $appointment->title,
+				'calendar' =>$calendar,
+				'periodDefinition' => $this->userInterface->serializePeriodDefinition(
+					$appointment->periodDefinition, $user
+				),
+				'periodUTC' => $this->userInterface->serializePeriodDefinition(
+					$appointment->periodDefinition
+				),
+				'userPeriod' => $this->userInterface->serializePeriodDefinitionForUser(
+					$appointment->periodDefinition, $user
+				),
+				'participants' => $appointment->participants,
+				'creator' => $appointment->creator->getName(),
+				'data' => $appointment->data,
+				'permissions' => [
+					'edit' => $this->permissions->canModifyAppointment( $user, $appointment, $appointment->calendar ),
+					'delete' => $this->permissions->canDeleteAppointment( $user, $appointment, $appointment->calendar ),
+				]
+			];
+		}
+		return $this->getResponseFactory()->createJson( $data );
 
 	}
 

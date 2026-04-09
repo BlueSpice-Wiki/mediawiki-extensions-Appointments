@@ -1,3 +1,4 @@
+const CalendarMenuOption = require( './util/CalendarMenuOption.js' );
 const calendarPicker = function ( config ) {
 	calendarPicker.parent.call( this, $.extend( {}, config ) );
 
@@ -17,8 +18,9 @@ calendarPicker.prototype.load = async function () {
 	this.menu.clearItems();
 
 	calendars.forEach( calendar => {
-		this.menu.addItems( [ new ( require( './util/CalendarMenuOption.js' ))( calendar ) ] );
+		this.menu.addItems( [ new CalendarMenuOption( calendar ) ] );
 	} );
+
 	if ( this.value ) {
 		this.menu.selectItemByData( this.value );
 	} else {

@@ -1,80 +1,67 @@
-const newCalendarMenuOptionClass = require( './util/NewCalendarMenuOption.js' );
+const calendarMenuOption = require( './util/CalendarCheckboxMenuOption.js' );
 
 const calendarMultiselect = function ( config ) {
-	calendarMultiselect.parent.call( this, $.extend( {
-		allowArbitrary: false,
-		menu: {
-			highlightOnFilter: false
-		}
-	}, config ) );
+	calendarMultiselect.parent.call( this, $.extend( {}, config ) );
 
-	this.menu.connect( this, {
-		select: ( items ) => {
-			for ( let i = 0; i < items.length; i++ ) {
-				if ( items[i].getData() === '_create' ) {
-					// Make sure that "new calendar" option is never selected
-					this.menu.unselectItem(items[i]);
+	this.$options = $( '<div>' ).addClass( 'ext-appointments-calendar-multiselect-options' );
+	this.$options.html( new OO.ui.ProgressBarWidget( { progress: false } ).$element );
+	this.$element.append( this.$options );
+
+	this.addCalendarButton = new OO.ui.ButtonWidget( {
+		label: mw.message( 'appointments-ui-create-calendar' ).text(),
+		framed: false,
+		icon: 'add',
+		flags: [ 'progressive' ]
+	} );
+	this.addCalendarButton.connect( this, {
+		click: () => {
+			ext.appointments.util.openCalendarEditorDialog().then( ( res ) => {
+				if ( res && res.entity ) {
+					this.reload();
 				}
-			}
-			const selected = [];
-			for ( const item of items ) {
-				if ( item.getData() !== '_create' ) {
-					selected.push( item.getData() );
-				}
-			}
-			this.emit( 'select', selected );
+			} );
 		}
 	} );
+	this.$element.append( this.addCalendarButton.$element );
+
+	this.reload();
+
 };
 
-OO.inheritClass( calendarMultiselect, OO.ui.MenuTagMultiselectWidget );
+OO.inheritClass( calendarMultiselect, OO.ui.Widget );
 
-calendarMultiselect.prototype.load = async function () {
-	const selected = this.getValue();
+calendarMultiselect.prototype.reload = function () {
+	ext.appointments.api.getCalendars().then( calendars => {
+		const items = [];
+		for ( const calendar of calendars ) {
+			const option = new calendarMenuOption( calendar );
+			option.connect( this, {
+				edit: ( updatedCalendar ) => {
+					this.emit( 'datasetUpdate', updatedCalendar );
+					this.reload();
+				},
+				delete: ( deletedCalendarGuid ) => {
+					this.emit( 'datasetUpdate', deletedCalendarGuid );
+					this.reload();
+				}
 
-	this.setDisabled( true );
-	this.menu.clearItems();
-
-	const calendars = await ext.appointments.api.getCalendars();
-	const values = selected;
-	for ( const calendar of calendars ) {
-		this.menu.addItems( [ this.addOptionFromCalendar( calendar ) ] );
-		if ( selected.length === 0 ) {
-			values.push( calendar.guid );
+			} );
+			items.push( option );
 		}
-	}
-	this.setValue( values );
-
-	const newCalendarOption = new newCalendarMenuOptionClass();
-	newCalendarOption.connect( this, {
-		calendarCreated: ( calendar ) => {
-			this.emit( 'calendarCreated', calendar );
-		}
+		this.selector = new OO.ui.CheckboxMultiselectWidget( { items: items } );
+		this.selector.connect( this, {
+			select: () => {
+				this.emit( 'select', this.selector.findSelectedItemsData() );
+			}
+		} );
+		this.selector.selectItemsByData( calendars.map( calendar => calendar.guid ) );
+		this.$options.html( this.selector.$element );
+	} ).catch( ( e ) => {
+		this.$element.html( new OO.ui.MessageWidget( {
+			type: 'error',
+			label: mw.message( 'appointments-ui-load-calendars-failed' ).text()
+		} ).$element );
 	} );
-	this.menu.addItems( [ newCalendarOption ] );
-	this.setDisabled( false );
-};
-
-calendarMultiselect.prototype.addOptionFromCalendar = function ( calendar ) {
-	return new ( require( './util/CalendarMenuOption.js' ) )( calendar );
 }
-
-calendarMultiselect.prototype.addTag = function ( data, label ) {
-	if ( data === '_create' ) {
-		return;
-	}
-	return calendarMultiselect.parent.prototype.addTag.call( this, data, label );
-};
-
-calendarMultiselect.prototype.onMenuChoose = function ( item, selected ) {
-	if ( !item ) {
-		return;
-	}
-	if ( item instanceof newCalendarMenuOptionClass ) {
-		item.onSelect();
-		return;
-	}
-	calendarMultiselect.parent.prototype.onMenuChoose.call( this, item, selected );
-};
 
 module.exports = calendarMultiselect;

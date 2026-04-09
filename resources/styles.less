@@ -18,3 +18,98 @@
 .appointments-time-picker-menu {
 	max-height: 200px !important;
 }
+
+.appointment-entry {
+
+	.appointment-entry-start-time {
+		font-weight: normal;
+		margin-right: 4px;
+		cursor: pointer;
+	}
+}
+
+.appointment-viewer {
+	.appointment-viewer-title {
+		font-size: 1.2em;
+	}
+
+	.oo-ui-horizontalLayout.entity-wrapper {
+		align-items: center;
+		background-color: #e5e5e5;
+		padding: 10px;
+		margin: 4px 0;
+		border-radius: 8px;
+	}
+
+	.oojsplus-user-widget,
+	.oojsplus-group-widget {
+		display: inline-block;
+		width: auto !important;
+		padding: 4px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		min-height: 32px
+	}
+}
+
+.ext-appointments-scheduler {
+	display: grid;
+	grid-template-columns: 200px 1fr;
+	grid-template-rows: auto 1fr;
+	gap: 10px;
+
+	.ext-appointments-scheduler-header {
+		grid-column-start: 1;
+		grid-column-end: -1;
+		margin-bottom: 20px;
+
+		.oo-ui-tool-name-calendar_view {
+			a {
+				padding: 10px;
+			}
+		}
+	}
+
+	.ext-appointments-scheduler-calendars {
+		grid-column: 1;
+		width: 200px;
+
+		.ext-appointments-calendar-multiselect-options {
+			.oo-ui-checkboxInputWidget {
+				vertical-align: middle;
+			}
+			.oo-ui-checkboxMultioptionWidget {
+				vertical-align: middle;
+				width: 100%;
+
+				&:hover {
+					.oo-ui-buttonWidget {
+						visibility: visible;
+					}
+				}
+
+				.oo-ui-buttonWidget {
+					background-color: white;
+					margin-right: 0;
+					position: absolute;
+					right: 32px;
+					top: -5px;
+					visibility: hidden;
+					&:last-of-type {
+						right: 0;
+					}
+				}
+			}
+		}
+	}
+
+	.ext-appointments-scheduler-calendar-cnt {
+		grid-column: 2;
+	}
+}
+
+.ext-appointments-scheduler-calendar-cnt {
+	.lm-calendar-navigation {
+		display: none;
+	}
+}

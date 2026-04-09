@@ -1,6 +1,8 @@
 const appointmentTime = require( './util/AppointmentTime.js' );
 const Appointment = require( '../object/Appointment.js' );
 const Participant = require( '../object/Participant.js' );
+const Calendar = require( '../object/Calendar.js' );
+const CalendarPicker = require( './CalendarPicker.js' );
 
 const appointmentEditor = function ( config ) {
 	appointmentEditor.parent.call( this, $.extend( {
@@ -38,13 +40,13 @@ appointmentEditor.prototype.focus = function () {
 appointmentEditor.prototype.init = function () {
 	this.name = new OO.ui.TextInputWidget( {
 		required: true,
-		value: this.calendar ? this.calendar.name : '',
+		value: this.appointment ? this.appointment.title : '',
 	} );
 	this.name.connect( this, { change: 'onInputChange' } );
 
-	this.calendar = new ( require( './CalendarPicker.js' ) )( {
+	this.calendar = new CalendarPicker( {
 		$overlay: this.dialog ? this.dialog.$overlay : true,
-		value: this.appointment ? this.appointment.calendar : null,
+		value: this.appointment ? this.appointment.calendar.guid : null,
 	} );
 	this.calendar.connect( this, { change: 'onInputChange' } );
 	this.calendar.load();
@@ -65,8 +67,14 @@ appointmentEditor.prototype.init = function () {
 		$overlay: this.dialog ? this.dialog.$overlay : true,
 		placeholder: mw.message( 'appointments-ui-field-participants-placeholder' ).text(),
 	} );
+	if ( this.appointment && this.appointment.participants ) {
+		this.participants.setValue( this.appointment.participants.map( participant => ( {
+			key: participant.getValue(),
+			type: participant.getKey()
+		} ) ) );
+	}
 	this.participants.connect( this, {
-		change: ( value ) => {
+		change: () => {
 			this.dialog.updateSize();
 			this.onInputChange();
 		}
@@ -77,13 +85,14 @@ appointmentEditor.prototype.init = function () {
 			dialog: this.dialog
 		}
 	);
+	if ( this.appointment && this.appointment.periodDefinition ) {
+		this.time.setValue( this.appointment.periodDefinition );
+	}
 	this.time.connect( this, {
 		change: () => {
-			console.log( this.time.getValue() );
 			this.onInputChange();
 		}
 	} );
-
 
 	this.$element.append(
 		new OO.ui.FieldLayout( this.name, {
@@ -122,8 +131,8 @@ appointmentEditor.prototype.getUpdatedEntity = function () {
 		this.appointment = new Appointment(null );
 	}
 
-	this.appointment.name = this.name.getValue();
-	this.appointment.calendar = this.calendar.getValue();
+	this.appointment.title = this.name.getValue();
+	this.appointment.calendar = new Calendar( this.calendar.getValue() );
 	const data = this.appointment.data || {};
 	data.location = this.location.getValue();
 	data.videoLink = this.videoLink.getValue();

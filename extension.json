@@ -34,14 +34,25 @@
 				"ui/EditorDialog.js",
 				"ui/CalendarEditor.js",
 				"ui/AppointmentEditor.js",
+				"ui/AppointmentEntry.js",
+				"ui/AppointmentViewer.js",
+				"ui/SchedulerView.js",
 				"ui/util/NewCalendarMenuOption.js",
 				"ui/util/CalendarMenuOption.js",
 				"ui/util/AppointmentTime.js",
 				"ui/util/TimePicker.js",
+				"ui/util/AppointmentTimeView.js",
+				"ui/util/ParticipantView.js",
+				"ui/util/CalendarCheckboxMenuOption.js",
+				"ui/util/MainToolbar.js",
 				"object/PeriodDefinition.js",
 				"object/Participant.js",
 				"object/Calendar.js",
-				"object/Appointment.js"
+				"object/Appointment.js",
+				{
+					"name": "config.json",
+					"callback": "MediaWiki\\Extension\\Appointments\\ResourceLoader\\ConfigCallback::handleConfigRequest"
+				}
 			],
 			"messages": [
 				"appointments-ui-create-new-calendar",
@@ -71,7 +82,9 @@
 				"appointments-ui-create-appointment",
 				"appointments-ui-save",
 				"appointments-ui-cancel",
-				"appointments-ui-field-participants-placeholder"
+				"appointments-ui-field-participants-placeholder",
+				"appointments-ui-edit",
+				"appointments-ui-delete"
 			],
 			"dependencies": [
 				"oojs-ui",
@@ -80,6 +93,7 @@
 				"oojs-ui.styles.icons-media",
 				"oojs-ui.styles.icons-interactions",
 				"oojs-ui.styles.icons-editing-advanced",
+				"oojs-ui.styles.icons-editing-core",
 				"ext.oOJSPlus.widgets"
 			]
 		},
@@ -129,20 +143,23 @@
 			"method": "GET",
 			"path": "/appointments/v0/appointments",
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentGetHandler",
-			"services": [ "Appointments.CalendarStore", "Appointments.AppointmentStore" ]
+			"services": [
+				"Appointments.CalendarStore", "Appointments.AppointmentStore",
+				"Appointments._UserInterface", "Appointments._Permissions"
+			]
 		},
 		{
 			"method": "GET",
 			"path": "/appointments/v0/calendars",
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\CalendarGetHandler",
-			"services": [ "Appointments.CalendarStore" ]
+			"services": [ "Appointments.CalendarStore", "Appointments._Permissions" ]
 		},
 		{
 			"method": "POST",
 			"path": "/appointments/v0/appointment",
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentSaveHandler",
 			"services": [
-				"Appointments.AppointmentStore", "Appointments._UserInterface",
+				"Appointments.CalendarStore", "Appointments.AppointmentStore", "Appointments._UserInterface",
 				"Appointments._Permissions", "Appointments._ParticipantResolver",
 				"HookContainer", "Appointments._Logger"
 			]

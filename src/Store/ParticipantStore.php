@@ -35,8 +35,8 @@ class ParticipantStore {
 		$participants = [];
 		foreach ( $raw as $p ) {
 			$participants[] = new Participant(
-				$p->pap_key,
-				$p->pap_value
+				$p->ap_key,
+				$p->ap_value
 			);
 		}
 		return $participants;
@@ -96,8 +96,8 @@ class ParticipantStore {
 		foreach ( $appointment->participants as $participant ) {
 			$rows[] = [
 				'ap_app' => $appointment->guid,
-				'ap_key' => $participant->key,
-				'ap_value' => $participant->value,
+				'ap_key' => $participant->getKey(),
+				'ap_value' => $participant->getValue(),
 			];
 		}
 		$this->lb->getConnection( DB_PRIMARY )->newInsertQueryBuilder()

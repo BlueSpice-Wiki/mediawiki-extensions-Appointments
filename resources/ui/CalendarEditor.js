@@ -1,3 +1,5 @@
+const Calendar = require( '../object/Calendar.js' );
+
 const calendarEditor = function ( config ) {
 	calendarEditor.parent.call( this, $.extend( {
 		expanded: false,
@@ -61,7 +63,7 @@ calendarEditor.prototype.save = async function ( entity ) {
 
 calendarEditor.prototype.getUpdatedEntity = function () {
 	if ( !this.calendar ) {
-		this.calendar = new ( require( '../object/Calendar.js' ) )();
+		this.calendar = new Calendar();
 	}
 
 	if ( this.name.getValue() !== this.calendar.name ) {

@@ -69,6 +69,7 @@ class AppointmentQuery {
 			->where( $this->conds )
 			->join( 'appointment_participants', 'ap', 'ap.ap_app = a.app_guid' )
 			->caller( __METHOD__ )
+			->groupBy( 'a.app_guid' )
 			->fetchResultSet();
 
 		$appointments = [];

@@ -7,6 +7,7 @@ use DateTimeZone;
 use MediaWiki\Language\Language;
 use MediaWiki\Languages\LanguageFactory;
 use MediaWiki\MainConfigNames;
+use MediaWiki\User\User;
 use MediaWiki\User\UserIdentity;
 use MediaWiki\User\UserOptionsLookup;
 use MediaWiki\User\UserTimeCorrection;
@@ -47,11 +48,12 @@ class UserInterface {
 	 * @return DateTime
 	 */
 	public function convertDateTimeForUser( DateTime $utcTime, UserIdentity $user ) {
+		$userTime = clone $utcTime;
 		$userTZ = $this->getUserTimezone( $user );
 		if ( $userTZ ) {
-			$utcTime->setTimezone( $userTZ );
+			$userTime->setTimezone( $userTZ );
 		}
-		return $utcTime;
+		return $userTime;
 	}
 
 	/**
@@ -94,4 +96,48 @@ class UserInterface {
 		}
 		return $this->contentLanguage;
 	}
+
+	/**
+	 * @param Entity\PeriodDefinition $periodDefinition
+	 * @param User|null $user
+	 * @return array
+	 */
+	public function serializePeriodDefinition( Entity\PeriodDefinition $periodDefinition, ?User $user = null ): array {
+		$start = $periodDefinition->getStart();
+		$end = $periodDefinition->getEnd();
+		if ( $user ) {
+			$start = $this->convertDateTimeForUser( $start, $user );
+			$end = $this->convertDateTimeForUser( $end, $user );
+
+		}
+		return [
+			'startDate' => $start->format( 'Y-m-d' ),
+			'startTime' => $start->format( 'H:i' ),
+			'endDate' => $end->format( 'Y-m-d' ),
+			'endTime' => $end->format( 'H:i' ),
+			'isAllDay' => $periodDefinition->isAllDay(),
+			'recurrenceRule' => $periodDefinition->getRecurrenceRule()?->getRule() ?? null,
+			'tz' => $start->getTimezone() ? $start->getTimezone()->getName() : null,
+		];
+	}
+
+	/**
+	 * @param Entity\PeriodDefinition $periodDefinition
+	 * @param User $user
+	 * @return array
+	 */
+	public function serializePeriodDefinitionForUser( Entity\PeriodDefinition $periodDefinition, User $user ): array {
+		$userFormattedStart = $this->formatDateTimeForUser( $periodDefinition->getStart(), $user );
+		$userFormattedEnd = $this->formatDateTimeForUser( $periodDefinition->getEnd(), $user );
+
+		return [
+			'startDate' => $userFormattedStart['date'],
+			'startTime' => $userFormattedStart['time'],
+			'endDate' => $userFormattedEnd['date'],
+			'endTime' => $userFormattedEnd['time'],
+			'isAllDay' => $periodDefinition->isAllDay(),
+			'recurrenceRule' => $periodDefinition->getRecurrenceRule()?->getRule() ?? null
+		];
+	}
+
 }
