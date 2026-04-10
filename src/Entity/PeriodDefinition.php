@@ -63,16 +63,20 @@ readonly class PeriodDefinition {
 	 * This is to be used to show appointment in calendar (for particular period currently visible in calendar)
 	 *
 	 * @param PeriodDefinition $periodDefinition
+	 * @param bool $matchNext
 	 * @return PeriodDefinition|null
 	 */
-	public function getMatchInPeriod( PeriodDefinition $periodDefinition ): ?PeriodDefinition {
-
+	public function getMatchInPeriod( PeriodDefinition $periodDefinition, bool $matchNext = false ): ?PeriodDefinition {
 		if ( !$this->recurrenceRule ) {
 			// No recurrence, just check if falls within start and end
-			if ( $this->overlapsWith( $periodDefinition ) ) {
+			if ( !$matchNext && $this->overlapsWith( $periodDefinition ) ) {
 				return $this;
 			}
 			return null;
+		}
+
+		if ( $matchNext ) {
+			$this->recurrenceRule->moveToNext( $this->start, $this->end );
 		}
 
 		// With recurrence, check if falls within any of the recurrences
@@ -122,5 +126,10 @@ readonly class PeriodDefinition {
 				);
 			}
 		}
+	}
+
+	public function __clone(): void {
+		$this->start = clone $this->start;
+		$this->end = clone $this->end;
 	}
 }

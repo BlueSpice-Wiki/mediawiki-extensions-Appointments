@@ -13,6 +13,7 @@ const appointmentEditor = function ( config ) {
 	this.appointment = config.appointment;
 	this.dirty = !this.appointment;
 	this.dialog = null;
+	this.defaultDate = config.defaultDate || null;
 };
 
 OO.inheritClass( appointmentEditor, OO.ui.PanelLayout );
@@ -82,7 +83,8 @@ appointmentEditor.prototype.init = function () {
 
 	this.time = new appointmentTime(
 		this.appointment ? this.appointment.periodDefinition : null, {
-			dialog: this.dialog
+			dialog: this.dialog,
+			defaultDate: this.defaultDate
 		}
 	);
 	if ( this.appointment && this.appointment.periodDefinition ) {
@@ -94,6 +96,11 @@ appointmentEditor.prototype.init = function () {
 		}
 	} );
 
+	this.notifyInAdvance = new OO.ui.CheckboxInputWidget( {
+		value: this.appointment ? !!this.appointment.data.notifyInAdvance : false,
+	} );
+	this.notifyInAdvance.connect( this, { change: 'onInputChange' } );
+
 	this.$element.append(
 		new OO.ui.FieldLayout( this.name, {
 			label: mw.message( 'appointments-ui-field-appointment-name' ).text(),
@@ -104,14 +111,17 @@ appointmentEditor.prototype.init = function () {
 		new OO.ui.FieldLayout( this.participants, {
 			label: mw.message( 'appointments-ui-field-participants' ).text(),
 		} ).$element,
+		new OO.ui.FieldLayout( this.time, {
+			label: mw.message( 'appointments-ui-field-time' ).text()
+		} ).$element,
 		new OO.ui.FieldLayout( this.location, {
 			label: mw.message( 'appointments-ui-field-location' ).text(),
 		} ).$element,
 		new OO.ui.FieldLayout( this.videoLink, {
 			label: mw.message( 'appointments-ui-field-video-link' ).text(),
 		} ).$element,
-		new OO.ui.FieldLayout( this.time, {
-			label: mw.message( 'appointments-ui-field-time' ).text()
+		new OO.ui.FieldLayout( this.notifyInAdvance, {
+			label: mw.message( 'appointments-ui-field-notify-in-advance' ).text(),
 		} ).$element
 	);
 
@@ -136,6 +146,7 @@ appointmentEditor.prototype.getUpdatedEntity = function () {
 	const data = this.appointment.data || {};
 	data.location = this.location.getValue();
 	data.videoLink = this.videoLink.getValue();
+	data.notifyInAdvance = this.notifyInAdvance.getValue();
 	this.appointment.data = data;
 
 	this.appointment.participants = this.participants.getValue()

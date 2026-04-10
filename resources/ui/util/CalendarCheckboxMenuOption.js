@@ -34,6 +34,8 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 			} );
 		}
 	} );
+	const color = calendar.getColor();
+	this.checkbox.checkIcon.$element.css( 'background-color', color );
 
 	this.$element.append( this.editButton.$element, this.deleteButton.$element );
 };

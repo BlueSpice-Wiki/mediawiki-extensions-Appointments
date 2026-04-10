@@ -11,6 +11,7 @@ const api = {
 				calendarData.description,
 				calendarData.data,
 				calendarData.wikiId,
+				calendarData.data || {},
 				calendarData.permissions || {}
 			);
 			calendars.push( calendar );

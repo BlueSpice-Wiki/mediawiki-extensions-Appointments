@@ -8,6 +8,12 @@ const appointmentTime = function ( period, cfg ) {
 
 	this.period = period;
 	this.today = moment().format( 'YYYY-MM-DD' );
+	this.defaultDate = cfg.defaultDate || this.today;
+	const hourNow = this.getUserTime();
+	if ( hourNow ) {
+		this.defaultStart = `${ hourNow }:00`;
+		this.defaultEnd = `${ hourNow }:30`;
+	}
 
 	this.timedAppointment = this.makeTimed();
 	this.timedAppointment.$element.hide();
@@ -17,6 +23,8 @@ const appointmentTime = function ( period, cfg ) {
 	this.recurrence = this.makeRecurrence();
 	this.allDayCheck = new OO.ui.CheckboxInputWidget();
 	this.allDayCheck.connect( this, { change: 'onAllDayChange' } );
+
+
 
 	this.render();
 	this.setValue( period );
@@ -31,11 +39,19 @@ appointmentTime.prototype.makeTimed = function () {
 	this.date = new OOJSPlus.ui.widget.DateInputWidget( {
 		mustBeAfter: this.today,
 		$overlay: this.dialog ? this.dialog.$overlay : true,
+		value: this.defaultDate
 	} );
 	this.date.connect( this, { change: 'onItemChange' } );
 	this.startTime = new timePicker( { $overlay: this.dialog ? this.dialog.$overlay : true } );
+	if ( this.defaultStart ) {
+		console.log( this.defaultStart );
+		this.startTime.setValue( this.defaultStart );
+	}
 	this.startTime.connect( this, { change: 'onItemChange' } );
 	this.endTime = new timePicker( { $overlay: this.dialog ? this.dialog.$overlay : true } );
+	if ( this.defaultEnd ) {
+		this.endTime.setValue( this.defaultEnd );
+	}
 	this.endTime.connect( this, { change: 'onItemChange' } );
 
 	return new OO.ui.HorizontalLayout( {
@@ -53,11 +69,13 @@ appointmentTime.prototype.makeAllDay = function () {
 	this.dateStart = new OOJSPlus.ui.widget.DateInputWidget( {
 		mustBeAfter: this.today,
 		$overlay: this.dialog ? this.dialog.$overlay : true,
+		value: this.defaultDate
 	} );
 	this.dateStart.connect( this, { change: 'onItemChange' } );
 	this.dateEnd = new OOJSPlus.ui.widget.DateInputWidget( {
 		mustBeAfter: this.today,
 		$overlay: this.dialog ? this.dialog.$overlay : true,
+		value: this.defaultDate
 	} );
 	this.dateEnd.connect( this, { change: 'onItemChange' } );
 
@@ -103,14 +121,9 @@ appointmentTime.prototype.onAllDayChange = function ( checked ) {
 	if ( checked ) {
 		this.timedAppointment.$element.hide();
 		this.allDayAppointment.$element.show();
-		this.date.setValue( null );
-		this.startTime.setValue( null );
-		this.endTime.setValue( null );
 	} else {
 		this.timedAppointment.$element.show();
 		this.allDayAppointment.$element.hide();
-		this.dateStart.setValue( null );
-		this.dateEnd.setValue( null );
 	}
 	this.onItemChange();
 };
@@ -180,5 +193,23 @@ appointmentTime.prototype.isValid = function () {
 		return startDate && startDate >= this.today && endTime > startTime;
 	}
 };
+
+appointmentTime.prototype.getUserTime = function () {
+	const value = mw.user.options.get('timecorrection') || 'System';
+	if ( value === 'System' ) {
+		return moment().format('HH');
+	}
+	const [ type, offset, tz ] = value.split('|');
+
+	if ( ( type === 'ZoneInfo' || type === 'Offset' ) && offset) {
+		return moment().utcOffset(parseInt(offset, 10)).format('HH');
+	}
+
+	if (type === 'Offset' && offset) {
+		return moment().utcOffset(parseInt(offset, 10)).format('HH');
+	}
+
+	return moment().format('HH');
+}
 
 module.exports = appointmentTime;

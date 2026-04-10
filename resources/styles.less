@@ -24,12 +24,28 @@
 		font-size: 1.2em;
 	}
 
+	.appointment-viewer-calendar {
+		align-items: center;
+		margin: 8px 0;
+
+		.appointment-viewer-calendar-color {
+			display: inline-block;
+			width: 12px;
+			height: 12px;
+			border-radius: 2px;
+		}
+	}
+
+	.appointment-viewer-buttons {
+		margin-bottom: 10px;
+	}
+
+
 	.oo-ui-horizontalLayout.entity-wrapper {
 		align-items: center;
-		background-color: #e5e5e5;
+		border-top: 1px solid #cecece;
 		padding: 10px;
 		margin: 4px 0;
-		border-radius: 8px;
 	}
 
 	.oojsplus-user-widget,
@@ -120,31 +136,59 @@
 		border-radius: 4px;
 		pointer-events: auto;
 		height: 24px;
-		background-color: #0b0080;
-		color: #fff;
-	}
 
-	.appointment-entry-span > a {
-		display: flex;
-		align-items: center;
-		width: 100%;
-		height: 100%;
-		padding: 0 6px;
-		margin: 0;
-		border-radius: 4px;
-		text-decoration: none;
-		line-height: 1;
-		min-height: inherit !important;
-	}
+		&.appointment-entry-multi-day a {
+			text-align: center;
+		}
 
-	.appointment-entry-span .appointment-entry-start-time {
-		display: none;
-	}
+		&.selected {
+			opacity: 0.9;
+		}
 
-	.appointment-entry-span .appointment-entry-title {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		color: #fff;
+		&.dark-text {
+			.appointment-entry-start-time,
+			.appointment-entry-title {
+				color: black;
+			}
+		}
+
+		.appointment-entry-start-time {
+			color: #fff;
+			margin-right: 4px;
+			font-weight: normal;
+			font-size: 0.8em;
+
+			.appointment-entry-recurring-icon {
+				background-size: 12px;
+				width: 12px;
+				min-width: 12px;
+				margin-left: 4px;
+			}
+		}
+
+		.appointment-entry-title {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			color: #fff;
+		}
+
+		> a {
+			display: flex;
+			align-items: center;
+			width: 100%;
+			height: 100%;
+			padding: 0 6px;
+			margin: 0;
+			border-radius: 4px;
+			text-decoration: none;
+			line-height: 1;
+			min-height: inherit !important;
+
+			&:focus {
+				box-shadow: none !important;
+				border: none !important;
+			}
+		}
 	}
 
 	.lm-calendar-content > div > .appointment-entry {
@@ -164,5 +208,63 @@
 		font-weight: normal;
 		margin-right: 4px;
 		cursor: pointer;
+	}
+}
+
+.calendar-color-picker {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: start;
+	gap: 5px;
+
+	.calendar-color-option {
+		height: 30px;
+		width: 30px;
+		margin-right: 5px;
+		border: 2px solid var( --border-color-interactive, #a2a9b1 );
+		border-radius: 2px;
+		cursor: pointer;
+		position: relative;
+		color: white;
+
+		&.dark-text {
+			color: black;
+		}
+
+		&::after {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate( -50%, -50% );
+			font-weight: bold;
+		}
+
+		&.selected {
+			border-width: 4px;
+
+			&::after {
+				content: '✓';
+			}
+		}
+	}
+}
+
+.appointments-ui-editor-dialog-body {
+	.oo-ui-fieldLayout-field {
+		width: 70%;
+	}
+}
+
+.calendar-menu-option {
+	.calendar-menu-option-color {
+		display: inline-block;
+		width: 12px;
+		height: 12px;
+		border-radius: 2px;
+		margin-right: 4px;
+	}
+
+	.oo-ui-labelElement-label {
+		display: inline !important;
 	}
 }

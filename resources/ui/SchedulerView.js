@@ -49,6 +49,7 @@ SchedulerMonth.prototype.render = function () {
 };
 
 SchedulerMonth.prototype.emitRangeChangeIfChanged = function () {
+	this.stampCells();
 	const now = this.getVisibleRange();
 	if ( !now ) {
 		return;
@@ -72,7 +73,9 @@ SchedulerMonth.prototype.renderNavigation = function () {
 	} );
 	this.nextButton.on( 'click', () => this.calendar.next() );
 	this.prevButton.on( 'click', () => this.calendar.prev() );
-	this.$element.find( '.lm-calendar-header' ).append( this.prevButton.$element, this.nextButton.$element );
+	this.$element.find( '.lm-calendar-navigation' ).replaceWith( new OO.ui.HorizontalLayout( {
+		items: [ this.prevButton, this.nextButton ],
+	} ).$element );
 };
 
 SchedulerMonth.prototype.removeForCalendar = function ( calendarGuid ) {
@@ -93,15 +96,10 @@ SchedulerMonth.prototype.removeForCalendar = function ( calendarGuid ) {
 SchedulerMonth.prototype.addAppointment = function ( appointment ) {
 	const start = appointment.periodDefinition.getStartDate();
 	const end = appointment.periodDefinition.getEndDate();
-
-	if ( start !== end || appointment.periodDefinition.isAllDay() ) {
-		this.addMultiDayAppointment( appointment, start, end );
-	} else {
-		this.addSingleDayAppointment( appointment, start );
-	}
+	this.addMultiDayAppointment( appointment, start, end );
 };
 
-SchedulerMonth.prototype.addSingleDayAppointment = function ( appointment, date ) {
+/*SchedulerMonth.prototype.addSingleDayAppointment = function ( appointment, date ) {
 	const cell = this.$element[ 0 ].querySelector(
 		`.lm-calendar-content > div[data-date="${date}"]`
 	);
@@ -115,7 +113,7 @@ SchedulerMonth.prototype.addSingleDayAppointment = function ( appointment, date 
 		}
 	} );
 	cell.appendChild( entry.$element[ 0 ] );
-};
+};*/
 
 /**
  * Render a multi-day appointment as one spanning bar per calendar row it
@@ -136,11 +134,20 @@ SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start,
 		return;
 	}
 
+	const visibleStart = cells[ 0 ].getAttribute( 'data-date' );
+	const visibleEnd = cells[ cells.length - 1 ].getAttribute( 'data-date' );
+	const renderStart = start < visibleStart ? visibleStart : start;
+	const renderEnd = end > visibleEnd ? visibleEnd : end;
+
+	if ( renderStart > renderEnd ) {
+		return;
+	}
+
 	// Build an ordered list of cell-indices that fall inside the appointment range
 	const hitIndices = [];
 	for ( let i = 0; i < cells.length; i++ ) {
 		const d = cells[ i ].getAttribute( 'data-date' );
-		if ( d >= start && d <= end ) {
+		if ( d >= renderStart && d <= renderEnd ) {
 			hitIndices.push( i );
 		}
 	}
@@ -173,7 +180,9 @@ SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start,
 		const slotIndex = grid._spanRowCounts[ row ] || 0;
 		grid._spanRowCounts[ row ] = slotIndex + 1;
 
-		const entry = new AppointmentEntry( appointment );
+		const cell = cells[ indices[ 0 ] ];
+
+		const entry = new AppointmentEntry( appointment, cell );
 		entry.connect( this, {
 			change: ( calendar ) => {
 				this.scheduler.onDatasetChange( calendar );
@@ -259,14 +268,29 @@ SchedulerMonth.prototype.getFromCursor = function () {
 };
 
 SchedulerMonth.prototype.stampCells = function () {
+	const cells = this.$element[0].querySelectorAll( '.lm-calendar-content > div' );
+	if (
+		this.calendar.options &&
+		this.calendar.options.length >= cells.length &&
+		this.calendar.helpers &&
+		this.calendar.helpers.numToDate
+	) {
+		cells.forEach( ( cell, index ) => {
+			cell.setAttribute(
+				'data-date',
+				this.calendar.helpers.numToDate( this.calendar.options[ index ].number ).slice( 0, 10 )
+			);
+		} );
+		return;
+	}
+
 	const year = this.calendar.cursor.y;
 	const month = this.calendar.cursor.m; // 0-indexed
 	const startingDay = this.calendar.startingDay || 0;
 	const firstDayOfMonth = new Date( Date.UTC( year, month, 1 ) );
 	const startOffset = ( firstDayOfMonth.getUTCDay() - startingDay + 7 ) % 7;
 
-	const cells = this.$element[0].querySelectorAll( '.lm-calendar-content > div' );
-	cells.forEach( function ( cell, index ) {
+	cells.forEach( ( cell, index ) => {
 		const dayOffset = index - startOffset + 1; // 1 = first of month
 		const date = new Date( Date.UTC( year, month, dayOffset ) );
 		cell.setAttribute( 'data-date', date.toISOString().substring( 0, 10 ) );

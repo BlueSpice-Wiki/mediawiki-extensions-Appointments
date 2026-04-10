@@ -53,6 +53,10 @@ class PeriodDefinition {
 	getRecurrenceRule() {
 		return this.#recurrenceRule;
 	}
+
+	isMultiDay() {
+		return this.getStartDate() !== this.getEndDate();
+	}
 }
 
 module.exports = PeriodDefinition;

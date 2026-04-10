@@ -14,7 +14,7 @@ class Calendar {
 		this.description = description;
 		this.creator = creator;
 		this.wikiId = wikiId;
-		this.data = data;
+		this.data = data || {};
 		this.permissions = permissions || {}
 	}
 
@@ -24,6 +24,14 @@ class Calendar {
 
 	canDelete() {
 		return this.permissions.delete || false;
+	}
+
+	getColor() {
+		return this.data.color || '#4d5d72';
+	}
+
+	setColor( color ) {
+		this.data = $.extend( {}, this.data, { color: color } );
 	}
 }
 

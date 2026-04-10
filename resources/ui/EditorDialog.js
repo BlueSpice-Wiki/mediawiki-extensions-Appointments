@@ -25,6 +25,7 @@ editorDialog.prototype.initialize = function () {
 	this.entity.setDialog( this );
 	this.entity.init();
 	this.$body.append( this.entity.$element );
+	this.$body.addClass( 'appointments-ui-editor-dialog-body' );
 };
 
 editorDialog.prototype.getSetupProcess = function (data ) {

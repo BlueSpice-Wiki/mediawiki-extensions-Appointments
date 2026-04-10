@@ -45,7 +45,19 @@
 	"appointments-ui-cancel": "Cancel",
 	"appointments-ui-edit": "Edit",
 	"appointments-ui-delete": "Delete",
+	"appointments-next-month": "Next month",
+	"appointments-previous-month": "Previous month",
+	"appointments-ui-delete-appointment-confirmation": "Are you sure you want to delete this appointment?",
+	"appointments-ui-delete-appointment-failed": "Failed to delete appointment.",
+	"appointments-ui-delete-calendar": "Delete calendar",
+	"appointments-ui-delete-calendar-confirmation": "Are you sure you want to delete this calendar?",
+	"appointments-ui-delete-calendar-failed": "Failed to delete calendar.",
 	"appointments-ui-field-participants-placeholder": "Search for users or groups...",
+	"appointments-ui-recurrence-yearly": "Yearly",
+	"appointments-ui-recurring-appointment": "Recurring appointment",
+	"appointments-ui-view-day": "Day",
+	"appointments-ui-view-week": "Week",
+	"appointments-ui-view-month": "Month",
 	"appointments-january": "January",
 	"appointments-february": "February",
 	"appointments-march": "March",
@@ -66,5 +78,6 @@
 	"appointments-friday": "Friday",
 	"appointments-saturday": "Saturday",
 	"appointments-calendarjs-done": "Done",
-	"appointments-calendarjs-reset": "Reset"
+	"appointments-calendarjs-reset": "Reset",
+	"appointments-ui-video-link-join": "Join video conference"
 }

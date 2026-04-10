@@ -26,5 +26,4 @@ timePicker.prototype.getRaw = function () {
 	return 0;
 };
 
-
 module.exports = timePicker;

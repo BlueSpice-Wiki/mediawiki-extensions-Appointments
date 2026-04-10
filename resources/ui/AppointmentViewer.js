@@ -22,13 +22,17 @@ appointmentViewer.prototype.render = function () {
 
 	const calendarLabel = new OO.ui.HorizontalLayout( {
 		items: [
-			new OO.ui.IconWidget( { icon: 'calendar' } ),
 			new OO.ui.LabelWidget( {
-				label: this.appointment.calendar.name,
-				classes: [ 'appointment-viewer-calendar' ]
+				label: this.appointment.calendar.name
 			} )
-		]
+		],
+		classes: [ 'appointment-viewer-calendar' ]
 	} );
+	calendarLabel.$element.prepend(
+		$( '<span>' )
+			.css( 'background-color', this.appointment.calendar.getColor() )
+			.addClass( 'appointment-viewer-calendar-color' )
+	);
 
 	const data = this.appointment.data || {};
 	const dataWidgets = [];
@@ -95,20 +99,27 @@ appointmentViewer.prototype.buildButtons = function () {
 	}
 
 	return new OO.ui.HorizontalLayout( {
-		items: buttons
+		items: buttons,
+		classes: [ 'appointment-viewer-buttons' ]
 	} );
 };
 
 appointmentViewer.prototype.onEditButtonClick = function () {
+	this.popup.toggle( false );
 	ext.appointments.util.openAppointmentEditorDialog( this.appointment ).then( ( updated ) => {
 		this.emit( 'update', updated );
 	} );
 };
 
 appointmentViewer.prototype.onDeleteButtonClick = function () {
+	this.popup.toggle( false );
 	ext.appointments.util.deleteAppointmentWithConfirm( this.appointment ).then( () => {
 		this.emit( 'delete', this.appointment );
 	} );
+};
+
+appointmentViewer.prototype.setPopup = function ( popup ) {
+	this.popup = popup;
 };
 
 module.exports = appointmentViewer;

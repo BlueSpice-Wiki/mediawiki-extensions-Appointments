@@ -92,11 +92,18 @@ class AppointmentQuery {
 		foreach ( $res as $row ) {
 			$appointment = $this->appointmentStore->appointmentFromRow( $row );
 			if ( $this->queryPeriod ) {
-				$newPeriod = $appointment->periodDefinition->getMatchInPeriod( $this->queryPeriod );
-				if ( $newPeriod ) {
-					$appointment->periodDefinition = $newPeriod;
-					$appointments[] = $appointment;
-				}
+				$period = $appointment->periodDefinition;
+				$getNext = false;
+				do {
+					$period = $period->getMatchInPeriod( $this->queryPeriod, $getNext );
+					if ( $period ) {
+						$appointment = clone $appointment;
+						$appointment->periodDefinition = clone $period;
+						$appointments[] = $appointment;
+						$getNext = true;
+					}
+				} while ( $period !== null && $period->getRecurrenceRule() );
+
 			} else {
 				$appointments[] = $appointment;
 			}

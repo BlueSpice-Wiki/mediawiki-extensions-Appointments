@@ -26,11 +26,17 @@ const scheduler = function ( config ) {
 	this.toolbar = makeToolbar( this.view );
 	this.toolbar.connect( this, {
 		add: () => {
-			ext.appointments.util.openAppointmentEditorDialog( null ).then( ( res ) => {
-				if ( res && res.entity ) {
-					this.onDatasetChange( res.entity.calendar );
-				}
-			} );
+			const view = this.views[this.view];
+			let defaultDate = null;
+			if ( view ) {
+				defaultDate = view.calendar.getValue();
+			}
+			ext.appointments.util.openAppointmentEditorDialog( null, { defaultDate: defaultDate } )
+				.then( ( res ) => {
+					if ( res && res.entity ) {
+						this.onDatasetChange( res.entity.calendar );
+					}
+				} );
 		},
 		viewChange: ( view ) => {
 			this.view = view;
@@ -50,7 +56,6 @@ const scheduler = function ( config ) {
 	} );
 	this.$calendarPicker.append( this.calendarPicker.$element );
 	this.visibleCalendars = [];
-	this.loadingState = {};
 
 	this.renderScheduler();
 };
@@ -104,6 +109,24 @@ scheduler.prototype.loadAppointments = async function ( calendarGuid, range ) {
 	}
 	view.removeForCalendar( calendarGuid );
 	const apps = await ext.appointments.api.getAppointments( calendarGuid, this.onlyPersonal, range.start, range.end );
+	// Sort longest-spanning appointments first so they render on top rows
+	apps.sort( ( a, b ) => {
+		const aStart = a.periodDefinition.getStartDate() < range.start ?
+			range.start :
+			a.periodDefinition.getStartDate();
+		const aEnd = a.periodDefinition.getEndDate() > range.end ?
+			range.end :
+			a.periodDefinition.getEndDate();
+		const bStart = b.periodDefinition.getStartDate() < range.start ?
+			range.start :
+			b.periodDefinition.getStartDate();
+		const bEnd = b.periodDefinition.getEndDate() > range.end ?
+			range.end :
+			b.periodDefinition.getEndDate();
+		const aSpan = new Date( aEnd ) - new Date( aStart );
+		const bSpan = new Date( bEnd ) - new Date( bStart );
+		return bSpan - aSpan;
+	} );
 	apps.forEach( app => {
 		view.addAppointment( app );
 	} );
@@ -141,7 +164,6 @@ scheduler.prototype.renderScheduler = function () {
 		setTimeout( () => {
 			this.views[this.view].connect( this, {
 				rangeChange: ( span ) => {
-					console.log( "RC" );
 					this.loadForVisibleCalendars( span );
 				}
 			} );
