@@ -93,7 +93,12 @@ SchedulerMonth.prototype.removeForCalendar = function ( calendarGuid ) {
 SchedulerMonth.prototype.addAppointment = function ( appointment ) {
 	const start = appointment.periodDefinition.getStartDate();
 	const end = appointment.periodDefinition.getEndDate();
-	this.addMultiDayAppointment( appointment, start, end );
+
+	if ( start !== end || appointment.periodDefinition.isAllDay() ) {
+		this.addMultiDayAppointment( appointment, start, end );
+	} else {
+		this.addSingleDayAppointment( appointment, start );
+	}
 };
 
 SchedulerMonth.prototype.addSingleDayAppointment = function ( appointment, date ) {
@@ -113,13 +118,13 @@ SchedulerMonth.prototype.addSingleDayAppointment = function ( appointment, date 
 };
 
 /**
- * Render a multi-day appointment as one bar per calendar row it touches.
- * Each bar is placed inside its first day-cell and sized via an explicit
- * pixel width to span across sibling cells, avoiding absolute positioning
- * so it participates in normal document flow.
+ * Render a multi-day appointment as one spanning bar per calendar row it
+ * touches.  Each bar is absolutely positioned inside `.lm-calendar-content`
+ * so that it stretches from the first visible day-cell to the last, giving the
+ * appearance of a single unified entity across columns.
  *
- * When the appointment crosses a week boundary the bar is split: one
- * segment per grid-row.
+ * When the appointment crosses a week boundary the bar is split: one segment
+ * per grid-row, each independently positioned.
  */
 SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start, end ) {
 	const grid = this.$element[ 0 ].querySelector( '.lm-calendar-content' );
@@ -155,8 +160,18 @@ SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start,
 	}
 	segments.push( seg );
 
+	// Count how many spanning bars already exist in each row so we can stack them
+	if ( !grid._spanRowCounts ) {
+		grid._spanRowCounts = {};
+	}
+
 	segments.forEach( ( indices ) => {
 		const firstCell = cells[ indices[ 0 ] ];
+		const lastCell = cells[ indices[ indices.length - 1 ] ];
+		const row = Math.floor( indices[ 0 ] / 7 );
+
+		const slotIndex = grid._spanRowCounts[ row ] || 0;
+		grid._spanRowCounts[ row ] = slotIndex + 1;
 
 		const entry = new AppointmentEntry( appointment );
 		entry.connect( this, {
@@ -167,20 +182,20 @@ SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start,
 
 		const el = entry.$element[ 0 ];
 		el.classList.add( 'appointment-entry-span' );
-		el.setAttribute( 'data-span-cols', indices.length );
+		el.setAttribute( 'data-span-row', row );
+		el.setAttribute( 'data-span-slot', slotIndex );
 
-		// Store references so layoutSpanningEntries can set the width
+		// Position will be calculated by layoutSpanningEntries after all
+		// appointments are added, because cell sizes may not be final yet.
 		el._spanFirstCell = firstCell;
-		el._spanLastCell = cells[ indices[ indices.length - 1 ] ];
+		el._spanLastCell = lastCell;
 
-		// Place inside the first cell of this segment
-		firstCell.appendChild( el );
+		grid.appendChild( el );
 	} );
 };
 
 /**
- * Set explicit pixel widths on `.appointment-entry-span` elements so they
- * visually stretch from their host cell across sibling cells.
+ * (Re-)position every `.appointment-entry-span` element inside the grid.
  *
  * Call once after all appointments for the visible range have been added
  * so that cell dimensions are stable.
@@ -191,6 +206,12 @@ SchedulerMonth.prototype.layoutSpanningEntries = function () {
 		return;
 	}
 
+	const barHeight = 24;
+	const barGap = 2;
+	const topOffset = 25; // leave room for the day number
+
+	// Absolutely position each spanning bar.
+	const gridRect = grid.getBoundingClientRect();
 	const spans = grid.querySelectorAll( '.appointment-entry-span' );
 	spans.forEach( ( el ) => {
 		const first = el._spanFirstCell;
@@ -200,7 +221,14 @@ SchedulerMonth.prototype.layoutSpanningEntries = function () {
 		}
 		const firstRect = first.getBoundingClientRect();
 		const lastRect = last.getBoundingClientRect();
+		const slot = parseInt( el.getAttribute( 'data-span-slot' ) ) || 0;
+
+		el.style.position = 'absolute';
+		el.style.left = ( firstRect.left - gridRect.left ) + 'px';
 		el.style.width = ( lastRect.right - firstRect.left ) + 'px';
+		el.style.top = ( firstRect.top - gridRect.top + topOffset + slot * ( barHeight + barGap ) ) + 'px';
+		el.style.height = barHeight + 'px';
+		el.style.zIndex = '1';
 	} );
 };
 

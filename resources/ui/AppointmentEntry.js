@@ -12,6 +12,7 @@ const appointmentEntry = function (appointment) {
 			head: false,
 			position: 'after',
 			$content: this.viewer.$element,
+			$overlay: true,
 			width: 500
 		}
 	} );
