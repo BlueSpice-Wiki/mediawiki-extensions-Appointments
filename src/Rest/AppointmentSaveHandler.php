@@ -73,6 +73,10 @@ class AppointmentSaveHandler extends SimpleHandler {
 		try {
 			$start = $this->userInterface->convertUserInputToUTC( $body['start_date' ], $body['start_time'], $user );
 			$end = $this->userInterface->convertUserInputToUTC( $body['end_date' ], $body['end_time'], $user );
+			if ( $body['is_all_day'] ) {
+				$start->setTime( 0, 0, 0 );
+				$end->setTime( 0, 0, 0 );
+			}
 		} catch ( \Exception $e ) {
 			throw new HttpException( Message::newFromKey( 'appointments-error-invalid-date-time' )->text() );
 		}

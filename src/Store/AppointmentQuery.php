@@ -13,6 +13,9 @@ class AppointmentQuery {
 	/** @var array */
 	private array $conds = [];
 
+	/** @var PeriodDefinition|null */
+	private ?PeriodDefinition $queryPeriod = null;
+
 	/**
 	 * @param AppointmentStore $appointmentStore
 	 * @param IDatabase $db
@@ -47,13 +50,26 @@ class AppointmentQuery {
 	 * @return $this
 	 */
 	public function forPeriod( PeriodDefinition $periodDefinition ): self {
+		$start = clone $periodDefinition->getStart();
+		$endPlusOne = clone $periodDefinition->getEnd();
+		$start->setTime( 0, 0 );
+		$endPlusOne->setTime( 0, 0 )->modify( '+1 day' );
+
 		$this->conds[] = $this->db->makeList( [
-			[
-				'app_start >= ' . $periodDefinition->getStart()->format( 'Ymd' ),
-				'app_end <= ' . $periodDefinition->getEnd()->format( 'Ymd' ),
-			],
-			'app_recurring IS NULL'
+			// Starts within period
+			$this->db->makeList( [
+				'app_start >= ' . $this->db->addQuotes( $start->format( 'YmdHis' ) ),
+				'app_start <= ' . $this->db->addQuotes( $endPlusOne->format( 'YmdHis' ) ),
+			], LIST_AND ),
+			// Ends within period
+			$this->db->makeList( [
+				'app_end >= ' . $this->db->addQuotes( $start->format( 'YmdHis' ) ),
+				'app_end <= ' . $this->db->addQuotes( $endPlusOne->format( 'YmdHis' ) ),
+			], LIST_AND ),
+			// Is recurring
+			'app_recurring IS NOT NULL'
 		], LIST_OR );
+		$this->queryPeriod = $periodDefinition;
 
 		return $this;
 	}
@@ -74,7 +90,16 @@ class AppointmentQuery {
 
 		$appointments = [];
 		foreach ( $res as $row ) {
-			$appointments[] = $this->appointmentStore->appointmentFromRow( $row );
+			$appointment = $this->appointmentStore->appointmentFromRow( $row );
+			if ( $this->queryPeriod ) {
+				$newPeriod = $appointment->periodDefinition->getMatchInPeriod( $this->queryPeriod );
+				if ( $newPeriod ) {
+					$appointment->periodDefinition = $newPeriod;
+					$appointments[] = $appointment;
+				}
+			} else {
+				$appointments[] = $appointment;
+			}
 		}
 		return $appointments;
 	}

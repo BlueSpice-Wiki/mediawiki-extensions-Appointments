@@ -1,5 +1,4 @@
 const CalendarMultiselect = require( './CalendarMultiselect.js' );
-const AppointmentEntry = require( './AppointmentEntry.js' );
 const makeToolbar = require( './util/MainToolbar.js' );
 const { MonthView, WeekDayView } = require( './SchedulerView.js' );
 
@@ -46,65 +45,109 @@ const scheduler = function ( config ) {
 			await this.calendarPicker.reload();
 		},
 		select: async ( calendarGuids ) => {
-			this.loadAndRenderAppointments( calendarGuids );
+			this.onCalendarSetChange( calendarGuids );
 		}
 	} );
 	this.$calendarPicker.append( this.calendarPicker.$element );
+	this.visibleCalendars = [];
+	this.loadingState = {};
 
 	this.renderScheduler();
 };
 
 OO.inheritClass( scheduler, OO.ui.PanelLayout );
 
-scheduler.prototype.loadAndRenderAppointments = async function ( calendarGuids ) {
-	const appointments = [];
-	for ( const calendarGuid of calendarGuids ) {
-		const calendarAppointments = await ext.appointments.api.getAppointments( calendarGuid, this.onlyPersonal );
+scheduler.prototype.onCalendarSetChange = async function ( calendarGuids ) {
+	// When calendar selection changes, we need to load appointments for newly added calendars and remove appointments for removed calendars
+	if ( !this.views[this.view] ) {
+		return;
+	}
+	const view = this.views[this.view];
+	const added = calendarGuids.filter( guid => !this.visibleCalendars.includes( guid ) );
+	const removed = this.visibleCalendars.filter( guid => !calendarGuids.includes( guid ) );
+	this.visibleCalendars = calendarGuids;
 
-		appointments.push( ...calendarAppointments );
+	for ( const guid of removed ) {
+		view.removeForCalendar( guid );
 	}
 
-	for ( const appointment of appointments ) {
-		const entry = new AppointmentEntry( appointment );
-		entry.connect( this, {
-			change: ( calendar ) => {
-				this.onDatasetChange( calendar );
-			}
-		} );
-		//this.$calendarCnt.append( entry.$element );
+	for ( const guid of added ) {
+		this.loadAppointments( guid );
+	}
+};
+
+scheduler.prototype.loadForVisibleCalendars = function ( range ) {
+	if ( !this.visibleCalendars || this.visibleCalendars.length === 0 ) {
+		return;
+	}
+	this.visibleCalendars.forEach( calendarGuid => {
+		this.loadAppointments( calendarGuid, range );
+	} );
+};
+
+scheduler.prototype.loadAppointments = async function ( calendarGuid, range ) {
+	const view = this.views[this.view];
+	if ( !view ) {
+		return;
+	}
+	if ( !calendarGuid ) {
+		return;
+	}
+	range = range || await new Promise((resolve) => {
+		// Give some time for the view to update its visible range if needed, e.g. when calendar is changed
+		setTimeout(() => {
+			resolve(view.getVisibleRange());
+		}, 100);
+	});
+	if ( !range ) {
+		return;
+	}
+	view.removeForCalendar( calendarGuid );
+	const apps = await ext.appointments.api.getAppointments( calendarGuid, this.onlyPersonal, range.start, range.end );
+	apps.forEach( app => {
+		view.addAppointment( app );
+	} );
+	if ( typeof view.layoutSpanningEntries === 'function' ) {
+		view.layoutSpanningEntries();
 	}
 };
 
 scheduler.prototype.onDatasetChange = function ( calendar ) {
-	// Happens whenever there is a change requiring reload of the calendar
-	console.log( "UPDATE CAL", calendar.guid );
+	// When new appointment is added or edited
+	if ( !calendar ) {
+		return;
+	}
+
+	this.loadAppointments( calendar.guid );
 };
 
 scheduler.prototype.renderScheduler = function () {
 	let wasNew = false;
 	if ( this.view === 'month' ) {
 		if ( !this.views['month'] ) {
-			this.views['month'] = new MonthView();
-			this.views['month'].connect( this, {
-				calendarUpdate: ( span ) => {
-					console.log( span );
-				}
-			} );
+			this.views['month'] = new MonthView( { scheduler: this } );
 			wasNew = true;
 		}
 		this.$calendarCnt.empty().append( this.views['month'].$element );
 	} else {
 		if ( !this.views[this.view] ) {
-			this.views[this.view] = new WeekDayView( { view: this.view } );
+			this.views[this.view] = new WeekDayView( { view: this.view, scheduler: this } );
 			 wasNew = true;
 		}
 		this.$calendarCnt.empty().append( this.views[this.view].$element );
 	}
+
 	if ( wasNew ) {
 		setTimeout( () => {
+			this.views[this.view].connect( this, {
+				rangeChange: ( span ) => {
+					console.log( "RC" );
+					this.loadForVisibleCalendars( span );
+				}
+			} );
 			this.views[this.view].render();
 		}, 100 );
 	}
-}
+};
 
 module.exports = scheduler;

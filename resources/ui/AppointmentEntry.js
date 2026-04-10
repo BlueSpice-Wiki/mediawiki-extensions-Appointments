@@ -17,16 +17,21 @@ const appointmentEntry = function (appointment) {
 	} );
 
 	this.appointment = appointment;
-
 	this.startTimeLabel = new OO.ui.LabelWidget( {
-		label: appointment.periodDefinition.getStartTime(),
 		classes: [ 'appointment-entry-start-time' ]
 	} );
+
+	if ( !appointment.periodDefinition.isAllDay() ) {
+		this.startTimeLabel.setLabel(appointment.periodDefinition.getStartTime());
+	}
+
 	this.setLabel( appointment.title );
 	this.$label.addClass( 'appointment-entry-title' );
 
 	this.$button.prepend( this.startTimeLabel.$element );
 	this.$element.addClass( 'appointment-entry' );
+	this.$element.attr( 'data-appointment', appointment.guid );
+	this.$element.attr( 'data-calendar', appointment.calendar.guid );
 };
 
 OO.inheritClass( appointmentEntry, OO.ui.PopupButtonWidget );

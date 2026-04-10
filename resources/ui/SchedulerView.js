@@ -1,5 +1,6 @@
 const CalendarJS = require( 'ext.appointments.lib.calendarjs' );
 const ExtensionConfig = require( './../config.json' );
+const AppointmentEntry = require("./AppointmentEntry.js");
 
 const SchedulerMonth = function ( config ) {
 	SchedulerMonth.parent.call( this, $.extend( {
@@ -10,6 +11,8 @@ const SchedulerMonth = function ( config ) {
 	CalendarJS.setDictionary( ExtensionConfig.i18n );
 
 	this.today = moment().format( 'YYYY-MM-DD' );
+	this.scheduler = config.scheduler;
+	this.last = null;
 };
 
 OO.inheritClass( SchedulerMonth, OO.ui.PanelLayout );
@@ -22,38 +25,208 @@ SchedulerMonth.prototype.render = function () {
 		wheel: false,
 		footer: false,
 		data: [],
-
-		onupdate: () => {
-			console.log( "UP" );
-			this.emit( 'calendarUpdate', this.getVisibleRange() );
-		}
 	} );
 
+	this.last = this.getVisibleRange();
+
+	// 1) programmatic navigation
+	const origNext = this.calendar.next.bind(this.calendar);
+	const origPrev = this.calendar.prev.bind(this.calendar);
+	const origSetValue = this.calendar.setValue.bind(this.calendar);
+
+	this.calendar.next = (...a) => { const r = origNext(...a); this.emitRangeChangeIfChanged(); return r; };
+	this.calendar.prev = (...a) => { const r = origPrev(...a); this.emitRangeChangeIfChanged(); return r; };
+	this.calendar.setValue = (...a) => { const r = origSetValue(...a); this.emitRangeChangeIfChanged(); return r; };
+
+	// 2) UI navigation (header buttons / keyboard)
+	const content = this.calendar.el.querySelector('.lm-calendar-content');
+	const mo = new MutationObserver(() => this.emitRangeChangeIfChanged());
+	mo.observe(content, { childList: true, subtree: true });
+
 	this.stampCells();
-}
 
-SchedulerMonth.prototype.renderAppointments = function ( appointments ) {
+	this.renderNavigation();
+};
 
+SchedulerMonth.prototype.emitRangeChangeIfChanged = function () {
+	const now = this.getVisibleRange();
+	if ( !now ) {
+		return;
+	}
+	if ( !this.last || now['start'] !== this.last['start'] || now['end'] !== this.last['end'] ) {
+		this.last = now;
+		this.emit( 'rangeChange', now );
+	}
+};
+
+SchedulerMonth.prototype.renderNavigation = function () {
+	this.nextButton = new OO.ui.ButtonWidget( {
+		icon: 'next',
+		title: mw.msg( 'appointments-next-month' ),
+		flags: [ 'progressive' ]
+	} );
+	this.prevButton = new OO.ui.ButtonWidget( {
+		icon: 'previous',
+		title: mw.msg( 'appointments-previous-month' ),
+		flags: [ 'progressive' ]
+	} );
+	this.nextButton.on( 'click', () => this.calendar.next() );
+	this.prevButton.on( 'click', () => this.calendar.prev() );
+	this.$element.find( '.lm-calendar-header' ).append( this.prevButton.$element, this.nextButton.$element );
+};
+
+SchedulerMonth.prototype.removeForCalendar = function ( calendarGuid ) {
+	const entries = this.$element[0]
+		.querySelectorAll( `.lm-calendar-content .appointment-entry[data-calendar="${calendarGuid}"]` );
+	entries.forEach( entry => entry.remove() );
+
+	// Reset spanning-bar row counts and cell padding so stacking is recalculated
+	const grid = this.$element[0].querySelector( '.lm-calendar-content' );
+	if ( grid ) {
+		grid._spanRowCounts = {};
+		grid.querySelectorAll( ':scope > div[data-date]' ).forEach( ( cell ) => {
+			cell.style.paddingTop = '';
+		} );
+	}
+};
+
+SchedulerMonth.prototype.addAppointment = function ( appointment ) {
+	const start = appointment.periodDefinition.getStartDate();
+	const end = appointment.periodDefinition.getEndDate();
+	this.addMultiDayAppointment( appointment, start, end );
+};
+
+SchedulerMonth.prototype.addSingleDayAppointment = function ( appointment, date ) {
+	const cell = this.$element[ 0 ].querySelector(
+		`.lm-calendar-content > div[data-date="${date}"]`
+	);
+	if ( !cell ) {
+		return;
+	}
+	const entry = new AppointmentEntry( appointment );
+	entry.connect( this, {
+		change: ( calendar ) => {
+			this.scheduler.onDatasetChange( calendar );
+		}
+	} );
+	cell.appendChild( entry.$element[ 0 ] );
+};
+
+/**
+ * Render a multi-day appointment as one bar per calendar row it touches.
+ * Each bar is placed inside its first day-cell and sized via an explicit
+ * pixel width to span across sibling cells, avoiding absolute positioning
+ * so it participates in normal document flow.
+ *
+ * When the appointment crosses a week boundary the bar is split: one
+ * segment per grid-row.
+ */
+SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start, end ) {
+	const grid = this.$element[ 0 ].querySelector( '.lm-calendar-content' );
+	if ( !grid ) {
+		return;
+	}
+	const cells = Array.from( grid.querySelectorAll( ':scope > div[data-date]' ) );
+	if ( !cells.length ) {
+		return;
+	}
+
+	// Build an ordered list of cell-indices that fall inside the appointment range
+	const hitIndices = [];
+	for ( let i = 0; i < cells.length; i++ ) {
+		const d = cells[ i ].getAttribute( 'data-date' );
+		if ( d >= start && d <= end ) {
+			hitIndices.push( i );
+		}
+	}
+	if ( !hitIndices.length ) {
+		return;
+	}
+
+	// Split into segments per visual row (rows of 7)
+	const segments = [];
+	let seg = [ hitIndices[ 0 ] ];
+	for ( let i = 1; i < hitIndices.length; i++ ) {
+		if ( Math.floor( hitIndices[ i ] / 7 ) !== Math.floor( seg[ 0 ] / 7 ) ) {
+			segments.push( seg );
+			seg = [];
+		}
+		seg.push( hitIndices[ i ] );
+	}
+	segments.push( seg );
+
+	segments.forEach( ( indices ) => {
+		const firstCell = cells[ indices[ 0 ] ];
+
+		const entry = new AppointmentEntry( appointment );
+		entry.connect( this, {
+			change: ( calendar ) => {
+				this.scheduler.onDatasetChange( calendar );
+			}
+		} );
+
+		const el = entry.$element[ 0 ];
+		el.classList.add( 'appointment-entry-span' );
+		el.setAttribute( 'data-span-cols', indices.length );
+
+		// Store references so layoutSpanningEntries can set the width
+		el._spanFirstCell = firstCell;
+		el._spanLastCell = cells[ indices[ indices.length - 1 ] ];
+
+		// Place inside the first cell of this segment
+		firstCell.appendChild( el );
+	} );
+};
+
+/**
+ * Set explicit pixel widths on `.appointment-entry-span` elements so they
+ * visually stretch from their host cell across sibling cells.
+ *
+ * Call once after all appointments for the visible range have been added
+ * so that cell dimensions are stable.
+ */
+SchedulerMonth.prototype.layoutSpanningEntries = function () {
+	const grid = this.$element[ 0 ].querySelector( '.lm-calendar-content' );
+	if ( !grid ) {
+		return;
+	}
+
+	const spans = grid.querySelectorAll( '.appointment-entry-span' );
+	spans.forEach( ( el ) => {
+		const first = el._spanFirstCell;
+		const last = el._spanLastCell;
+		if ( !first || !last ) {
+			return;
+		}
+		const firstRect = first.getBoundingClientRect();
+		const lastRect = last.getBoundingClientRect();
+		el.style.width = ( lastRect.right - firstRect.left ) + 'px';
+	} );
 };
 
 SchedulerMonth.prototype.getVisibleRange = function ( ) {
-	const year = this.calendar.cursor.y;
-	const month = this.calendar.cursor.m; // 0-based
-	const startingDay = this.calendar.startingDay || 0;
-
-	const firstOfMonth = new Date(Date.UTC(year, month, 1));
-	const startOffset = (firstOfMonth.getUTCDay() - startingDay + 7) % 7;
-
-	const visibleStart = new Date(Date.UTC(year, month, 1 - startOffset));
-	const visibleEnd = new Date(Date.UTC(
-		visibleStart.getUTCFullYear(),
-		visibleStart.getUTCMonth(),
-		visibleStart.getUTCDate() + 41 // 6 weeks grid
-	));
-
+	if ( !this.calendar ) {
+		return;
+	}
+	if (this.calendar.view !== 'days' || !this.calendar.options || this.calendar.options.length < 42) {
+		return this.getFromCursor();
+	}
+	const startNum = this.calendar.options[0].number;
+	const endNum = this.calendar.options[41].number;
 	return {
-		start: visibleStart.toISOString().slice(0, 10),
-		end: visibleEnd.toISOString().slice(0, 10)
+		start: this.calendar.helpers.numToDate(startNum).slice(0, 10),
+		end: this.calendar.helpers.numToDate(endNum).slice(0, 10)
+	};
+};
+
+SchedulerMonth.prototype.getFromCursor = function () {
+	const year = this.calendar.cursor.y;
+	const month = this.calendar.cursor.m; // 0-indexed
+	const firstDayOfMonth = new Date( Date.UTC( year, month, 1 ) );
+	const lastDayOfMonth = new Date( Date.UTC( year, month + 1, 0 ) );
+	return {
+		start: firstDayOfMonth.toISOString().substring( 0, 10 ),
+		end: lastDayOfMonth.toISOString().substring( 0, 10 )
 	};
 };
 

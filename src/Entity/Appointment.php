@@ -4,7 +4,7 @@ namespace MediaWiki\Extension\Appointments\Entity;
 
 use MediaWiki\User\UserIdentity;
 
-readonly class Appointment {
+class Appointment {
 
 	/**
 	 * @param string $guid
@@ -16,13 +16,13 @@ readonly class Appointment {
 	 * @param array $data
 	 */
 	public function __construct(
-		public string $guid,
-		public string $title,
-		public array $participants,
-		public Calendar $calendar,
+		public readonly string $guid,
+		public readonly string $title,
+		public readonly array $participants,
+		public readonly Calendar $calendar,
 		public PeriodDefinition $periodDefinition,
-		public UserIdentity $creator,
-		public array $data
+		public readonly UserIdentity $creator,
+		public readonly array $data
 	) {
 	}
 }

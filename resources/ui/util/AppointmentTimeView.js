@@ -11,7 +11,7 @@ const appointmentTimeView = function ( period ) {
 		if ( startEqualsEnd ) {
 			this.timeLabel.setLabel( period.getStartDate() );
 		} else {
-			this.timeLabel.setLabel( period.getStartDate(), period.getEndDate() );
+			this.timeLabel.setLabel( period.getStartDate() + ' - ' + period.getEndDate() );
 		}
 	} else {
 		const startDate = period.getStartDate();

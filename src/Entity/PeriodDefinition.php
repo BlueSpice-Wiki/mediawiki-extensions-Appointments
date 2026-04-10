@@ -62,28 +62,37 @@ readonly class PeriodDefinition {
 	 * (taking into account recurrence rule if exists)
 	 * This is to be used to show appointment in calendar (for particular period currently visible in calendar)
 	 *
-	 * @param DateTime $start
-	 * @param DateTime $end
+	 * @param PeriodDefinition $periodDefinition
 	 * @return PeriodDefinition|null
 	 */
-	public function getMatchInPeriod( DateTime $start, DateTime $end ): ?PeriodDefinition {
+	public function getMatchInPeriod( PeriodDefinition $periodDefinition ): ?PeriodDefinition {
+
 		if ( !$this->recurrenceRule ) {
 			// No recurrence, just check if falls within start and end
-			if ( $start >= $this->start && $end <= $this->end ) {
+			if ( $this->overlapsWith( $periodDefinition ) ) {
 				return $this;
 			}
 			return null;
 		}
+
 		// With recurrence, check if falls within any of the recurrences
-		$currentStart = clone $this->start;
-		$currentEnd = clone $this->end;
-		while ( $currentStart <= $end ) {
-			if ( $start >= $currentStart && $end <= $currentEnd ) {
-				return new PeriodDefinition( $currentStart, $currentEnd, $this->isAllDay );
+		while ( $this->start <= $periodDefinition->getEnd() ) {
+			if ( $this->overlapsWith( $periodDefinition ) ) {
+				return $this;
 			}
-			$this->recurrenceRule->moveToNext( $currentStart, $currentEnd );
+			$this->recurrenceRule->moveToNext( $this->start, $this->end );
 		}
 		return null;
+	}
+
+	/**
+	 * @param PeriodDefinition $toCheck
+	 * @return bool
+	 */
+	public function overlapsWith( PeriodDefinition $toCheck ): bool {
+		$startsWithin = $this->start >= $toCheck->getStart() && $this->start <= $toCheck->getEnd();
+		$endsWithin = $this->end >= $toCheck->getStart() && $this->end <= $toCheck->getEnd();
+		return $startsWithin || $endsWithin;
 	}
 
 	/**
