@@ -18,10 +18,12 @@ class CalendarStore {
 	/**
 	 * @param ILoadBalancer $lb
 	 * @param UserFactory $userFactory
+	 * @param EventTypeStore $eventTypeStore
 	 */
 	public function __construct(
 		private ILoadBalancer    $lb,
-		private UserFactory 	 $userFactory
+		private UserFactory 	 $userFactory,
+		private EventTypeStore   $eventTypeStore
 	) {
 	}
 
@@ -35,6 +37,7 @@ class CalendarStore {
 		} else {
 			$this->insertCalendar( $calendar );
 		}
+		$this->eventTypeStore->assignToCalendar( $calendar->eventTypes, $calendar );
 		$this->calendars[ $calendar->guid ] = $calendar;
 	}
 
@@ -48,6 +51,7 @@ class CalendarStore {
 			->where( [ 'cal_guid' => $calendar->guid ] )
 			->caller( __METHOD__ )
 			->execute();
+		$this->eventTypeStore->unassignFromCalendar( $calendar );
 		unset( $this->calendars[ $calendar->guid ] );
 	}
 
@@ -92,12 +96,14 @@ class CalendarStore {
 	 * @return Calendar
 	 */
 	private function rowToCalendar( stdClass $row ): Calendar {
+
 		return new Calendar(
 			guid: $row->cal_guid,
 			name: $row->cal_name,
 			description: $row->cal_description,
 			creator: $this->userFactory->newFromId( $row->cal_creator ),
 			wikiId: $row->cal_wiki_id,
+			eventTypes: $this->eventTypeStore->getEventsForCalendarGuid( $row->cal_guid ),
 			data: json_decode( $row->cal_data, true ) ?? []
 		);
 	}

@@ -11,6 +11,14 @@
 				}
 			},
 			{
+				"name": "app_event_type",
+				"type": "string",
+				"options": {
+					"length": 32,
+					"notnull": true
+				}
+			},
+			{
 				"name": "app_calendar_guid",
 				"type": "string",
 				"options": {

@@ -1,0 +1,60 @@
+[
+	{
+		"name": "appointment_event_types",
+		"columns": [
+			{
+				"name": "aet_guid",
+				"type": "string",
+				"options": {
+					"length": 32,
+					"notnull": true
+				}
+			},
+			{
+				"name": "aet_name",
+				"type": "string",
+				"options": {
+					"length": 255,
+					"notnull": true
+				}
+			},
+			{
+				"name": "aet_description",
+				"type": "text",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "aet_created_at",
+				"type": "mwtimestamp",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "aet_creator",
+				"type": "integer",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "aet_data",
+				"type": "text",
+				"options": {
+					"notnull": true
+				}
+			},
+			{
+				"name": "aet_is_system",
+				"type": "mwtinyint",
+				"options": {
+					"notnull": true
+				}
+			}
+		],
+		"indexes": [],
+		"pk": [ "aet_guid" ]
+	}
+]

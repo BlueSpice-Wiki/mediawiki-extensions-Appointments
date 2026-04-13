@@ -50,6 +50,14 @@ readonly class Permissions {
 		return true;
 	}
 
+	public function canModifyEventTypes( Authority $actor ): bool {
+		return true;
+	}
+
+	public function canDeleteEventTypes( Authority $actor ): bool {
+		return true;
+	}
+
 	/**
 	 * @param Authority $actor
 	 * @param Appointment|Calendar $entity

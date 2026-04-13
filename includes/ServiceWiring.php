@@ -2,6 +2,7 @@
 
 use MediaWiki\Extension\Appointments\Store\AppointmentStore;
 use MediaWiki\Extension\Appointments\Store\CalendarStore;
+use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\Store\ParticipantStore;
 use MediaWiki\Extension\Appointments\UserInterface;
 use MediaWiki\Extension\Appointments\Utils\ParticipantResolver;
@@ -15,17 +16,36 @@ return [
 			$services->getDBLoadBalancer(),
 			$services->getService( 'Appointments.ParticipantStore' ),
 			$services->getService( 'Appointments.CalendarStore' ),
-			$services->getUserFactory()
+			$services->getUserFactory(),
+			$services->getService( 'Appointments.EventTypeStore' )
 		);
 	},
 	'Appointments.CalendarStore' => static function ( MediaWikiServices $services ) {
 		return new CalendarStore(
 			$services->getDBLoadBalancer(),
-			$services->getUserFactory()
+			$services->getUserFactory(),
+			$services->getService( 'Appointments.EventTypeStore' )
 		);
 	},
 	'Appointments.ParticipantStore' => static function ( MediaWikiServices $services ) {
 		return new ParticipantStore( $services->getDBLoadBalancer() );
+	},
+	'Appointments.EventTypeStore' => static function ( MediaWikiServices $services ) {
+		$typeAttribute = ExtensionRegistry::getInstance()->getAttribute( 'AppointmentsEventTypes' );
+		$systemTypes = [];
+		foreach ( $typeAttribute as $key => $spec ) {
+			$type = $services->getObjectFactory()->createObject( $spec );
+			if ( !( $type instanceof MediaWiki\Extension\Appointments\Entity\EventType ) ) {
+				throw new InvalidArgumentException( "Invalid event type for key $key" );
+			}
+			$systemTypes[$type->guid] = $type;
+		}
+
+		return new EventTypeStore(
+			$services->getDBLoadBalancer(),
+			$services->getUserFactory(),
+			$systemTypes
+		);
 	},
 	'Appointments._UserInterface' => static function ( MediaWikiServices $services ) {
 		return new UserInterface(
@@ -44,7 +64,7 @@ return [
 	'Appointments._Permissions' => static function ( MediaWikiServices $services ) {
 		return new Permissions( $services->getPermissionManager() );
 	},
-	'Appointments._Logger' => static function ( MediaWikiServices $services ) {
+	'Appointments._Logger' => static function () {
 		return LoggerFactory::getInstance( 'Appointments' );
 	},
 ];

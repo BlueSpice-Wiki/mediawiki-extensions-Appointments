@@ -7,6 +7,7 @@ use MediaWiki\Extension\Appointments\Entity\Appointment;
 use MediaWiki\Extension\Appointments\Entity\PeriodDefinition;
 use MediaWiki\Extension\Appointments\Store\AppointmentStore;
 use MediaWiki\Extension\Appointments\Store\CalendarStore;
+use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\UserInterface;
 use MediaWiki\Extension\Appointments\Utils\GuidGenerator;
 use MediaWiki\Extension\Appointments\Utils\ParticipantResolver;
@@ -26,6 +27,7 @@ class AppointmentSaveHandler extends SimpleHandler {
 	/**
 	 * @param CalendarStore $calendarStore
 	 * @param AppointmentStore $appointmentStore
+	 * @param EventTypeStore $eventTypeStore
 	 * @param UserInterface $userInterface
 	 * @param Permissions $permissions
 	 * @param ParticipantResolver $participantResolver
@@ -35,6 +37,7 @@ class AppointmentSaveHandler extends SimpleHandler {
 	public function __construct(
 		private readonly CalendarStore $calendarStore,
 		private readonly AppointmentStore $appointmentStore,
+		private readonly EventTypeStore $eventTypeStore,
 		private readonly UserInterface $userInterface,
 		private readonly Permissions $permissions,
 		private readonly ParticipantResolver $participantResolver,
@@ -71,14 +74,17 @@ class AppointmentSaveHandler extends SimpleHandler {
 		}
 
 		try {
-			$start = $this->userInterface->convertUserInputToUTC( $body['start_date' ], $body['start_time'], $user );
-			$end = $this->userInterface->convertUserInputToUTC( $body['end_date' ], $body['end_time'], $user );
-			if ( $body['is_all_day'] ) {
-				$start->setTime( 0, 0, 0 );
-				$end->setTime( 0, 0, 0 );
-			}
+			$start = $this->userInterface->convertUserInputToUTC( $body['start_date' ], $body['start_time'], $user, $body['is_all_day'] );
+			$end = $this->userInterface->convertUserInputToUTC( $body['end_date' ], $body['end_time'], $user, $body['is_all_day'] );
 		} catch ( \Exception $e ) {
 			throw new HttpException( Message::newFromKey( 'appointments-error-invalid-date-time' )->text() );
+		}
+
+		$eventType = $this->eventTypeStore->getEventType( $body['event_type'] );
+		if ( !$eventType ) {
+			throw new HttpException(
+				Message::newFromKey( 'appointments-error-event-type-not-found', [ 'guid' => $body['eventType'] ] )->text()
+			);
 		}
 
 		$guidGenerator = new GuidGenerator( WikiMap::getCurrentWikiId() );
@@ -97,6 +103,7 @@ class AppointmentSaveHandler extends SimpleHandler {
 		$appointment = new Appointment(
 			guid: $oldAppointment ? $oldAppointment->guid : $guidGenerator->generateAppointmentGuid(),
 			title: $body['title'],
+			eventType: $eventType,
 			participants: $participants,
 			calendar: $calendar,
 			periodDefinition: $periodDefinition,
@@ -138,6 +145,11 @@ class AppointmentSaveHandler extends SimpleHandler {
 				ParamValidator::PARAM_TYPE => 'string',
 			],
 			'title' => [
+				static::PARAM_SOURCE => 'body',
+				ParamValidator::PARAM_REQUIRED => true,
+				ParamValidator::PARAM_TYPE => 'string',
+			],
+			'event_type' => [
 				static::PARAM_SOURCE => 'body',
 				ParamValidator::PARAM_REQUIRED => true,
 				ParamValidator::PARAM_TYPE => 'string',

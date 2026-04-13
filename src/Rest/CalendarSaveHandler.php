@@ -5,6 +5,7 @@ namespace MediaWiki\Extension\Appointments\Rest;
 use MediaWiki\Context\RequestContext;
 use MediaWiki\Extension\Appointments\Entity\Calendar;
 use MediaWiki\Extension\Appointments\Store\CalendarStore;
+use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\Utils\GuidGenerator;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\HookContainer\HookContainer;
@@ -20,12 +21,14 @@ class CalendarSaveHandler extends SimpleHandler {
 
 	/**
 	 * @param CalendarStore $calendarStore
+	 * @param EventTypeStore $eventTypeStore
 	 * @param Permissions $permissions
 	 * @param HookContainer $hookContainer
 	 * @param LoggerInterface $logger
 	 */
 	public function __construct(
 		private readonly CalendarStore $calendarStore,
+		private readonly EventTypeStore $eventTypeStore,
 		private readonly Permissions $permissions,
 		private readonly HookContainer $hookContainer,
 		private readonly LoggerInterface $logger
@@ -64,12 +67,27 @@ class CalendarSaveHandler extends SimpleHandler {
 			throw new HttpException( Message::newFromKey( 'appointments-error-name-required' )->text(), 400 );
 		}
 
+		$eventTypeGuids = $body['eventTypes'];
+		$eventTypes = [];
+		foreach ( $eventTypeGuids as $eventTypeGuid ) {
+			$eventType = $this->eventTypeStore->getEventType( $eventTypeGuid );
+			if ( !$eventType ) {
+				throw new HttpException(
+					Message::newFromKey( 'appointments-error-event-type-not-found',
+					[ 'guid' => $eventTypeGuid ] )->text(),
+					400
+				);
+			}
+			$eventTypes[] = $eventType;
+		}
+
 		$calendar = new Calendar(
 			guid: $oldCalendar?->guid ?? $guidGenerator->generateCalendarGuid(),
 			name: $body['name'],
 			description: $body['description'] ?? '',
 			creator: RequestContext::getMain()->getUser(),
 			wikiId: $oldCalendar?->wikiId ?? $wikiId,
+			eventTypes: $eventTypes,
 			data: $data
 		);
 
@@ -91,6 +109,11 @@ class CalendarSaveHandler extends SimpleHandler {
 				static::PARAM_SOURCE => 'body',
 				ParamValidator::PARAM_REQUIRED => false,
 				ParamValidator::PARAM_TYPE => 'string',
+			],
+			'eventTypes' => [
+				static::PARAM_SOURCE => 'body',
+				ParamValidator::PARAM_REQUIRED => true,
+				ParamValidator::PARAM_TYPE => 'array',
 			],
 			'name' => [
 				static::PARAM_SOURCE => 'body',

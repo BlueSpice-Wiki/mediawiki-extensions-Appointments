@@ -1,5 +1,5 @@
 const Calendar = require( '../object/Calendar.js' );
-const CalendarColor = require( './util/CalendarColor.js' );
+const EventTypeMultiselect = require( './EventTypeMultiselect.js' );
 
 const calendarEditor = function ( config ) {
 	calendarEditor.parent.call( this, $.extend( {
@@ -46,10 +46,14 @@ calendarEditor.prototype.init = function () {
 	} );
 	this.description.connect( this, { change: 'onInputChange' } );
 
-	this.color = new CalendarColor( {
-		value: this.calendar ? this.calendar.getColor() : null,
+	this.eventTypes = new EventTypeMultiselect( {
+		$overlay: this.dialog ? this.dialog.$overlay : null,
 	} );
-	this.color.connect( this, { change: 'onInputChange' } );
+	if ( this.calendar && this.calendar.eventTypes ) {
+		this.eventTypes.setValue( this.calendar.eventTypes );
+	}
+	this.eventTypes.load();
+	this.eventTypes.connect( this, { change: 'onInputChange' } );
 
 	this.$element.append(
 		new OO.ui.FieldLayout( this.name, {
@@ -58,8 +62,8 @@ calendarEditor.prototype.init = function () {
 		new OO.ui.FieldLayout( this.description, {
 			label: mw.message( 'appointments-ui-field-calendar-description' ).text(),
 		} ).$element,
-		new OO.ui.FieldLayout( this.color, {
-			label: mw.message( 'appointments-ui-field-calendar-color' ).text(),
+		new OO.ui.FieldLayout( this.eventTypes, {
+			label: mw.message( 'appointments-ui-field-calendar-event-types' ).text(),
 		} ).$element,
 	);
 };
@@ -69,12 +73,14 @@ calendarEditor.prototype.isDirty = function () {
 };
 
 calendarEditor.prototype.save = async function ( entity ) {
-	console.log( "PR" , entity );
 	await ext.appointments.api.saveCalendar( entity );
 };
 
 calendarEditor.prototype.onInputChange = function () {
 	this.dirty = true;
+	if ( this.dialog ) {
+		this.dialog.updateSize();
+	}
 }
 
 calendarEditor.prototype.getUpdatedEntity = function () {
@@ -84,7 +90,7 @@ calendarEditor.prototype.getUpdatedEntity = function () {
 
 	this.calendar.name = this.name.getValue();
 	this.calendar.description = this.description.getValue();
-	this.calendar.setColor( this.color.getValue() );
+	this.calendar.eventTypes = this.eventTypes.getSelectedEventTypes();
 
 	return this.calendar;
 };

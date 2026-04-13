@@ -104,7 +104,7 @@ readonly class PeriodDefinition {
 	 */
 	private function validate() {
 		// End must be after start
-		if ( $this->end <= $this->start ) {
+		if ( $this->end < $this->start ) {
 			throw new InvalidArgumentException(
 				Message::newFromKey( 'appointments-error-end-before-start' )->text()
 			);

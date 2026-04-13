@@ -29,15 +29,23 @@ class UserInterface {
 	 * @param string $date
 	 * @param string $time
 	 * @param UserIdentity $user
+	 * @param bool $isAllDay
 	 * @return DateTime
 	 * @throws \Exception
 	 */
-	public function convertUserInputToUTC( string $date, string $time, UserIdentity $user ): DateTime {
+	public function convertUserInputToUTC( string $date, string $time, UserIdentity $user, bool $isAllDay = false ): DateTime {
 		$userTZ = $this->getUserTimezone( $user );
 		$dateTimeStr = $date . ' ' . $time;
 
 		$dateTime = new DateTime( $dateTimeStr, $userTZ ?: new DateTimeZone( 'UTC' ) );
-		$dateTime->setTimezone( new DateTimeZone( 'UTC' ) );
+
+		// If its all day, we must make sure to preserve the date and not have it shift due to timezone conversion.
+		// So we create the DateTime in the user's timezone and then convert to UTC
+		if ( $isAllDay ) {
+			$dateTime->setTime( 0, 0 );
+		} else {
+			$dateTime->setTimezone( new DateTimeZone( 'UTC' ) );
+		}
 
 		return $dateTime;
 	}

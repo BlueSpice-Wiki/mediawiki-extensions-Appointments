@@ -3,6 +3,8 @@ const Appointment = require( '../object/Appointment.js' );
 const Participant = require( '../object/Participant.js' );
 const Calendar = require( '../object/Calendar.js' );
 const CalendarPicker = require( './CalendarPicker.js' );
+const EventTypePicker = require( './EventTypePicker.js' );
+const EventType = require( './../object/EventType.js' );
 
 const appointmentEditor = function ( config ) {
 	appointmentEditor.parent.call( this, $.extend( {
@@ -49,7 +51,16 @@ appointmentEditor.prototype.init = function () {
 		$overlay: this.dialog ? this.dialog.$overlay : true,
 		value: this.appointment ? this.appointment.calendar.guid : null,
 	} );
-	this.calendar.connect( this, { change: 'onInputChange' } );
+	this.calendar.connect( this, {
+		select: () => {
+			this.eventType.load( this.calendar.getSelectedCalendar() );
+			this.onInputChange();
+		}
+	} );
+
+	this.eventType = new EventTypePicker( this.appointment ? this.appointment.eventType.guid : null );
+	this.eventType.connect( this, { select: 'onInputChange' } );
+
 	this.calendar.load();
 
 	this.location = new OO.ui.TextInputWidget( {
@@ -103,25 +114,28 @@ appointmentEditor.prototype.init = function () {
 
 	this.$element.append(
 		new OO.ui.FieldLayout( this.name, {
-			label: mw.message( 'appointments-ui-field-appointment-name' ).text(),
+			label: mw.message( 'appointments-ui-field-appointment-name' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.calendar, {
-			label: mw.message( 'appointments-ui-field-calendar-name' ).text(),
+			label: mw.message( 'appointments-ui-field-calendar-name' ).text()
+		} ).$element,
+		new OO.ui.FieldLayout( this.eventType, {
+			label: mw.message( 'appointments-ui-field-event-type' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.participants, {
-			label: mw.message( 'appointments-ui-field-participants' ).text(),
+			label: mw.message( 'appointments-ui-field-participants' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.time, {
 			label: mw.message( 'appointments-ui-field-time' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.location, {
-			label: mw.message( 'appointments-ui-field-location' ).text(),
+			label: mw.message( 'appointments-ui-field-location' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.videoLink, {
-			label: mw.message( 'appointments-ui-field-video-link' ).text(),
+			label: mw.message( 'appointments-ui-field-video-link' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.notifyInAdvance, {
-			label: mw.message( 'appointments-ui-field-notify-in-advance' ).text(),
+			label: mw.message( 'appointments-ui-field-notify-in-advance' ).text()
 		} ).$element
 	);
 
@@ -143,6 +157,7 @@ appointmentEditor.prototype.getUpdatedEntity = function () {
 
 	this.appointment.title = this.name.getValue();
 	this.appointment.calendar = new Calendar( this.calendar.getValue() );
+	this.appointment.eventType = new EventType( this.eventType.getValue() );
 	const data = this.appointment.data || {};
 	data.location = this.location.getValue();
 	data.videoLink = this.videoLink.getValue();
@@ -166,7 +181,8 @@ appointmentEditor.prototype.setAbilities = function () {
 		if (
 			this.name.getValue() &&
 			this.calendar.getValue() &&
-			this.time.isValid()
+			this.time.isValid() &&
+			this.eventType.getValue()
 		) {
 			this.dialog.actions.setAbilities( { save: true } );
 		} else {

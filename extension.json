@@ -11,6 +11,22 @@
 		"MediaWiki": ">= 1.43.0"
 	},
 	"attributes": {
+		"Appointments": {
+			"EventTypes": {
+				"birthday": {
+					"class": "MediaWiki\\Extension\\Appointments\\Entity\\EventType\\Birthday"
+				},
+				"meeting": {
+					"class": "MediaWiki\\Extension\\Appointments\\Entity\\EventType\\Meeting"
+				},
+				"travel": {
+					"class": "MediaWiki\\Extension\\Appointments\\Entity\\EventType\\Travel"
+				},
+				"vacation": {
+					"class": "MediaWiki\\Extension\\Appointments\\Entity\\EventType\\Vacation"
+				}
+			}
+		}
 	},
 	"callback": "mwsInitComponents",
 	"MessagesDirs": {
@@ -30,26 +46,30 @@
 				"api.js",
 				"ui/Scheduler.js",
 				"ui/CalendarMultiselect.js",
+				"ui/EventTypeMultiselect.js",
 				"ui/CalendarPicker.js",
+				"ui/EventTypePicker.js",
 				"ui/EditorDialog.js",
 				"ui/CalendarEditor.js",
+				"ui/EventTypeEditor.js",
 				"ui/AppointmentEditor.js",
 				"ui/AppointmentEntry.js",
 				"ui/AppointmentViewer.js",
 				"ui/SchedulerView.js",
 				"ui/util/NewCalendarMenuOption.js",
-				"ui/util/CalendarMenuOption.js",
+				"ui/util/EventTypeMenuOptions.js",
 				"ui/util/AppointmentTime.js",
 				"ui/util/TimePicker.js",
 				"ui/util/AppointmentTimeView.js",
 				"ui/util/ParticipantView.js",
 				"ui/util/CalendarCheckboxMenuOption.js",
 				"ui/util/MainToolbar.js",
-				"ui/util/CalendarColor.js",
+				"ui/util/EntityColor.js",
 				"object/PeriodDefinition.js",
 				"object/Participant.js",
 				"object/Calendar.js",
 				"object/Appointment.js",
+				"object/EventType.js",
 				{
 					"name": "config.json",
 					"callback": "MediaWiki\\Extension\\Appointments\\ResourceLoader\\ConfigCallback::handleConfigRequest"
@@ -98,7 +118,8 @@
 				"appointments-ui-view-day",
 				"appointments-ui-view-week",
 				"appointments-ui-view-month",
-				"appointments-ui-video-link-join"
+				"appointments-ui-video-link-join",
+				"appointments-ui-create-new-event-type"
 			],
 			"dependencies": [
 				"oojs-ui",
@@ -158,7 +179,7 @@
 			"path": "/appointments/v0/appointments",
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentGetHandler",
 			"services": [
-				"Appointments.CalendarStore", "Appointments.AppointmentStore",
+				"Appointments.CalendarStore", "Appointments.AppointmentStore", "Appointments.EventTypeStore",
 				"Appointments._UserInterface", "Appointments._Permissions"
 			]
 		},
@@ -169,12 +190,18 @@
 			"services": [ "Appointments.CalendarStore", "Appointments._Permissions" ]
 		},
 		{
+			"method": "GET",
+			"path": "/appointments/v0/event_types",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\EventTypeGetHandler",
+			"services": [ "Appointments.EventTypeStore" ]
+		},
+		{
 			"method": "POST",
 			"path": "/appointments/v0/appointment",
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentSaveHandler",
 			"services": [
-				"Appointments.CalendarStore", "Appointments.AppointmentStore", "Appointments._UserInterface",
-				"Appointments._Permissions", "Appointments._ParticipantResolver",
+				"Appointments.CalendarStore", "Appointments.AppointmentStore",  "Appointments.EventTypeStore",
+				"Appointments._UserInterface", "Appointments._Permissions", "Appointments._ParticipantResolver",
 				"HookContainer", "Appointments._Logger"
 			]
 		},
@@ -191,7 +218,8 @@
 			"path": "/appointments/v0/calendar",
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\CalendarSaveHandler",
 			"services": [
-				"Appointments.CalendarStore", "Appointments._Permissions", "HookContainer", "Appointments._Logger"
+				"Appointments.CalendarStore", "Appointments.EventTypeStore",
+				"Appointments._Permissions", "HookContainer", "Appointments._Logger"
 			]
 		},
 		{
@@ -201,6 +229,22 @@
 			"services": [
 				"Appointments.CalendarStore", "Appointments.AppointmentStore",
 				"Appointments._Permissions", "HookContainer", "Appointments._Logger"
+			]
+		},
+		{
+			"method": "POST",
+			"path": "/appointments/v0/event_type",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\EventTypeSaveHandler",
+			"services": [
+				"Appointments.EventTypeStore", "Appointments._Permissions", "Appointments._Logger"
+			]
+		},
+		{
+			"method": "POST",
+			"path": "/appointments/v0/event_type/delete/{eventType}",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\EventTypeSaveHandler",
+			"services": [
+				"Appointments.EventTypeStore", "Appointments._Permissions", "Appointments._Logger"
 			]
 		}
 	],

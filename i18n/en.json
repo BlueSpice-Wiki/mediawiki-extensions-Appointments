@@ -79,5 +79,10 @@
 	"appointments-saturday": "Saturday",
 	"appointments-calendarjs-done": "Done",
 	"appointments-calendarjs-reset": "Reset",
-	"appointments-ui-video-link-join": "Join video conference"
+	"appointments-ui-video-link-join": "Join video conference",
+	"appointments-birthday-event-type-name": "Birthday",
+	"appointments-meeting-event-type-name": "Meeting",
+	"appointments-vacation-event-type-name": "Vacation",
+	"appointments-travel-event-type-name": "Travel",
+	"appointments-ui-create-new-event-type": "Create a custom event type"
 }

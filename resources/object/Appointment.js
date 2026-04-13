@@ -4,6 +4,7 @@ class Appointment {
 	 * @param {string} title
 	 * @param {Participant[]} participants
 	 * @param {Calendar} calendar
+	 * @param {EventType} eventType
 	 * @param {PeriodDefinition} periodDefinition
 	 * @param {PeriodDefinition} periodUTC
 	 * @param {PeriodDefinition} userPeriod
@@ -11,13 +12,14 @@ class Appointment {
 	 * @param {Object} data
 	 * @param {Object} permissions
 	 */
-	constructor( guid, title, participants, calendar,
+	constructor( guid, title, participants, calendar, eventType,
 				 periodDefinition, periodUTC, userPeriod, creator, data, permissions
 	) {
 		this.guid = guid;
 		this.title = title;
 		this.participants = participants;
 		this.calendar = calendar;
+		this.eventType = eventType;
 		this.periodDefinition = periodDefinition;
 		this.periodUTC = periodUTC;
 		this.userPeriod = userPeriod;

@@ -75,6 +75,18 @@ class AppointmentQuery {
 	}
 
 	/**
+	 * @param array $eventTypes
+	 * @return $this
+	 */
+	public function forEventTypes( array $eventTypes ): self {
+		$this->conds[] = 'app_event_type IN (' .
+			$this->db->makeList( array_map( fn( $et ) => $et->guid, $eventTypes ) ) .
+		')';
+
+		return $this;
+	}
+
+	/**
 	 * @return Appointment[]
 	 */
 	public function execute(): array {
@@ -83,7 +95,7 @@ class AppointmentQuery {
 			->from( 'appointment_participants', 'ap' )
 			->select( AppointmentStore::APPOINTMENT_FIELDS )
 			->where( $this->conds )
-			->join( 'appointment_participants', 'ap', 'ap.ap_app = a.app_guid' )
+			->leftJoin( 'appointment_participants', 'ap', 'ap.ap_app = a.app_guid' )
 			->caller( __METHOD__ )
 			->groupBy( 'a.app_guid' )
 			->fetchResultSet();

@@ -3,8 +3,8 @@ const AppointmentViewer = require( './AppointmentViewer.js' );
 const appointmentEntry = function (appointment, cell) {
 	this.viewer = new AppointmentViewer( { appointment: appointment } );
 	this.viewer.connect( this, {
-		update: () => { this.emit( 'change' ) },
-		delete: () => { this.emit( 'change' ) }
+		update: ( appointment ) => { this.emit( 'change', appointment.calendar ) },
+		delete: ( appointment ) => { this.emit( 'change', appointment.calendar ) }
 	} );
 	appointmentEntry.parent.call( this, {
 		framed: false,
@@ -57,13 +57,11 @@ const appointmentEntry = function (appointment, cell) {
 		mouseleave: this.onMouseLeave.bind( this )
 	} );
 
-	const color = appointment.calendar.getColor();
-	if ( color ) {
-		if ( !ext.appointments.CALENDAR_COLORS[ color ] ) {
-			this.$element.addClass( 'dark-text' );
-		}
-		this.$element.css( 'background-color', color );
+	const color = appointment.eventType.getColor();
+	if ( color in ext.appointments.CALENDAR_COLORS && !ext.appointments.CALENDAR_COLORS[ color ] ) {
+		this.$element.addClass( 'dark-text' );
 	}
+	this.$element.css( 'background-color', color );
 
 };
 

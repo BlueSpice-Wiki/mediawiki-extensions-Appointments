@@ -25,5 +25,13 @@ class RunDatabaseUpdates implements LoadExtensionSchemaUpdatesHook {
 			'appointment_participants',
 			"$dir/db/$dbType/appointment_participants.sql"
 		);
+		$updater->addExtensionTable(
+			'appointment_event_types',
+			"$dir/db/$dbType/appointment_event_types.sql"
+		);
+		$updater->addExtensionTable(
+			'appointment_event_type_assignments',
+			"$dir/db/$dbType/appointment_event_type_assignments.sql"
+		);
 	}
 }

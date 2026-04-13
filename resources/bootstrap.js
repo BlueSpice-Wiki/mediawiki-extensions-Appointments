@@ -1,5 +1,6 @@
 const editorClass = require("./ui/EditorDialog.js");
 const appointmentEditor = require("./ui/AppointmentEditor.js");
+const eventTypeEditor = require("./ui/EventTypeEditor.js");
 const calendarEditor = require("./ui/CalendarEditor.js");
 
 window.ext = window.ext || {};
@@ -11,6 +12,7 @@ window.ext.appointments = {
 	objects: {
 		Calendar: require( './object/Calendar.js' ),
 		Appointment: require( './object/Appointment.js' ),
+		EventType: require( './object/EventType.js' ),
 		Participant: require( './object/Participant.js' ),
 		PeriodDefinition: require( './object/PeriodDefinition.js' )
 	},
@@ -30,7 +32,8 @@ window.ext.appointments = {
 			const dialog = new editorClass( {
 				entity: new calendarEditor( {
 					calendar: calendar
-				} )
+				} ),
+				size: 'large'
 			} );
 			return this.openDialog( dialog );
 		},
@@ -41,6 +44,16 @@ window.ext.appointments = {
 					appointment: appointment
 				}, config ) ),
 				size: 'larger'
+			} );
+
+			return this.openDialog( dialog );
+		},
+		openEventTypeDialog: function ( eventType, config ) {
+			config = config || {};
+			const dialog = new editorClass( {
+				entity: new eventTypeEditor( $.extend( {
+					eventType: eventType
+				}, config ) )
 			} );
 
 			return this.openDialog( dialog );
@@ -104,6 +117,39 @@ window.ext.appointments = {
 							dfd.resolve( true );
 						} catch ( e ) {
 							mw.notify( mw.msg( 'appointments-ui-delete-calendar-failed' ), { type: 'error' } );
+							dfd.reject( e );
+						}
+					}
+				} );
+
+			return dfd.promise();
+		},
+		deleteEventTypeWithConfirm: function ( eventType ) {
+			const dfd = $.Deferred();
+
+			OO.ui.confirm(
+				mw.msg( 'appointments-ui-delete-event-type-confirmation' ), {
+					actions: [
+						{
+							label: mw.msg( 'appointments-ui-delete' ),
+							flags: [ 'destructive' ],
+							action: 'accept'
+						},
+						{
+							label: mw.msg( 'appointments-ui-cancel' ),
+							action: 'cancel'
+						}
+					]
+				} )
+				.done( async ( confirmed ) => {
+					if ( !confirmed ) {
+						dfd.reject();
+					} else {
+						try {
+							await ext.appointments.api.deleteEventType( eventType );
+							dfd.resolve( true );
+						} catch ( e ) {
+							mw.notify( mw.msg( 'appointments-ui-delete-event-type-failed' ), { type: 'error' } );
 							dfd.reject( e );
 						}
 					}

@@ -1,0 +1,25 @@
+[
+	{
+		"name": "appointment_event_type_assignments",
+		"columns": [
+			{
+				"name": "aeta_type",
+				"type": "string",
+				"options": {
+					"length": 32,
+					"notnull": true
+				}
+			},
+			{
+				"name": "aeta_calendar",
+				"type": "string",
+				"options": {
+					"length": 32,
+					"notnull": true
+				}
+			}
+		],
+		"indexes": [],
+		"pk": []
+	}
+]

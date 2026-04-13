@@ -61,7 +61,7 @@
 
 .ext-appointments-scheduler {
 	display: grid;
-	grid-template-columns: 200px 1fr;
+	grid-template-columns: 300px 1fr;
 	grid-template-rows: auto 1fr;
 	gap: 10px;
 
@@ -79,7 +79,7 @@
 
 	.ext-appointments-scheduler-calendars {
 		grid-column: 1;
-		width: 200px;
+		width: 300px;
 
 		.ext-appointments-calendar-multiselect-options {
 			.oo-ui-checkboxInputWidget {
@@ -89,7 +89,7 @@
 				vertical-align: middle;
 				width: 100%;
 
-				&:hover {
+				&.options-open, &:hover {
 					.oo-ui-buttonWidget {
 						visibility: visible;
 					}
@@ -211,13 +211,13 @@
 	}
 }
 
-.calendar-color-picker {
+.entity-color-picker {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: start;
 	gap: 5px;
 
-	.calendar-color-option {
+	.entity-color-option {
 		height: 30px;
 		width: 30px;
 		margin-right: 5px;
@@ -255,8 +255,8 @@
 	}
 }
 
-.calendar-menu-option {
-	.calendar-menu-option-color {
+.entityType-menu-option {
+	.option-color {
 		display: inline-block;
 		width: 12px;
 		height: 12px;
@@ -264,7 +264,17 @@
 		margin-right: 4px;
 	}
 
+	.option-icon {
+		background-size: 18px !important;
+		background-position: top !important;
+		margin-right: 0.25em;
+	}
+
 	.oo-ui-labelElement-label {
 		display: inline !important;
 	}
+}
+
+.event-type-multiselect {
+	margin-left: 12px;
 }

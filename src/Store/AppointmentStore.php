@@ -14,7 +14,7 @@ use Wikimedia\Rdbms\ILoadBalancer;
 readonly class AppointmentStore {
 
 	public const APPOINTMENT_FIELDS = [
-		'app_guid', 'app_calendar_guid', 'app_title', 'app_start', 'app_end',
+		'app_guid', 'app_calendar_guid', 'app_title', 'app_start', 'app_end', 'app_event_type',
 		'app_is_all_day', 'app_recurring', 'app_creator', 'app_created_at', 'app_data'
 	];
 
@@ -23,12 +23,14 @@ readonly class AppointmentStore {
 	 * @param ParticipantStore $participantStore
 	 * @param CalendarStore $calendarStore
 	 * @param UserFactory $userFactory
+	 * @param EventTypeStore $eventTypeStore
 	 */
 	public function __construct(
 		private ILoadBalancer    $lb,
 		private ParticipantStore $participantStore,
 		private CalendarStore    $calendarStore,
-		private UserFactory      $userFactory
+		private UserFactory      $userFactory,
+		private EventTypeStore   $eventTypeStore
 	) {
 	}
 
@@ -147,6 +149,7 @@ readonly class AppointmentStore {
 				'app_guid' => $appointment->guid,
 				'app_calendar_guid' => $appointment->calendar->guid,
 				'app_title' => $appointment->title,
+				'app_event_type' => $appointment->eventType->guid,
 				'app_start' => $appointment->periodDefinition->getStart()->format( 'YmdHis' ),
 				'app_end' => $appointment->periodDefinition->getEnd()->format( 'YmdHis' ),
 				'app_is_all_day' => $appointment->periodDefinition->isAllDay() ? 1 : 0,
@@ -169,6 +172,7 @@ readonly class AppointmentStore {
 			->set( [
 				'app_calendar_guid' => $appointment->calendar->guid,
 				'app_title' => $appointment->title,
+				'app_event_type' => $appointment->eventType->guid,
 				'app_start' => $appointment->periodDefinition->getStart()->format( 'YmdHis' ),
 				'app_end' => $appointment->periodDefinition->getEnd()->format( 'YmdHis' ),
 				'app_is_all_day' => $appointment->periodDefinition->isAllDay() ? 1 : 0,
@@ -205,6 +209,7 @@ readonly class AppointmentStore {
 		return new Appointment(
 			guid: $row->app_guid,
 			title: $row->app_title,
+			eventType: $this->eventTypeStore->getEventType( $row->app_event_type ),
 			participants: $participants,
 			calendar: $calendar,
 			periodDefinition: new PeriodDefinition(

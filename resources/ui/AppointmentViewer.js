@@ -20,17 +20,17 @@ appointmentViewer.prototype.render = function () {
 		classes: [ 'appointment-viewer-title' ]
 	} );
 
-	const calendarLabel = new OO.ui.HorizontalLayout( {
+	const calendarAndTypeLabel = new OO.ui.HorizontalLayout( {
 		items: [
 			new OO.ui.LabelWidget( {
-				label: this.appointment.calendar.name
+				label: this.appointment.eventType.name + ' (' + this.appointment.calendar.name + ')',
 			} )
 		],
 		classes: [ 'appointment-viewer-calendar' ]
 	} );
-	calendarLabel.$element.prepend(
+	calendarAndTypeLabel.$element.prepend(
 		$( '<span>' )
-			.css( 'background-color', this.appointment.calendar.getColor() )
+			.css( 'background-color', this.appointment.eventType.getColor() )
 			.addClass( 'appointment-viewer-calendar-color' )
 	);
 
@@ -61,7 +61,7 @@ appointmentViewer.prototype.render = function () {
 
 	this.$element.append(
 		titleLabel.$element,
-		calendarLabel.$element,
+		calendarAndTypeLabel.$element,
 		this.buildButtons().$element,
 		new OO.ui.HorizontalLayout( {
 			items: dataWidgets
@@ -106,8 +106,11 @@ appointmentViewer.prototype.buildButtons = function () {
 
 appointmentViewer.prototype.onEditButtonClick = function () {
 	this.popup.toggle( false );
-	ext.appointments.util.openAppointmentEditorDialog( this.appointment ).then( ( updated ) => {
-		this.emit( 'update', updated );
+	ext.appointments.util.openAppointmentEditorDialog( this.appointment ).then( ( res ) => {
+		if ( res && res.entity ) {
+			this.emit( 'update', res.entity );
+		}
+
 	} );
 };
 

@@ -31,30 +31,43 @@ const calendarMultiselect = function ( config ) {
 OO.inheritClass( calendarMultiselect, OO.ui.Widget );
 
 calendarMultiselect.prototype.reload = function () {
+	const preValue = this.getValue();
 	ext.appointments.api.getCalendars().then( calendars => {
 		const items = [];
 		for ( const calendar of calendars ) {
 			const option = new calendarMenuOption( calendar );
 			option.connect( this, {
+				select: ( item, selected ) => {
+					const value = {};
+					value[item.getData()] = item.getValue();
+					this.emit( 'select', value, selected );
+				},
 				edit: ( updatedCalendar ) => {
 					this.emit( 'datasetUpdate', updatedCalendar );
-					this.reload();
 				},
 				delete: ( deletedCalendarGuid ) => {
 					this.emit( 'datasetUpdate', deletedCalendarGuid );
-					this.reload();
 				}
-
 			} );
 			items.push( option );
 		}
 		this.selector = new OO.ui.CheckboxMultiselectWidget( { items: items } );
 		this.selector.connect( this, {
-			select: () => {
-				this.emit( 'select', this.selector.findSelectedItemsData() );
+			select: ( item, selected ) => {
+				const value = {};
+				value[item.getData()] = item.getValue();
+				if ( !selected ) {
+					item.unselectEventTypes();
+				}
+				this.emit( 'select', value, selected );
 			}
 		} );
-		this.selector.selectItemsByData( calendars.map( calendar => calendar.guid ) );
+		if ( !preValue ) {
+			this.selector.selectItemsByData( calendars.map( calendar => calendar.guid ) );
+			this.selectedAllEventTypes();
+		} else {
+			this.setValue( preValue );
+		}
 		this.$options.html( this.selector.$element );
 	} ).catch( ( e ) => {
 		this.$element.html( new OO.ui.MessageWidget( {
@@ -62,6 +75,42 @@ calendarMultiselect.prototype.reload = function () {
 			label: mw.message( 'appointments-ui-load-calendars-failed' ).text()
 		} ).$element );
 	} );
+};
+
+calendarMultiselect.prototype.getValue = function () {
+	if ( !this.selector ) {
+		return null;
+	}
+	// Find all selected options
+	const selectedCalendars = this.selector.findSelectedItems();
+	const value = {};
+	for ( const calendarOption of selectedCalendars ) {
+		value[calendarOption.getData()] = calendarOption.getValue();
+	}
+	return value;
+};
+
+calendarMultiselect.prototype.setValue = function ( value ) {
+	if ( !this.selector ) {
+		return;
+	}
+	const selectedCalendars = [];
+	for ( const calendarGuid in value ) {
+		selectedCalendars.push( calendarGuid );
+		const calendarOption = this.selector.findItemFromData( calendarGuid );
+		if ( calendarOption ) {
+			calendarOption.setValue( value[calendarGuid] );
+		}
+	}
+	this.selector.selectItemsByData( selectedCalendars );
+
+}
+
+calendarMultiselect.prototype.selectedAllEventTypes = function () {
+	const selectedCalendars = this.selector.findSelectedItems();
+	for ( const calendarOption of selectedCalendars ) {
+		calendarOption.selectAllEventTypes();
+	}
 }
 
 module.exports = calendarMultiselect;

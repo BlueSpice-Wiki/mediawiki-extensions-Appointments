@@ -1,8 +1,8 @@
-calendarColor = function ( cfg ) {
+entityColor = function ( cfg ) {
 	cfg = cfg || {};
 	console.log( cfg );
 
-	calendarColor.super.call( this, cfg );
+	entityColor.super.call( this, cfg );
 
 	this.colorBlocks = {};
 	this.selectedColor = null;
@@ -13,7 +13,7 @@ calendarColor = function ( cfg ) {
 			darkText = false;
 		}
 		this.colorBlocks[ color ] = $( '<div>' )
-			.addClass( 'calendar-color-option' )
+			.addClass( 'entity-color-option' )
 			.css( {
 				'background-color': color
 			} )
@@ -31,19 +31,19 @@ calendarColor = function ( cfg ) {
 
 	this.setValue( cfg.value || Object.keys( ext.appointments.CALENDAR_COLORS )[ 0 ] );
 
-	this.$element.addClass( 'calendar-color-picker' );
+	this.$element.addClass( 'entity-color-picker' );
 };
 
-OO.inheritClass( calendarColor, OO.ui.Widget );
+OO.inheritClass( entityColor, OO.ui.Widget );
 
-calendarColor.prototype.getValue = function () {
+entityColor.prototype.getValue = function () {
 	if ( !this.selectedColor ) {
 		return null;
 	}
 	return this.selectedColor;
 };
 
-calendarColor.prototype.setValue = function ( value ) {
+entityColor.prototype.setValue = function ( value ) {
 	this.clearValue();
 	if ( this.colorBlocks[ value ] ) {
 		this.colorBlocks[ value ].addClass( 'selected' );
@@ -52,7 +52,7 @@ calendarColor.prototype.setValue = function ( value ) {
 	}
 };
 
-calendarColor.prototype.clearValue = function () {
+entityColor.prototype.clearValue = function () {
 	for ( const color in this.colorBlocks ) {
 		if ( Object.prototype.hasOwnProperty.call( this.colorBlocks, color ) ) {
 			this.colorBlocks[ color ].removeClass( 'selected' );
@@ -61,4 +61,4 @@ calendarColor.prototype.clearValue = function () {
 	this.selectedColor = null;
 };
 
-module.exports = calendarColor;
+module.exports = entityColor;

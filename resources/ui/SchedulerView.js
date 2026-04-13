@@ -99,22 +99,6 @@ SchedulerMonth.prototype.addAppointment = function ( appointment ) {
 	this.addMultiDayAppointment( appointment, start, end );
 };
 
-/*SchedulerMonth.prototype.addSingleDayAppointment = function ( appointment, date ) {
-	const cell = this.$element[ 0 ].querySelector(
-		`.lm-calendar-content > div[data-date="${date}"]`
-	);
-	if ( !cell ) {
-		return;
-	}
-	const entry = new AppointmentEntry( appointment );
-	entry.connect( this, {
-		change: ( calendar ) => {
-			this.scheduler.onDatasetChange( calendar );
-		}
-	} );
-	cell.appendChild( entry.$element[ 0 ] );
-};*/
-
 /**
  * Render a multi-day appointment as one spanning bar per calendar row it
  * touches.  Each bar is absolutely positioned inside `.lm-calendar-content`
@@ -185,6 +169,7 @@ SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start,
 		const entry = new AppointmentEntry( appointment, cell );
 		entry.connect( this, {
 			change: ( calendar ) => {
+				console.log( calendar );
 				this.scheduler.onDatasetChange( calendar );
 			}
 		} );

@@ -3,15 +3,17 @@ class Calendar {
 	 * @param {string} guid
 	 * @param {string} name
 	 * @param {string} description
+	 * @param {Object} eventTypes
 	 * @param {string} creator
 	 * @param {string} wikiId
 	 * @param {Object} data
 	 * @param {Object} permissions
 	 */
-	constructor( guid, name, description, creator, wikiId, data, permissions ) {
+	constructor( guid, name, description, eventTypes, creator, wikiId, data, permissions ) {
 		this.guid = guid;
 		this.name = name;
 		this.description = description;
+		this.eventTypes = eventTypes;
 		this.creator = creator;
 		this.wikiId = wikiId;
 		this.data = data || {};
@@ -24,14 +26,6 @@ class Calendar {
 
 	canDelete() {
 		return this.permissions.delete || false;
-	}
-
-	getColor() {
-		return this.data.color || '#4d5d72';
-	}
-
-	setColor( color ) {
-		this.data = $.extend( {}, this.data, { color: color } );
 	}
 }
 

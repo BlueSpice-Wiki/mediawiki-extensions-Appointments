@@ -4,6 +4,7 @@
 -- See https://www.mediawiki.org/wiki/Manual:Schema_changes
 CREATE TABLE /*_*/appointments (
   app_guid VARCHAR(32) NOT NULL,
+  app_event_type VARCHAR(32) NOT NULL,
   app_calendar_guid VARCHAR(32) NOT NULL,
   app_title VARCHAR(255) NOT NULL,
   app_start BLOB NOT NULL,

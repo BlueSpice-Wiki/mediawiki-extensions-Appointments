@@ -100,6 +100,9 @@ class ParticipantStore {
 				'ap_value' => $participant->getValue(),
 			];
 		}
+		if ( empty( $rows ) ) {
+			return;
+		}
 		$this->lb->getConnection( DB_PRIMARY )->newInsertQueryBuilder()
 			->insertInto( 'appointment_participants' )
 			->rows( $rows )

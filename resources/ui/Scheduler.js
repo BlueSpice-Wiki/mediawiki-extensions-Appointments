@@ -50,44 +50,53 @@ const scheduler = function ( config ) {
 		datasetUpdate: async () => {
 			await this.calendarPicker.reload();
 		},
-		select: async ( calendarGuids ) => {
-			this.onCalendarSetChange( calendarGuids );
+		select: async ( value, selected ) => {
+			this.onCalendarSetChange( value, selected );
 		}
 	} );
 	this.$calendarPicker.append( this.calendarPicker.$element );
-	this.visibleCalendars = [];
+	this.visibleCalendars = {};
 
 	this.renderScheduler();
 };
 
 OO.inheritClass( scheduler, OO.ui.PanelLayout );
 
-scheduler.prototype.onCalendarSetChange = async function ( calendarGuids ) {
+scheduler.prototype.onCalendarSetChange = async function ( calendars, selected ) {
 	// When calendar selection changes, we need to load appointments for newly added calendars and remove appointments for removed calendars
 	if ( !this.views[this.view] ) {
 		return;
 	}
 	const view = this.views[this.view];
-	const added = calendarGuids.filter( guid => !this.visibleCalendars.includes( guid ) );
-	const removed = this.visibleCalendars.filter( guid => !calendarGuids.includes( guid ) );
-	this.visibleCalendars = calendarGuids;
 
-	for ( const guid of removed ) {
-		view.removeForCalendar( guid );
-	}
-
-	for ( const guid of added ) {
-		this.loadAppointments( guid );
+	for ( const guid in calendars ) {
+		const selectedTypes = calendars[ guid ];
+		if ( selectedTypes.length === 0 || !selected ) {
+			// Calendar was visible but now is not, remove it
+			if ( !this.visibleCalendars[ guid ] ) {
+				continue;
+			}
+			delete this.visibleCalendars[ guid ];
+			view.removeForCalendar( guid );
+		} else {
+			if ( this.visibleCalendars[ guid ] && this.visibleCalendars[ guid ].join() === selectedTypes.join() ) {
+				// Calendar is already visible with the same event types, no need to do anything
+				continue;
+			}
+			// Calendar is still visible, but event types selection changed, so we need to reload it
+			this.loadAppointments( guid );
+			this.visibleCalendars[ guid ] = selectedTypes;
+		}
 	}
 };
 
 scheduler.prototype.loadForVisibleCalendars = function ( range ) {
-	if ( !this.visibleCalendars || this.visibleCalendars.length === 0 ) {
+	if ( !this.visibleCalendars ) {
 		return;
 	}
-	this.visibleCalendars.forEach( calendarGuid => {
-		this.loadAppointments( calendarGuid, range );
-	} );
+	for ( const guid in this.visibleCalendars ) {
+		this.loadAppointments( guid, range );
+	}
 };
 
 scheduler.prototype.loadAppointments = async function ( calendarGuid, range ) {
@@ -107,8 +116,9 @@ scheduler.prototype.loadAppointments = async function ( calendarGuid, range ) {
 	if ( !range ) {
 		return;
 	}
-	view.removeForCalendar( calendarGuid );
-	const apps = await ext.appointments.api.getAppointments( calendarGuid, this.onlyPersonal, range.start, range.end );
+	const apps = await ext.appointments.api.getAppointments(
+		calendarGuid, this.visibleCalendars[calendarGuid], this.onlyPersonal, range.start, range.end
+	);
 	// Sort longest-spanning appointments first so they render on top rows
 	apps.sort( ( a, b ) => {
 		const aStart = a.periodDefinition.getStartDate() < range.start ?
@@ -127,6 +137,7 @@ scheduler.prototype.loadAppointments = async function ( calendarGuid, range ) {
 		const bSpan = new Date( bEnd ) - new Date( bStart );
 		return bSpan - aSpan;
 	} );
+	view.removeForCalendar( calendarGuid );
 	apps.forEach( app => {
 		view.addAppointment( app );
 	} );
@@ -136,11 +147,12 @@ scheduler.prototype.loadAppointments = async function ( calendarGuid, range ) {
 };
 
 scheduler.prototype.onDatasetChange = function ( calendar ) {
+	console.log( "DSC", calendar );
 	// When new appointment is added or edited
 	if ( !calendar ) {
 		return;
 	}
-
+	console.log( "LOAD" );
 	this.loadAppointments( calendar.guid );
 };
 

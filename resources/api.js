@@ -1,27 +1,46 @@
 const api = {
+	normalizeCollectionResponse: function ( res ) {
+		if ( Array.isArray( res ) ) {
+			return res;
+		}
+
+		return Object.values( res || {} );
+	},
+	toEventType: function ( eventTypeData ) {
+		return new ext.appointments.objects.EventType(
+			eventTypeData.guid,
+			eventTypeData.name,
+			eventTypeData.description,
+			eventTypeData.data || {},
+			eventTypeData.system || false
+		);
+	},
+	toCalendar: function ( calendarData ) {
+		const eventTypes = api.normalizeCollectionResponse( calendarData.eventTypes )
+			.map( ( eventTypeData ) => api.toEventType( eventTypeData ) );
+
+		return new ext.appointments.objects.Calendar(
+			calendarData.guid,
+			calendarData.name,
+			calendarData.description,
+			eventTypes,
+			calendarData.creator,
+			calendarData.wikiId,
+			calendarData.data || {},
+			calendarData.permissions || {}
+		);
+	},
 	getCalendars: async function () {
 		const res = await ext.appointments.api._get( 'calendars' );
 
-		const calendars = [];
-		for ( let i = 0; i < res.length; i++ ) {
-			const calendarData = res[ i ];
-			const calendar = new ext.appointments.objects.Calendar(
-				calendarData.guid,
-				calendarData.name,
-				calendarData.description,
-				calendarData.data,
-				calendarData.wikiId,
-				calendarData.data || {},
-				calendarData.permissions || {}
-			);
-			calendars.push( calendar );
-		}
-		return calendars;
+		return api.normalizeCollectionResponse( res )
+			.map( ( calendarData ) => api.toCalendar( calendarData ) );
 	},
 	saveCalendar: function ( calendar ) {
 		return ext.appointments.api._post( 'calendar', {
 			guid: calendar.guid || null,
 			name: calendar.name,
+			eventTypes: calendar.eventTypes.map( et => et.guid ),
 			description: calendar.description,
 			data: JSON.stringify( calendar.data )
 		} );
@@ -32,7 +51,26 @@ const api = {
 		} );
 	},
 
-	getAppointments: async function ( calendarId, onlyPersonal, startDate, endDate ) {
+	getEventTypes: async function () {
+		const res = await ext.appointments.api._get( 'event_types' );
+
+		return api.normalizeCollectionResponse( res )
+			.map( ( eventTypeData ) => api.toEventType( eventTypeData ) );
+	},
+	saveEventType: async function ( eventType ) {
+		return ext.appointments.api._post( 'event_type', {
+			guid: eventType.guid || null,
+			name: eventType.name,
+			description: eventType.description,
+			data: eventType.data
+		} );
+	},
+	deleteEventType: async function ( eventType ) {
+		return ext.appointments.api._post( `event_type/delete/${eventType.guid}` );
+	},
+
+
+	getAppointments: async function ( calendarId, eventTypes, onlyPersonal, startDate, endDate ) {
 		const params = new URLSearchParams();
 		if ( calendarId !== undefined ) {
 			params.append( 'calendar', calendarId );
@@ -46,6 +84,7 @@ const api = {
 		if ( endDate !== undefined ) {
 			params.append( 'endDate', endDate );
 		}
+		params.append( 'eventTypes', eventTypes ? eventTypes.join( '|' ) : '' );
 		const res = await ext.appointments.api._get( `appointments?${ params.toString() }` );
 		const appointments = [];
 		for ( let i = 0; i < res.length; i++ ) {
@@ -55,7 +94,8 @@ const api = {
 				appointmentData.guid,
 				appointmentData.title,
 				appointmentData.participants.map( p => new ext.appointments.objects.Participant( p.key, p.value ) ),
-				new ext.appointments.objects.Calendar( ...Object.values( appointmentData.calendar ) ),
+				api.toCalendar( appointmentData.calendar ),
+				new ext.appointments.objects.EventType( ...Object.values( appointmentData.eventType ) ),
 				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodDefinition ) ),
 				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodUTC ) ),
 				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.userPeriod ) ),
@@ -73,6 +113,7 @@ const api = {
 			title: appointment.title,
 			participants: appointment.participants.map( p => p.serialize() ),
 			calendar_guid: appointment.calendar.guid,
+			event_type: appointment.eventType ? appointment.eventType.guid : null,
 			start_date: appointment.periodDefinition.getStartDate(),
 			start_time: appointment.periodDefinition.getStartTime(),
 			end_date: appointment.periodDefinition.getEndDate(),
