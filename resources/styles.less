@@ -150,6 +150,9 @@
 			.appointment-entry-title {
 				color: black;
 			}
+			.oo-ui-iconElement {
+				filter: invert(0);
+			}
 		}
 
 		.appointment-entry-start-time {
@@ -163,6 +166,7 @@
 				width: 12px;
 				min-width: 12px;
 				margin-left: 4px;
+				filter: invert(1);
 			}
 		}
 
@@ -187,6 +191,12 @@
 			&:focus {
 				box-shadow: none !important;
 				border: none !important;
+			}
+
+			> .oo-ui-iconElement-icon {
+				background-size: 16px;
+				margin-right: 4px;
+				filter: invert(1);
 			}
 		}
 	}
@@ -272,6 +282,14 @@
 
 	.oo-ui-labelElement-label {
 		display: inline !important;
+	}
+}
+
+.entityType-checkbox-option {
+	.option-icon {
+		background-size: 18px !important;
+		background-position: top !important;
+		margin-right: 0.25em;
 	}
 }
 

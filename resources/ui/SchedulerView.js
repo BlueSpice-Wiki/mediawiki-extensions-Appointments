@@ -82,21 +82,42 @@ SchedulerMonth.prototype.removeForCalendar = function ( calendarGuid ) {
 	const entries = this.$element[0]
 		.querySelectorAll( `.lm-calendar-content .appointment-entry[data-calendar="${calendarGuid}"]` );
 	entries.forEach( entry => entry.remove() );
-
-	// Reset spanning-bar row counts and cell padding so stacking is recalculated
-	const grid = this.$element[0].querySelector( '.lm-calendar-content' );
-	if ( grid ) {
-		grid._spanRowCounts = {};
-		grid.querySelectorAll( ':scope > div[data-date]' ).forEach( ( cell ) => {
-			cell.style.paddingTop = '';
-		} );
-	}
 };
 
 SchedulerMonth.prototype.addAppointment = function ( appointment ) {
 	const start = appointment.periodDefinition.getStartDate();
 	const end = appointment.periodDefinition.getEndDate();
 	this.addMultiDayAppointment( appointment, start, end );
+};
+
+SchedulerMonth.prototype.findAvailableSpanSlot = function ( grid, segments ) {
+	const existingSpans = Array.from( grid.querySelectorAll( '.appointment-entry-span' ) );
+	let slotIndex = 0;
+
+	while ( true ) {
+		const hasCollision = existingSpans.some( ( span ) => {
+			const existingSlot = parseInt( span.getAttribute( 'data-span-slot' ), 10 );
+			if ( existingSlot !== slotIndex ) {
+				return false;
+			}
+
+			const existingRow = parseInt( span.getAttribute( 'data-span-row' ), 10 );
+			const existingStartCol = parseInt( span.getAttribute( 'data-span-start-col' ), 10 );
+			const existingEndCol = parseInt( span.getAttribute( 'data-span-end-col' ), 10 );
+
+			return segments.some( ( segment ) =>
+				segment.row === existingRow &&
+				segment.startCol <= existingEndCol &&
+				segment.endCol >= existingStartCol
+			);
+		} );
+
+		if ( !hasCollision ) {
+			return slotIndex;
+		}
+
+		slotIndex++;
+	}
 };
 
 /**
@@ -140,49 +161,47 @@ SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start,
 	}
 
 	// Split into segments per visual row (rows of 7)
-	const segments = [];
+	const segmentIndices = [];
 	let seg = [ hitIndices[ 0 ] ];
 	for ( let i = 1; i < hitIndices.length; i++ ) {
 		if ( Math.floor( hitIndices[ i ] / 7 ) !== Math.floor( seg[ 0 ] / 7 ) ) {
-			segments.push( seg );
+			segmentIndices.push( seg );
 			seg = [];
 		}
 		seg.push( hitIndices[ i ] );
 	}
-	segments.push( seg );
+	segmentIndices.push( seg );
 
-	// Count how many spanning bars already exist in each row so we can stack them
-	if ( !grid._spanRowCounts ) {
-		grid._spanRowCounts = {};
-	}
+	const segments = segmentIndices.map( ( indices ) => ( {
+		firstCell: cells[ indices[ 0 ] ],
+		lastCell: cells[ indices[ indices.length - 1 ] ],
+		row: Math.floor( indices[ 0 ] / 7 ),
+		startCol: indices[ 0 ] % 7,
+		endCol: indices[ indices.length - 1 ] % 7
+	} ) );
+	const slotIndex = this.findAvailableSpanSlot( grid, segments );
 
-	segments.forEach( ( indices ) => {
-		const firstCell = cells[ indices[ 0 ] ];
-		const lastCell = cells[ indices[ indices.length - 1 ] ];
-		const row = Math.floor( indices[ 0 ] / 7 );
-
-		const slotIndex = grid._spanRowCounts[ row ] || 0;
-		grid._spanRowCounts[ row ] = slotIndex + 1;
-
-		const cell = cells[ indices[ 0 ] ];
+	segments.forEach( ( segment ) => {
+		const cell = segment.firstCell;
 
 		const entry = new AppointmentEntry( appointment, cell );
 		entry.connect( this, {
 			change: ( calendar ) => {
-				console.log( calendar );
 				this.scheduler.onDatasetChange( calendar );
 			}
 		} );
 
 		const el = entry.$element[ 0 ];
 		el.classList.add( 'appointment-entry-span' );
-		el.setAttribute( 'data-span-row', row );
+		el.setAttribute( 'data-span-row', segment.row );
 		el.setAttribute( 'data-span-slot', slotIndex );
+		el.setAttribute( 'data-span-start-col', segment.startCol );
+		el.setAttribute( 'data-span-end-col', segment.endCol );
 
 		// Position will be calculated by layoutSpanningEntries after all
 		// appointments are added, because cell sizes may not be final yet.
-		el._spanFirstCell = firstCell;
-		el._spanLastCell = lastCell;
+		el._spanFirstCell = segment.firstCell;
+		el._spanLastCell = segment.lastCell;
 
 		grid.appendChild( el );
 	} );

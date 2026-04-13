@@ -16,7 +16,7 @@ readonly class Birthday extends EventType {
 			true,
 			User::newSystemUser( 'MediaWiki default' ),
 			[
-				'color' => '#6B7F99',
+				'color' => '#4F5F78',
 				'icon' => 'calendar'
 			]
 		);

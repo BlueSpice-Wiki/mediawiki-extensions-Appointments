@@ -55,6 +55,13 @@ const eventTypeCheckboxMenuOption = function ( eventType ) {
 
 		this.$element.append( this.options.$element );
 	}
+	const icon = eventType.getIcon();
+	if ( icon ) {
+		this.$label.prepend( new OO.ui.IconWidget( {
+			icon: icon,
+			classes: [ 'option-icon' ]
+		} ).$element );
+	}
 
 	const color = eventType.getColor();
 	if ( this.isSelected() ) {
@@ -69,6 +76,7 @@ const eventTypeCheckboxMenuOption = function ( eventType ) {
 			}
 		}
 	} );
+	this.$element.addClass( 'entityType-checkbox-option' );
 
 };
 

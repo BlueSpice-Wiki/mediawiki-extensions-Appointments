@@ -16,7 +16,7 @@ readonly class Vacation extends EventType {
 			true,
 			User::newSystemUser( 'MediaWiki default' ),
 			[
-				'color' => '#D47A6A',
+				'color' => '#B25F52',
 				'icon' => 'calendar'
 			]
 		);

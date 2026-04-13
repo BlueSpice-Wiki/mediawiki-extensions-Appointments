@@ -15,7 +15,8 @@ const appointmentEntry = function (appointment, cell) {
 			//position: 'after',
 			$content: this.viewer.$element,
 			width: 500
-		}
+		},
+		classes: [ 'appointment-entry-popup-button' ]
 	} );
 	this.viewer.setPopup( this.popup );
 
@@ -40,6 +41,11 @@ const appointmentEntry = function (appointment, cell) {
 	this.setLabel( appointment.title );
 	this.$label.addClass( 'appointment-entry-title' );
 	this.setTitle( appointment.title );
+
+	const icon = appointment.eventType.getIcon();
+	if ( icon ) {
+		this.setIcon( icon );
+	}
 
 	this.$button.prepend( this.startTimeLabel.$element );
 	this.$element.addClass( 'appointment-entry' );

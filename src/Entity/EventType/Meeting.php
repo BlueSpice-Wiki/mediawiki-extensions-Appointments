@@ -16,7 +16,7 @@ readonly class Meeting extends EventType {
 			true,
 			User::newSystemUser( 'MediaWiki default' ),
 			[
-				'color' => '#6FAF88',
+				'color' => '#4F8F6B',
 				'icon' => 'calendar'
 			]
 		);

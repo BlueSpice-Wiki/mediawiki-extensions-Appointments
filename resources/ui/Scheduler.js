@@ -119,8 +119,14 @@ scheduler.prototype.loadAppointments = async function ( calendarGuid, range ) {
 	const apps = await ext.appointments.api.getAppointments(
 		calendarGuid, this.visibleCalendars[calendarGuid], this.onlyPersonal, range.start, range.end
 	);
-	// Sort longest-spanning appointments first so they render on top rows
+	// Sort all-day appointments first, then longest visible spans first so they render on top rows.
 	apps.sort( ( a, b ) => {
+		const aAllDay = a.periodDefinition.isAllDay();
+		const bAllDay = b.periodDefinition.isAllDay();
+		if ( aAllDay !== bAllDay ) {
+			return aAllDay ? -1 : 1;
+		}
+
 		const aStart = a.periodDefinition.getStartDate() < range.start ?
 			range.start :
 			a.periodDefinition.getStartDate();
@@ -135,8 +141,19 @@ scheduler.prototype.loadAppointments = async function ( calendarGuid, range ) {
 			b.periodDefinition.getEndDate();
 		const aSpan = new Date( aEnd ) - new Date( aStart );
 		const bSpan = new Date( bEnd ) - new Date( bStart );
-		return bSpan - aSpan;
+		if ( bSpan !== aSpan ) {
+			return bSpan - aSpan;
+		}
+
+		const aTime = aAllDay ? '00:00' : a.periodDefinition.getStartTime();
+		const bTime = bAllDay ? '00:00' : b.periodDefinition.getStartTime();
+		if ( aStart !== bStart ) {
+			return aStart.localeCompare( bStart );
+		}
+		return aTime.localeCompare( bTime );
 	} );
+
+
 	view.removeForCalendar( calendarGuid );
 	apps.forEach( app => {
 		view.addAppointment( app );
@@ -147,12 +164,10 @@ scheduler.prototype.loadAppointments = async function ( calendarGuid, range ) {
 };
 
 scheduler.prototype.onDatasetChange = function ( calendar ) {
-	console.log( "DSC", calendar );
 	// When new appointment is added or edited
 	if ( !calendar ) {
 		return;
 	}
-	console.log( "LOAD" );
 	this.loadAppointments( calendar.guid );
 };
 

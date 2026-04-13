@@ -16,7 +16,7 @@ readonly class Travel extends EventType {
 			true,
 			User::newSystemUser( 'MediaWiki default' ),
 			[
-				'color' => '#A06FAF',
+				'color' => '#7E5A8F',
 				'icon' => 'calendar'
 			]
 		);
