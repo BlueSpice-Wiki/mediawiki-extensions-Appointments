@@ -1,14 +1,17 @@
 const { EventTypeMenuOption } = require( './util/EventTypeMenuOptions.js' );
-const eventTypePicker = function ( value ) {
+
+const eventTypePicker = function ( value, appointmentData ) {
 	eventTypePicker.parent.call( this );
 
 	this.value = value || null;
+	this.appointmentData = appointmentData || null;
 	this.eventTypes = {};
 
 	this.menu.connect( this, {
 		select: ( item ) => {
 			this.value = item.getData();
 			if ( this.eventTypes[this.value] ) {
+				this.emit( 'selectEventType', this.eventTypes[this.value] );
 				this.setIcon( this.eventTypes[this.value].getIcon() );
 			}
 		}

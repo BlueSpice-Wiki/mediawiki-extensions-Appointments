@@ -33,6 +33,18 @@ class EventType {
 	isSystemType() {
 		return this.isSystem;
 	}
+
+	getEditPanel( data ) {
+		return null;
+	}
+
+	getViewPanel( data ) {
+		return null;
+	}
+
+	getCustomFieldValues() {
+		return {};
+	}
 }
 
 module.exports = EventType;

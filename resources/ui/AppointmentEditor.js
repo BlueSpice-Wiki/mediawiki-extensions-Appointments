@@ -58,22 +58,19 @@ appointmentEditor.prototype.init = function () {
 		}
 	} );
 
-	this.eventType = new EventTypePicker( this.appointment ? this.appointment.eventType.guid : null );
-	this.eventType.connect( this, { select: 'onInputChange' } );
+	this.eventType = new EventTypePicker(
+		this.appointment ? this.appointment.eventType.guid : null,
+		this.appointment ? this.appointment.data : null
+	);
+	this.eventType.connect( this, {
+		select: 'onInputChange',
+		selectEventType: ( eventType ) => {
+			this.setupCustomPanel( eventType );
+		},
+		typeCustomPanelChange: 'onInputChange'
+	} );
 
 	this.calendar.load();
-
-	this.location = new OO.ui.TextInputWidget( {
-		icon: 'mapPin',
-		value: this.appointment ? this.appointment.data.location || '' : '',
-	} );
-	this.location.connect( this, { change: 'onInputChange' } );
-
-	this.videoLink = new OO.ui.TextInputWidget( {
-		icon: 'camera',
-		value: this.appointment ? this.appointment.data.videoLink || '' : '',
-	} );
-	this.videoLink.connect( this, { change: 'onInputChange' } );
 
 	this.participants = new OOJSPlus.ui.widget.UserGroupMultiselectWidget( {
 		$overlay: this.dialog ? this.dialog.$overlay : true,
@@ -125,17 +122,11 @@ appointmentEditor.prototype.init = function () {
 		new OO.ui.FieldLayout( this.participants, {
 			label: mw.message( 'appointments-ui-field-participants' ).text()
 		} ).$element,
-		new OO.ui.FieldLayout( this.time, {
-			label: mw.message( 'appointments-ui-field-time' ).text()
-		} ).$element,
-		new OO.ui.FieldLayout( this.location, {
-			label: mw.message( 'appointments-ui-field-location' ).text()
-		} ).$element,
-		new OO.ui.FieldLayout( this.videoLink, {
-			label: mw.message( 'appointments-ui-field-video-link' ).text()
-		} ).$element,
 		new OO.ui.FieldLayout( this.notifyInAdvance, {
 			label: mw.message( 'appointments-ui-field-notify-in-advance' ).text()
+		} ).$element,
+		new OO.ui.FieldLayout( this.time, {
+			label: mw.message( 'appointments-ui-field-time' ).text()
 		} ).$element
 	);
 
@@ -159,8 +150,9 @@ appointmentEditor.prototype.getUpdatedEntity = function () {
 	this.appointment.calendar = new Calendar( this.calendar.getValue() );
 	this.appointment.eventType = new EventType( this.eventType.getValue() );
 	const data = this.appointment.data || {};
-	data.location = this.location.getValue();
-	data.videoLink = this.videoLink.getValue();
+	if ( this.eventTypeCustomPanel && this.eventTypeObject ) {
+		Object.assign( data, this.eventTypeObject.getCustomFieldValues( this.eventTypeCustomPanel ) );
+	}
 	data.notifyInAdvance = this.notifyInAdvance.getValue();
 	this.appointment.data = data;
 
@@ -189,6 +181,23 @@ appointmentEditor.prototype.setAbilities = function () {
 			this.dialog.actions.setAbilities( { save: false } );
 		}
 	}
+};
+
+appointmentEditor.prototype.setupCustomPanel = function ( eventType ) {
+	if ( this.eventTypeCustomPanel ) {
+		this.eventTypeCustomPanel.disconnect( this );
+		this.eventTypeCustomPanel.$element.remove();
+	}
+	this.eventTypeObject = eventType;
+	const editPanel = eventType.getEditPanel( this.appointment ? this.appointment.data : {} );
+	if ( editPanel ) {
+		this.eventTypeCustomPanel = editPanel;
+		this.eventTypeCustomPanel.connect( this, {
+			change: 'onInputChange'
+		} );
+		this.$element.append( this.eventTypeCustomPanel.$element );
+	}
+	this.dialog.updateSize();
 };
 
 module.exports = appointmentEditor;

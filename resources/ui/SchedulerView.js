@@ -1,6 +1,13 @@
 const CalendarJS = require( 'ext.appointments.lib.calendarjs' );
 const ExtensionConfig = require( './../config.json' );
 const AppointmentEntry = require("./AppointmentEntry.js");
+const AppointmentPopupList = require( './util/AppointmentPopupList.js' );
+
+const SPAN_BAR_HEIGHT = 24;
+const SPAN_BAR_GAP = 2;
+const SPAN_TOP_OFFSET = 25;
+const DAY_OVERFLOW_BUTTON_HEIGHT = 18;
+const DAY_OVERFLOW_BUTTON_GAP = 2;
 
 const SchedulerMonth = function ( config ) {
 	SchedulerMonth.parent.call( this, $.extend( {
@@ -82,6 +89,9 @@ SchedulerMonth.prototype.removeForCalendar = function ( calendarGuid ) {
 	const entries = this.$element[0]
 		.querySelectorAll( `.lm-calendar-content .appointment-entry[data-calendar="${calendarGuid}"]` );
 	entries.forEach( entry => entry.remove() );
+	this.$element[ 0 ].querySelectorAll( '.appointment-day-overflow' ).forEach( ( button ) => {
+		button.remove();
+	} );
 };
 
 SchedulerMonth.prototype.addAppointment = function ( appointment ) {
@@ -118,6 +128,106 @@ SchedulerMonth.prototype.findAvailableSpanSlot = function ( grid, segments ) {
 
 		slotIndex++;
 	}
+};
+
+SchedulerMonth.prototype.getDaySpans = function ( spans, row, col ) {
+	return spans
+		.filter( ( span ) => {
+			const spanRow = parseInt( span.getAttribute( 'data-span-row' ), 10 );
+			const startCol = parseInt( span.getAttribute( 'data-span-start-col' ), 10 );
+			const endCol = parseInt( span.getAttribute( 'data-span-end-col' ), 10 );
+
+			return spanRow === row && col >= startCol && col <= endCol;
+		} )
+		.sort( ( a, b ) =>
+			parseInt( a.getAttribute( 'data-span-slot' ), 10 ) -
+			parseInt( b.getAttribute( 'data-span-slot' ), 10 )
+		);
+};
+
+SchedulerMonth.prototype.applyOverflowHandling = function ( grid ) {
+	const cells = Array.from( grid.querySelectorAll( ':scope > div[data-date]' ) );
+	const spans = Array.from( grid.querySelectorAll( '.appointment-entry-span' ) );
+	const hiddenSpans = new Set();
+
+	grid.querySelectorAll( '.appointment-day-overflow' ).forEach( ( button ) => {
+		button.remove();
+	} );
+	spans.forEach( ( span ) => {
+		span.style.display = '';
+	} );
+
+	cells.forEach( ( cell, index ) => {
+		const row = Math.floor( index / 7 );
+		const col = index % 7;
+		const daySpans = this.getDaySpans( spans, row, col );
+		const cellHeight = cell.getBoundingClientRect().height;
+		const availableHeight = Math.max( 0, cellHeight - SPAN_TOP_OFFSET );
+		const maxSlotsWithoutOverflow = Math.max(
+			0,
+			Math.floor( ( availableHeight + SPAN_BAR_GAP ) / ( SPAN_BAR_HEIGHT + SPAN_BAR_GAP ) )
+		);
+		const needsOverflowButton = daySpans.some( ( span ) =>
+			parseInt( span.getAttribute( 'data-span-slot' ), 10 ) >= maxSlotsWithoutOverflow
+		);
+		let maxVisibleSlots = maxSlotsWithoutOverflow;
+
+		if ( needsOverflowButton ) {
+			const availableHeightWithOverflow = Math.max(
+				0,
+				availableHeight - DAY_OVERFLOW_BUTTON_HEIGHT - DAY_OVERFLOW_BUTTON_GAP
+			);
+			maxVisibleSlots = Math.max(
+				0,
+				Math.floor(
+					( availableHeightWithOverflow + SPAN_BAR_GAP ) / ( SPAN_BAR_HEIGHT + SPAN_BAR_GAP )
+				)
+			);
+		}
+
+		daySpans.forEach( ( span ) => {
+			const slot = parseInt( span.getAttribute( 'data-span-slot' ), 10 );
+
+			if ( slot >= maxVisibleSlots ) {
+				hiddenSpans.add( span );
+			}
+		} );
+	} );
+
+	spans.forEach( ( span ) => {
+		if ( hiddenSpans.has( span ) ) {
+			span.style.display = 'none';
+		}
+	} );
+
+	cells.forEach( ( cell, index ) => {
+		const row = Math.floor( index / 7 );
+		const col = index % 7;
+		const daySpans = this.getDaySpans( spans, row, col );
+		const hiddenDaySpans = daySpans.filter( ( span ) => hiddenSpans.has( span ) );
+
+		if ( !hiddenDaySpans.length ) {
+			return;
+		}
+
+		const overflowButton = new AppointmentPopupList( hiddenDaySpans.length );
+		overflowButton.connect( this, {
+			click: () => {
+				const appointments = daySpans.reduce( ( items, span ) => {
+					if (
+						span._appointment &&
+						!items.some( ( item ) => item.guid === span._appointment.guid )
+					) {
+						items.push( span._appointment );
+					}
+					return items;
+				}, [] );
+				overflowButton.setAppointments( appointments );
+			}
+		} );
+
+		cell.appendChild( overflowButton.$element[0] );
+	} );
 };
 
 /**
@@ -202,6 +312,7 @@ SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start,
 		// appointments are added, because cell sizes may not be final yet.
 		el._spanFirstCell = segment.firstCell;
 		el._spanLastCell = segment.lastCell;
+		el._appointment = appointment;
 
 		grid.appendChild( el );
 	} );
@@ -219,10 +330,6 @@ SchedulerMonth.prototype.layoutSpanningEntries = function () {
 		return;
 	}
 
-	const barHeight = 24;
-	const barGap = 2;
-	const topOffset = 25; // leave room for the day number
-
 	// Absolutely position each spanning bar.
 	const gridRect = grid.getBoundingClientRect();
 	const spans = grid.querySelectorAll( '.appointment-entry-span' );
@@ -239,10 +346,11 @@ SchedulerMonth.prototype.layoutSpanningEntries = function () {
 		el.style.position = 'absolute';
 		el.style.left = ( firstRect.left - gridRect.left ) + 'px';
 		el.style.width = ( lastRect.right - firstRect.left ) + 'px';
-		el.style.top = ( firstRect.top - gridRect.top + topOffset + slot * ( barHeight + barGap ) ) + 'px';
-		el.style.height = barHeight + 'px';
+		el.style.top = ( firstRect.top - gridRect.top + SPAN_TOP_OFFSET + slot * ( SPAN_BAR_HEIGHT + SPAN_BAR_GAP ) ) + 'px';
+		el.style.height = SPAN_BAR_HEIGHT + 'px';
 		el.style.zIndex = '1';
 	} );
+	this.applyOverflowHandling( grid );
 };
 
 SchedulerMonth.prototype.getVisibleRange = function ( ) {

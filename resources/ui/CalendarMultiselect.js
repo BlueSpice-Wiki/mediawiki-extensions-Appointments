@@ -70,6 +70,7 @@ calendarMultiselect.prototype.reload = function () {
 		}
 		this.$options.html( this.selector.$element );
 	} ).catch( ( e ) => {
+		console.error( e ); // eslint-disable-line no-console
 		this.$element.html( new OO.ui.MessageWidget( {
 			type: 'error',
 			label: mw.message( 'appointments-ui-load-calendars-failed' ).text()
@@ -87,6 +88,7 @@ calendarMultiselect.prototype.getValue = function () {
 	for ( const calendarOption of selectedCalendars ) {
 		value[calendarOption.getData()] = calendarOption.getValue();
 	}
+
 	return value;
 };
 

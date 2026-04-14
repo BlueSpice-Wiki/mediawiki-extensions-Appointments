@@ -8,6 +8,7 @@ window.ext.appointments = {
 	ui: {
 		Scheduler: require( './ui/Scheduler.js' )
 	},
+	eventTypeRegistry: new OO.Registry(),
 	api: require( './api.js' ),
 	objects: {
 		Calendar: require( './object/Calendar.js' ),

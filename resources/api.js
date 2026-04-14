@@ -7,13 +7,18 @@ const api = {
 		return Object.values( res || {} );
 	},
 	toEventType: function ( eventTypeData ) {
-		return new ext.appointments.objects.EventType(
-			eventTypeData.guid,
-			eventTypeData.name,
-			eventTypeData.description,
-			eventTypeData.data || {},
-			eventTypeData.system || false
-		);
+		require( './object/eventType/Meeting.js' );
+
+		let eventType = new ext.appointments.objects.EventType( eventTypeData.guid );
+		if ( ext.appointments.eventTypeRegistry.lookup( eventTypeData.guid ) ) {
+			eventType = new ( ext.appointments.eventTypeRegistry.lookup( eventTypeData.guid ) )( eventTypeData.guid );
+		}
+		eventType.name = eventTypeData.name;
+		eventType.description = eventTypeData.description;
+		eventType.data = eventTypeData.data || {};
+		eventType.isSystem = eventTypeData.system || false;
+
+		return eventType;
 	},
 	toCalendar: function ( calendarData ) {
 		const eventTypes = api.normalizeCollectionResponse( calendarData.eventTypes )
@@ -95,7 +100,7 @@ const api = {
 				appointmentData.title,
 				appointmentData.participants.map( p => new ext.appointments.objects.Participant( p.key, p.value ) ),
 				api.toCalendar( appointmentData.calendar ),
-				new ext.appointments.objects.EventType( ...Object.values( appointmentData.eventType ) ),
+				api.toEventType( appointmentData.eventType ),
 				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodDefinition ) ),
 				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodUTC ) ),
 				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.userPeriod ) ),

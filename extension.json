@@ -65,11 +65,14 @@
 				"ui/util/CalendarCheckboxMenuOption.js",
 				"ui/util/MainToolbar.js",
 				"ui/util/EntityColor.js",
+				"ui/util/PanelWithEvents.js",
+				"ui/util/AppointmentPopupList.js",
 				"object/PeriodDefinition.js",
 				"object/Participant.js",
 				"object/Calendar.js",
 				"object/Appointment.js",
 				"object/EventType.js",
+				"object/eventType/Meeting.js",
 				{
 					"name": "config.json",
 					"callback": "MediaWiki\\Extension\\Appointments\\ResourceLoader\\ConfigCallback::handleConfigRequest"

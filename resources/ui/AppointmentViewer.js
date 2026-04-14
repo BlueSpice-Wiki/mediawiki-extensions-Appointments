@@ -35,40 +35,25 @@ appointmentViewer.prototype.render = function () {
 	);
 
 	const data = this.appointment.data || {};
-	const dataWidgets = [];
-	if ( 'videoLink' in data && data.videoLink ) {
-		dataWidgets.push( new OO.ui.ButtonWidget( {
-			href: data.videoLink,
-			target: '_blank',
-			label: mw.message( 'appointments-ui-video-link-join' ).text(),
-			icon: 'camera'
-		} ) );
-	}
-	if ( 'location' in data && data.location ) {
-		dataWidgets.push( new OO.ui.HorizontalLayout( {
-			items: [
-				new OO.ui.IconWidget( { icon: 'calendar' } ),
-				new OO.ui.LabelWidget( {
-					label: data.location,
-					classes: [ 'appointment-viewer-calendar' ]
-				} )
-			]
-		} ) );
-	}
+	const customDataPanel = this.appointment.eventType.getViewPanel( data );
 
 	const timeView = new AppointmentTimeView( this.appointment.userPeriod );
-	const participantsView = new ParticipantView( this.appointment.participants );
+
 
 	this.$element.append(
 		titleLabel.$element,
 		calendarAndTypeLabel.$element,
-		this.buildButtons().$element,
-		new OO.ui.HorizontalLayout( {
-			items: dataWidgets
-		} ).$element,
-		timeView.$element,
-		participantsView.$element
+		this.buildButtons().$element
 	);
+	if ( customDataPanel ) {
+		this.$element.append( customDataPanel.$element );
+	}
+	this.$element.append(
+		timeView.$element
+	);
+	if ( this.appointment.participants.length ) {
+		this.$element.append( new ParticipantView( this.appointment.participants ).$element );
+	}
 };
 
 appointmentViewer.prototype.buildButtons = function () {
@@ -110,7 +95,6 @@ appointmentViewer.prototype.onEditButtonClick = function () {
 		if ( res && res.entity ) {
 			this.emit( 'update', res.entity );
 		}
-
 	} );
 };
 
