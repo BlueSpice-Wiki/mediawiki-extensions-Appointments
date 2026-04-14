@@ -57,6 +57,16 @@ class PeriodDefinition {
 	isMultiDay() {
 		return this.getStartDate() !== this.getEndDate();
 	}
+
+	isEqual( other ) {
+		return other instanceof PeriodDefinition &&
+			this.getStartDate() === other.getStartDate() &&
+			this.getStartTime() === other.getStartTime() &&
+			this.getEndDate() === other.getEndDate() &&
+			this.getEndTime() === other.getEndTime() &&
+			this.isAllDay() === other.isAllDay() &&
+			this.getRecurrenceRule() === other.getRecurrenceRule();
+	}
 }
 
 module.exports = PeriodDefinition;

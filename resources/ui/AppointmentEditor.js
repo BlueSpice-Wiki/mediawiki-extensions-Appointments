@@ -41,6 +41,8 @@ appointmentEditor.prototype.focus = function () {
 };
 
 appointmentEditor.prototype.init = function () {
+	const appointmentData = this.appointment ? this.appointment.data || {} : {};
+
 	this.name = new OO.ui.TextInputWidget( {
 		required: true,
 		value: this.appointment ? this.appointment.title : '',
@@ -49,7 +51,7 @@ appointmentEditor.prototype.init = function () {
 
 	this.calendar = new CalendarPicker( {
 		$overlay: this.dialog ? this.dialog.$overlay : true,
-		value: this.appointment ? this.appointment.calendar.guid : null,
+		value: this.appointment && this.appointment.calendar ? this.appointment.calendar.guid : null,
 	} );
 	this.calendar.connect( this, {
 		select: () => {
@@ -59,8 +61,8 @@ appointmentEditor.prototype.init = function () {
 	} );
 
 	this.eventType = new EventTypePicker(
-		this.appointment ? this.appointment.eventType.guid : null,
-		this.appointment ? this.appointment.data : null
+		this.appointment && this.appointment.eventType ? this.appointment.eventType.guid : null,
+		appointmentData
 	);
 	this.eventType.connect( this, {
 		select: 'onInputChange',
@@ -105,7 +107,7 @@ appointmentEditor.prototype.init = function () {
 	} );
 
 	this.notifyInAdvance = new OO.ui.CheckboxInputWidget( {
-		value: this.appointment ? !!this.appointment.data.notifyInAdvance : false,
+		value: appointmentData.notifyInAdvance || false,
 	} );
 	this.notifyInAdvance.connect( this, { change: 'onInputChange' } );
 

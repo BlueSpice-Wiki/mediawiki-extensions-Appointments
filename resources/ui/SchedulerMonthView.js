@@ -18,7 +18,7 @@ const SchedulerMonth = function ( config ) {
 	CalendarJS.setDictionary( ExtensionConfig.i18n );
 
 	this.today = moment().format( 'YYYY-MM-DD' );
-	this.scheduler = config.scheduler;
+	this.controller = config.controller;
 	this.last = null;
 };
 
@@ -51,7 +51,6 @@ SchedulerMonth.prototype.render = function () {
 	mo.observe(content, { childList: true, subtree: true });
 
 	this.stampCells();
-
 	this.renderNavigation();
 };
 
@@ -80,9 +79,31 @@ SchedulerMonth.prototype.renderNavigation = function () {
 	} );
 	this.nextButton.on( 'click', () => this.calendar.next() );
 	this.prevButton.on( 'click', () => this.calendar.prev() );
-	this.$element.find( '.lm-calendar-navigation' ).replaceWith( new OO.ui.HorizontalLayout( {
-		items: [ this.prevButton, this.nextButton ],
-	} ).$element );
+
+	const header = this.$element[ 0 ].querySelector( '.lm-calendar-header > div:first-child' );
+	const labels = header ? header.querySelector( '.lm-calendar-labels' ) : null;
+	const navigation = header ? header.querySelector( '.lm-calendar-navigation' ) : null;
+
+	if ( !header || !labels || !navigation ) {
+		return;
+	}
+
+	header.classList.add( 'appointments-scheduler-period-navigation' );
+	labels.classList.add( 'appointments-scheduler-period-label' );
+	labels.classList.add( 'appointments-scheduler-month-label' );
+
+	navigation.remove();
+	header.insertBefore( this.prevButton.$element[ 0 ], labels );
+	header.appendChild( this.nextButton.$element[ 0 ] );
+};
+
+SchedulerMonth.prototype.removeAllAppointments = function () {
+	const entries = this.$element[ 0 ]
+		.querySelectorAll( '.lm-calendar-content .appointment-entry' );
+	entries.forEach( ( entry ) => entry.remove() );
+	this.$element[ 0 ].querySelectorAll( '.appointment-day-overflow' ).forEach( ( button ) => {
+		button.remove();
+	} );
 };
 
 SchedulerMonth.prototype.removeForCalendar = function ( calendarGuid ) {
@@ -222,7 +243,7 @@ SchedulerMonth.prototype.applyOverflowHandling = function ( grid ) {
 					}
 					return items;
 				}, [] );
-				overflowButton.setAppointments( appointments );
+				overflowButton.setAppointments( appointments, cell );
 			}
 		} );
 
@@ -297,7 +318,7 @@ SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start,
 		const entry = new AppointmentEntry( appointment, cell );
 		entry.connect( this, {
 			change: ( calendar ) => {
-				this.scheduler.onDatasetChange( calendar );
+				this.controller.onDatasetChange( calendar );
 			}
 		} );
 
@@ -409,22 +430,4 @@ SchedulerMonth.prototype.stampCells = function () {
 	} );
 };
 
-const SchedulerWeekDay = function ( config ) {
-	this.view = config.view;
-	SchedulerWeekDay.parent.call( this, config );
-};
-
-OO.inheritClass( SchedulerWeekDay, SchedulerMonth );
-
-SchedulerWeekDay.prototype.render = function () {
-	this.scheduler = CalendarJS.Schedule( this.$element[0], {
-		type: this.view,
-		grid: 30,
-		data: []
-	} );
-};
-
-module.exports = {
-	MonthView: SchedulerMonth,
-	WeekDayView: SchedulerWeekDay
-}
+module.exports = SchedulerMonth;

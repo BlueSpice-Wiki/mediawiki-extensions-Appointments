@@ -7,33 +7,20 @@ use InvalidArgumentException;
 use MediaWiki\Extension\Appointments\Utils\RecurrenceRule;
 use MediaWiki\Message\Message;
 
-readonly class PeriodDefinition {
+class PeriodDefinition extends NaivePeriod {
 
 	public function __construct(
-		private DateTime $start,
-		private DateTime $end,
+		DateTime $start,
+		DateTime $end,
 		private bool $isAllDay = false,
 		private ?RecurrenceRule $recurrenceRule = null
 	) {
+		parent::__construct( $start, $end );
 		if ( $this->isAllDay ) {
 			$this->start->setTime( 0, 0 );
 			$this->end->setTime( 0, 0,);
 		}
 		$this->validate();
-	}
-
-	/**
-	 * @return DateTime
-	 */
-	public function getStart(): DateTime {
-		return $this->start;
-	}
-
-	/**
-	 * @return DateTime
-	 */
-	public function getEnd(): DateTime {
-		return $this->end;
 	}
 
 	/**
@@ -66,7 +53,7 @@ readonly class PeriodDefinition {
 	 * @param bool $matchNext
 	 * @return PeriodDefinition|null
 	 */
-	public function getMatchInPeriod( PeriodDefinition $periodDefinition, bool $matchNext = false ): ?PeriodDefinition {
+	public function getMatchInPeriod( NaivePeriod $periodDefinition, bool $matchNext = false ): ?PeriodDefinition {
 		if ( !$this->recurrenceRule ) {
 			// No recurrence, just check if falls within start and end
 			if ( !$matchNext && $this->overlapsWith( $periodDefinition ) ) {
@@ -93,7 +80,7 @@ readonly class PeriodDefinition {
 	 * @param PeriodDefinition $toCheck
 	 * @return bool
 	 */
-	public function overlapsWith( PeriodDefinition $toCheck ): bool {
+	public function overlapsWith( NaivePeriod $toCheck ): bool {
 		$startsWithin = $this->start >= $toCheck->getStart() && $this->start <= $toCheck->getEnd();
 		$endsWithin = $this->end >= $toCheck->getStart() && $this->end <= $toCheck->getEnd();
 		return $startsWithin || $endsWithin;

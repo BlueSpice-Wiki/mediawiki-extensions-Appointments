@@ -3,6 +3,7 @@
 namespace MediaWiki\Extension\Appointments\Rest;
 
 use MediaWiki\Context\RequestContext;
+use MediaWiki\Extension\Appointments\Entity\NaivePeriod;
 use MediaWiki\Extension\Appointments\Entity\PeriodDefinition;
 use MediaWiki\Extension\Appointments\Store\AppointmentStore;
 use MediaWiki\Extension\Appointments\Store\CalendarStore;
@@ -19,7 +20,7 @@ class AppointmentGetHandler extends SimpleHandler {
 	/**
 	 * @param CalendarStore $calendarStore
 	 * @param AppointmentStore $appointmentStore
-	
+
 	 * @param EventTypeStore $eventTypeStore
 	 * @param UserInterface $userInterface
 	 * @param Permissions $permissions
@@ -48,16 +49,20 @@ class AppointmentGetHandler extends SimpleHandler {
 			}
 		}
 		$personalOnly = $params['personalOnly'];
+		$user = RequestContext::getMain()->getUser();
+		$query = $this->appointmentStore->newQuery();
 
 		$startDate = $params['startDate'];
 		$endDate = $params['endDate'];
 		$period = null;
 		if ( $startDate && $endDate ) {
-			$period = new PeriodDefinition(
-				start: \DateTime::createFromFormat( 'Y-m-d', $startDate ),
-				end: \DateTime::createFromFormat( 'Y-m-d', $endDate ),
-				isAllDay:  true
-			);
+			$start = \DateTime::createFromFormat( 'Y-m-d', $startDate );
+			$start->setTime( 0, 0 );
+			$start = $this->userInterface->convertDateTimeForUser( $start, $user );
+			$end = \DateTime::createFromFormat( 'Y-m-d', $endDate );
+			$end->setTime( 23, 59, 59 );
+			$end = $this->userInterface->convertDateTimeForUser( $end, $user );
+			$query->forPeriod( new NaivePeriod( $start, $end ) );
 		}
 
 		$eventTypes = [];
@@ -67,9 +72,6 @@ class AppointmentGetHandler extends SimpleHandler {
 				$eventTypes[] = $eventTypeObj;
 			}
 		}
-
-		$user = RequestContext::getMain()->getUser();
-		$query = $this->appointmentStore->newQuery();
 
 		if ( $calendar ) {
 			$query->forCalendar( $calendar );

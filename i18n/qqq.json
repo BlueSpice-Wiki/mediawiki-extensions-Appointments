@@ -45,6 +45,8 @@
 	"appointments-ui-cancel": "Label for cancel/close dialog action button.",
 	"appointments-ui-edit": "Label for edit action button/menu item.",
 	"appointments-ui-delete": "Label for delete action button/menu item.",
+	"appointments-next-period": "Tooltip/title for button that navigates the day or week scheduler to the next visible period.",
+	"appointments-previous-period": "Tooltip/title for button that navigates the day or week scheduler to the previous visible period.",
 	"appointments-next-month": "Tooltip/title for button that navigates the month calendar to the next month.",
 	"appointments-previous-month": "Tooltip/title for button that navigates the month calendar to the previous month.",
 	"appointments-ui-delete-appointment-confirmation": "Confirmation text shown before deleting an appointment.",

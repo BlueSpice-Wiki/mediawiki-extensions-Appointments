@@ -45,6 +45,8 @@
 	"appointments-ui-cancel": "Cancel",
 	"appointments-ui-edit": "Edit",
 	"appointments-ui-delete": "Delete",
+	"appointments-next-period": "Next period",
+	"appointments-previous-period": "Previous period",
 	"appointments-next-month": "Next month",
 	"appointments-previous-month": "Previous month",
 	"appointments-ui-delete-appointment-confirmation": "Are you sure you want to delete this appointment?",

@@ -116,8 +116,42 @@
 }
 
 .ext-appointments-scheduler-calendar-cnt {
+	.appointments-scheduler-period-navigation {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 12px;
+
+		.oo-ui-buttonWidget {
+			flex: 0 0 auto;
+			margin: 0;
+		}
+	}
+
+	.appointments-scheduler-period-label {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 1 1 auto;
+		min-width: 0;
+		text-align: center;
+		font-size: 1.1em;
+		font-weight: 600;
+	}
+
+	.appointments-scheduler-month-label {
+		margin: 0 !important;
+		padding: 0 8px !important;
+		gap: 4px;
+		cursor: default;
+	}
+
 	.lm-calendar-navigation {
 		display: none;
+	}
+
+	.lm-calendar-header > .appointments-scheduler-period-navigation {
+		margin-bottom: 0;
 	}
 
 	.lm-calendar-content {
@@ -237,6 +271,46 @@
 		margin-right: 4px;
 		cursor: pointer;
 	}
+
+	.lm-schedule-item.appointment-schedule-item-with-icon {
+		&::before {
+			content: none;
+		}
+
+		.appointment-schedule-title {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			max-width: 100%;
+			min-width: 0;
+			margin-left: 2px;
+			margin-bottom: 4px;
+			font-size: 0.9em;
+			overflow: hidden;
+
+			.oo-ui-iconElement {
+				filter: invert( 1 );
+				flex: 0 0 auto;
+			}
+
+			&.dark-text .oo-ui-iconElement {
+				filter: invert( 0 );
+			}
+
+			.oo-ui-iconElement-icon {
+				width: 14px;
+				min-width: 14px;
+				height: 14px;
+				background-size: 14px;
+			}
+		}
+
+		.appointment-schedule-title-label {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
 }
 
 .entity-color-picker {
@@ -313,4 +387,39 @@
 
 .event-type-multiselect {
 	margin-left: 12px;
+}
+
+
+
+.appointment-popup-list {
+	.appointment-entry-popup-button {
+		width: 100%;
+		margin: 0 !important;
+		border-radius: 10px;
+
+		&.dark-text {
+			.appointment-entry-start-time,
+			.appointment-entry-title {
+				color: black;
+			}
+			.oo-ui-iconElement {
+				filter: invert(0);
+			}
+		}
+
+		.appointment-entry-start-time {
+			color: #fff;
+			margin-right: 4px;
+			font-weight: normal;
+			font-size: 0.8em;
+
+			.appointment-entry-recurring-icon {
+				background-size: 12px;
+				width: 12px;
+				min-width: 12px;
+				margin-left: 4px;
+				filter: invert(1);
+			}
+		}
+	}
 }

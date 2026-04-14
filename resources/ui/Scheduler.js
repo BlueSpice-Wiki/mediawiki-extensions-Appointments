@@ -1,6 +1,7 @@
 const CalendarMultiselect = require( './CalendarMultiselect.js' );
 const makeToolbar = require( './util/MainToolbar.js' );
-const { MonthView, WeekDayView } = require( './SchedulerView.js' );
+const MonthView = require( './SchedulerMonthView.js' );
+const WeekDayView = require( './SchedulerWeekDayView.js' );
 
 const scheduler = function ( config ) {
 	scheduler.parent.call( this, $.extend( {
@@ -29,7 +30,11 @@ const scheduler = function ( config ) {
 			const view = this.views[this.view];
 			let defaultDate = null;
 			if ( view ) {
-				defaultDate = view.calendar.getValue();
+				if ( view.calendar && typeof view.calendar.getValue === 'function' ) {
+					defaultDate = view.calendar.getValue();
+				} else if ( view.scheduler && view.scheduler.value ) {
+					defaultDate = view.scheduler.value;
+				}
 			}
 			ext.appointments.util.openAppointmentEditorDialog( null, { defaultDate: defaultDate } )
 				.then( ( res ) => {
@@ -41,6 +46,7 @@ const scheduler = function ( config ) {
 		viewChange: ( view ) => {
 			this.view = view;
 			this.renderScheduler();
+			this.loadForVisibleCalendars();
 		}
 	} );
 	this.$header.append( this.toolbar.$element );
@@ -56,6 +62,7 @@ const scheduler = function ( config ) {
 	} );
 	this.$calendarPicker.append( this.calendarPicker.$element );
 	this.visibleCalendars = {};
+	this.appointmentCache = {};
 
 	this.renderScheduler();
 };
@@ -68,6 +75,7 @@ scheduler.prototype.onCalendarSetChange = async function ( calendars, selected )
 		return;
 	}
 	const view = this.views[this.view];
+	let needsReload = false;
 
 	for ( const guid in calendars ) {
 		const selectedTypes = calendars[ guid ];
@@ -83,105 +91,110 @@ scheduler.prototype.onCalendarSetChange = async function ( calendars, selected )
 				// Calendar is already visible with the same event types, no need to do anything
 				continue;
 			}
-			// Calendar is still visible, but event types selection changed, so we need to reload it
-			this.loadAppointments( guid );
+			// Calendar is still visible, but event types selection changed
 			this.visibleCalendars[ guid ] = selectedTypes;
+			needsReload = true;
 		}
+	}
+	if ( needsReload ) {
+		this.loadForVisibleCalendars();
 	}
 };
 
-scheduler.prototype.loadForVisibleCalendars = function ( range ) {
+scheduler.prototype.loadForVisibleCalendars = async function ( range, onlyForCalendar ) {
 	if ( !this.visibleCalendars ) {
 		return;
 	}
-	for ( const guid in this.visibleCalendars ) {
-		this.loadAppointments( guid, range );
-	}
-};
-
-scheduler.prototype.loadAppointments = async function ( calendarGuid, range ) {
-	const view = this.views[this.view];
+	const view = this.views[ this.view ];
 	if ( !view ) {
 		return;
 	}
-	if ( !calendarGuid ) {
-		return;
+
+	if ( !range ) {
+		range = await new Promise( ( resolve ) => {
+			setTimeout( () => {
+				resolve( view.getVisibleRange() );
+			}, 100 );
+		} );
 	}
-	range = range || await new Promise((resolve) => {
-		// Give some time for the view to update its visible range if needed, e.g. when calendar is changed
-		setTimeout(() => {
-			resolve(view.getVisibleRange());
-		}, 100);
-	});
 	if ( !range ) {
 		return;
 	}
-	const apps = await ext.appointments.api.getAppointments(
-		calendarGuid, this.visibleCalendars[calendarGuid], this.onlyPersonal, range.start, range.end
-	);
-	// Sort all-day appointments first, then longest visible spans first so they render on top rows.
-	apps.sort( ( a, b ) => {
-		const aAllDay = a.periodDefinition.isAllDay();
-		const bAllDay = b.periodDefinition.isAllDay();
-		if ( aAllDay !== bAllDay ) {
-			return aAllDay ? -1 : 1;
+
+	const allApps = [];
+	for ( const guid in this.visibleCalendars ) {
+		const apps = await ext.appointments.api.getAppointments(
+			guid, this.visibleCalendars[ guid ], this.onlyPersonal, range.start, range.end
+		);
+		allApps.push( ...apps );
+	}
+
+	if ( this.view === 'month' ) {
+		// Sort all-day appointments first, then longest visible spans first
+		allApps.sort( ( a, b ) => {
+			const aAllDay = a.periodDefinition.isAllDay();
+			const bAllDay = b.periodDefinition.isAllDay();
+			if ( aAllDay !== bAllDay ) {
+				return aAllDay ? -1 : 1;
+			}
+
+			const aStart = a.periodDefinition.getStartDate() < range.start ?
+				range.start :
+				a.periodDefinition.getStartDate();
+			const aEnd = a.periodDefinition.getEndDate() > range.end ?
+				range.end :
+				a.periodDefinition.getEndDate();
+			const bStart = b.periodDefinition.getStartDate() < range.start ?
+				range.start :
+				b.periodDefinition.getStartDate();
+			const bEnd = b.periodDefinition.getEndDate() > range.end ?
+				range.end :
+				b.periodDefinition.getEndDate();
+			const aSpan = new Date( aEnd ) - new Date( aStart );
+			const bSpan = new Date( bEnd ) - new Date( bStart );
+			if ( bSpan !== aSpan ) {
+				return bSpan - aSpan;
+			}
+
+			const aTime = aAllDay ? '00:00' : a.periodDefinition.getStartTime();
+			const bTime = bAllDay ? '00:00' : b.periodDefinition.getStartTime();
+			if ( aStart !== bStart ) {
+				return aStart.localeCompare( bStart );
+			}
+			return aTime.localeCompare( bTime );
+		} );
+
+		// Clear all and render in one pass
+		if ( typeof view.removeAllAppointments === 'function' ) {
+			view.removeAllAppointments();
 		}
-
-		const aStart = a.periodDefinition.getStartDate() < range.start ?
-			range.start :
-			a.periodDefinition.getStartDate();
-		const aEnd = a.periodDefinition.getEndDate() > range.end ?
-			range.end :
-			a.periodDefinition.getEndDate();
-		const bStart = b.periodDefinition.getStartDate() < range.start ?
-			range.start :
-			b.periodDefinition.getStartDate();
-		const bEnd = b.periodDefinition.getEndDate() > range.end ?
-			range.end :
-			b.periodDefinition.getEndDate();
-		const aSpan = new Date( aEnd ) - new Date( aStart );
-		const bSpan = new Date( bEnd ) - new Date( bStart );
-		if ( bSpan !== aSpan ) {
-			return bSpan - aSpan;
+		allApps.forEach( ( app ) => {
+			view.addAppointment( app );
+		} );
+		if ( typeof view.layoutSpanningEntries === 'function' ) {
+			view.layoutSpanningEntries();
 		}
-
-		const aTime = aAllDay ? '00:00' : a.periodDefinition.getStartTime();
-		const bTime = bAllDay ? '00:00' : b.periodDefinition.getStartTime();
-		if ( aStart !== bStart ) {
-			return aStart.localeCompare( bStart );
-		}
-		return aTime.localeCompare( bTime );
-	} );
-
-
-	view.removeForCalendar( calendarGuid );
-	apps.forEach( app => {
-		view.addAppointment( app );
-	} );
-	if ( typeof view.layoutSpanningEntries === 'function' ) {
-		view.layoutSpanningEntries();
+	} else {
+		console.log( allApps );
+		view.setData( allApps );
 	}
 };
 
 scheduler.prototype.onDatasetChange = function ( calendar ) {
-	// When new appointment is added or edited
-	if ( !calendar ) {
-		return;
-	}
-	this.loadAppointments( calendar.guid );
+	this.loadForVisibleCalendars( null, calendar );
 };
 
 scheduler.prototype.renderScheduler = function () {
 	let wasNew = false;
 	if ( this.view === 'month' ) {
 		if ( !this.views['month'] ) {
-			this.views['month'] = new MonthView( { scheduler: this } );
+			this.views['month'] = new MonthView( { controller: this } );
 			wasNew = true;
 		}
 		this.$calendarCnt.empty().append( this.views['month'].$element );
 	} else {
 		if ( !this.views[this.view] ) {
-			this.views[this.view] = new WeekDayView( { view: this.view, scheduler: this } );
+			this.views[this.view] = new WeekDayView( { view: this.view, controller: this } );
 			 wasNew = true;
 		}
 		this.$calendarCnt.empty().append( this.views[this.view].$element );
