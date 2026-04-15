@@ -49,8 +49,8 @@ editorDialog.prototype.getActionProcess = function (action ) {
 				return;
 			}
 			try {
-				await this.entity.save( updatedEntity );
-				this.close( { entity: updatedEntity } );
+				const res = await this.entity.save( updatedEntity );
+				this.close( { entity: updatedEntity, res: res } );
 			} catch ( e ) {
 				this.popPending();
 				dfd.reject( new OO.ui.Error( e ) );

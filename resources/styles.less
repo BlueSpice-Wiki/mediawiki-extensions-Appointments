@@ -1,11 +1,6 @@
 .appointments-appointment-time {
-
 	.oojsplus-date-widget {
 		min-width: 210px;
-	}
-
-	.appointments-time-picker {
-
 	}
 
 	.appointments-appointment-options {
@@ -40,7 +35,6 @@
 		margin-bottom: 10px;
 	}
 
-
 	.oo-ui-horizontalLayout.entity-wrapper {
 		align-items: center;
 		border-top: 1px solid #cecece;
@@ -55,7 +49,7 @@
 		padding: 4px;
 		border: 1px solid #ccc;
 		border-radius: 4px;
-		min-height: 32px
+		min-height: 32px;
 	}
 }
 
@@ -66,6 +60,7 @@
 	gap: 10px;
 
 	.ext-appointments-scheduler-header {
+		/* "proper" way (1/-1) doesnt work */
 		grid-column-start: 1;
 		grid-column-end: -1;
 		margin-bottom: 20px;
@@ -85,25 +80,28 @@
 			.oo-ui-checkboxInputWidget {
 				vertical-align: middle;
 			}
+
 			.oo-ui-checkboxMultioptionWidget {
 				vertical-align: middle;
 				width: 100%;
 
-				&.options-open, &:hover {
-					.oo-ui-buttonWidget {
-						visibility: visible;
-					}
-				}
-
 				.oo-ui-buttonWidget {
-					background-color: white;
+					background-color: #fff;
 					margin-right: 0;
 					position: absolute;
 					right: 32px;
 					top: -5px;
 					visibility: hidden;
+
 					&:last-of-type {
 						right: 0;
+					}
+				}
+
+				&.options-open,
+				&:hover {
+					.oo-ui-buttonWidget {
+						visibility: visible;
 					}
 				}
 			}
@@ -189,67 +187,8 @@
 		pointer-events: auto;
 		height: 24px;
 
-		&.appointment-entry-multi-day a {
-			text-align: center;
-		}
-
 		&.selected {
 			opacity: 0.9;
-		}
-
-		&.dark-text {
-			.appointment-entry-start-time,
-			.appointment-entry-title {
-				color: black;
-			}
-			.oo-ui-iconElement {
-				filter: invert(0);
-			}
-		}
-
-		.appointment-entry-start-time {
-			color: #fff;
-			margin-right: 4px;
-			font-weight: normal;
-			font-size: 0.8em;
-
-			.appointment-entry-recurring-icon {
-				background-size: 12px;
-				width: 12px;
-				min-width: 12px;
-				margin-left: 4px;
-				filter: invert(1);
-			}
-		}
-
-		.appointment-entry-title {
-			overflow: hidden;
-			text-overflow: ellipsis;
-			color: #fff;
-		}
-
-		> a {
-			display: flex;
-			align-items: center;
-			width: 100%;
-			height: 100%;
-			padding: 0 6px;
-			margin: 0;
-			border-radius: 4px;
-			text-decoration: none;
-			line-height: 1;
-			min-height: inherit !important;
-
-			&:focus {
-				box-shadow: none !important;
-				border: none !important;
-			}
-
-			> .oo-ui-iconElement-icon {
-				background-size: 16px;
-				margin-right: 4px;
-				filter: invert(1);
-			}
 		}
 	}
 
@@ -326,11 +265,6 @@
 		border-right: 1px solid var( --lm-border-color, #ddd );
 	}
 
-	// Do not draw grid borders inside the all-day label cell
-	.appointments-allday-label {
-		border-top: none !important;
-	}
-
 	.appointments-allday-tbody {
 		border-bottom: 1px solid var( --lm-border-color, #ddd );
 	}
@@ -351,72 +285,13 @@
 		line-height: 1.2;
 		padding: 4px 2px !important;
 		border-right: 1px solid var( --lm-border-color, #ddd );
+		border-top: transparent !important;
 	}
 
 	.appointments-allday-bar-cell > .appointments-allday-entry {
 		width: 100%;
 		display: block;
-		margin: 0;
 		margin-left: 0 !important;
-
-		&.dark-text {
-			.appointment-entry-start-time,
-			.appointment-entry-title {
-				color: black;
-			}
-			.oo-ui-iconElement {
-				filter: invert(0);
-			}
-		}
-
-		> a {
-			display: flex;
-			align-items: center;
-			width: 100%;
-			padding: 2px 6px;
-			margin: 0;
-			border-radius: 4px;
-			min-height: 22px !important;
-			height: 22px;
-			line-height: 18px;
-			font-size: 0.8em;
-			text-decoration: none;
-
-			&:focus {
-				box-shadow: none !important;
-				border: none !important;
-			}
-
-			> .oo-ui-iconElement-icon {
-				background-size: 16px;
-				margin-right: 4px;
-				filter: invert(1);
-			}
-		}
-
-		.appointment-entry-start-time {
-			color: #fff;
-			margin-right: 4px;
-			font-weight: normal;
-			font-size: 0.8em;
-			vertical-align: middle;
-			margin-top: -3px;
-
-			.appointment-entry-recurring-icon {
-				background-size: 12px;
-				width: 12px;
-				min-width: 12px;
-				margin-left: 4px;
-				filter: invert(1);
-			}
-		}
-
-		.appointment-entry-title {
-			line-height: 1 !important;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			color: #fff;
-		}
 	}
 }
 
@@ -434,10 +309,10 @@
 		border-radius: 2px;
 		cursor: pointer;
 		position: relative;
-		color: white;
+		color: #fff;
 
 		&.dark-text {
-			color: black;
+			color: #000;
 		}
 
 		&::after {
@@ -496,43 +371,83 @@
 	margin-left: 12px;
 }
 
-
-
 .appointment-popup-list {
-	.appointment-entry-popup-button {
-		width: 100%;
-		margin: 0 !important;
-		border-radius: 10px;
-
-		&.dark-text {
-			.appointment-entry-start-time,
-			.appointment-entry-title {
-				color: black;
-			}
-			.oo-ui-iconElement {
-				filter: invert(0);
-			}
-		}
-
-		.appointment-entry-start-time {
-			color: #fff;
-			margin-right: 4px;
-			font-weight: normal;
-			font-size: 0.8em;
-
-			.appointment-entry-recurring-icon {
-				background-size: 12px;
-				width: 12px;
-				min-width: 12px;
-				margin-left: 4px;
-				filter: invert(1);
-			}
-		}
+	.appointment-viewer {
+		background-color: #eee;
+		border-radius: 8px;
+		padding: 8px;
+		margin-bottom: 8px;
 	}
 }
 
 .appointments-main-toolbar {
 	.right-actions {
 		float: right;
+	}
+}
+
+.appointment-entry-popup-button {
+	&.dark-text {
+		.appointment-entry-start-time,
+		.appointment-entry-title {
+			color: #000;
+		}
+
+		.oo-ui-iconElement {
+			filter: invert( 0 );
+		}
+	}
+
+	.appointment-entry-start-time {
+		color: #fff;
+		margin-right: 4px;
+		font-weight: normal;
+		font-size: 0.8em;
+		vertical-align: top;
+		line-height: 1 !important;
+
+		.appointment-entry-recurring-icon {
+			background-size: 12px;
+			width: 12px;
+			min-width: 12px;
+			margin-left: 4px;
+			filter: invert( 1 );
+			vertical-align: top;
+			margin-top: -3px;
+		}
+	}
+
+	.appointment-entry-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: #fff;
+		vertical-align: top;
+		display: inline-block;
+		line-height: 1 !important;
+		white-space: nowrap;
+	}
+
+	> a {
+		display: flex !important;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		padding: 0 6px;
+		margin: 0;
+		border-radius: 4px;
+		text-decoration: none;
+		line-height: 1;
+		min-height: inherit !important;
+
+		&:focus {
+			box-shadow: none !important;
+			border: transparent !important;
+		}
+
+		> .oo-ui-iconElement-icon {
+			background-size: 16px;
+			margin-right: 4px;
+			filter: invert( 1 );
+		}
 	}
 }

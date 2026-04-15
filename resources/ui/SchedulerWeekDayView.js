@@ -3,6 +3,7 @@ const ExtensionConfig = require( './../config.json' );
 const PeriodDefinition = require( './../object/PeriodDefinition.js' );
 const Appointment = require( './../object/Appointment.js' );
 const AppointmentEntry = require( './AppointmentEntry.js' );
+const AppointmentViewer = require("./AppointmentViewer.js");
 
 const SchedulerWeekDay = function ( config ) {
 	this.view = config.view;
@@ -35,8 +36,7 @@ SchedulerWeekDay.prototype.render = function () {
 		overlap: true,
 		onbeforecreate: this.onBeforeCreateAppointment.bind( this ),
 		onchangeevent: this.handleEventChange.bind( this ),
-		ondelete: this.onEventDelete.bind( this ),
-		ondblclick: this.onEventOpen.bind( this )
+		ondelete: this.onEventDelete.bind( this )
 	} );
 
 	this.last = this.getVisibleRange();
@@ -44,20 +44,30 @@ SchedulerWeekDay.prototype.render = function () {
 	const originalNext = this.scheduler.next.bind( this.scheduler );
 	const originalPrev = this.scheduler.prev.bind( this.scheduler );
 	const originalToday = this.scheduler.today.bind( this.scheduler );
+	this.scheduler.el.addEventListener( 'click', this.handleEventClick.bind( this ) );
 
 
 	const originalUpdateEvent = this.scheduler.updateEvent.bind( this.scheduler );
 	this.scheduler.next = ( ...args ) => {
+		if ( this.popup ) {
+			this.popup.toggle( false );
+		}
 		const result = originalNext( ...args );
 		this.emitRangeChangeIfChanged();
 		return result;
 	};
 	this.scheduler.prev = ( ...args ) => {
+		if ( this.popup ) {
+			this.popup.toggle( false );
+		}
 		const result = originalPrev( ...args );
 		this.emitRangeChangeIfChanged();
 		return result;
 	};
 	this.scheduler.today = ( ...args ) => {
+		if ( this.popup ) {
+			this.popup.toggle( false );
+		}
 		const result = originalToday( ...args );
 		this.emitRangeChangeIfChanged();
 		return result;
@@ -213,7 +223,10 @@ SchedulerWeekDay.prototype.onBeforeCreateAppointment = function ( calendarSchedu
 		ext.appointments.util.openAppointmentEditorDialog( appointment, {} )
 			.then( ( res ) => {
 				if ( res && res.entity ) {
-					this.controller.onDatasetChange( res.entity.calendar.guid );
+					if ( res.res.guid ) {
+						res.entity.guid = res.res.guid;
+						this.controller.dataProvider.onAppointmentChange( res.entity );
+					}
 				} else {
 					if ( preview && calendarScheduler.el && calendarScheduler.el.contains( preview ) ) {
 						event.el = preview;
@@ -241,7 +254,7 @@ SchedulerWeekDay.prototype.onEventChange = function ( calendarScheduler, newValu
 	appointment.periodDefinition = newPeriod;
 	ext.appointments.api.saveAppointment( appointment ).then( ( res ) => {
 		if ( res ) {
-			this.controller.onDatasetChange( appointment.calendar.guid );
+			this.controller.dataProvider.onAppointmentChange( appointment );
 		}
 	} );
 };
@@ -250,23 +263,63 @@ SchedulerWeekDay.prototype.onEventDelete = function ( calendarScheduler, event )
 	const appointment = this.getAppointment( event.guid );
 	if ( appointment ) {
 		ext.appointments.api.deleteAppointment( appointment.guid ).then( ( res ) => {
-			if ( res ) {
-				this.controller.onDatasetChange( appointment.calendar.guid );
-			}
+			this.controller.dataProvider.onAppointmentDelete( appointment );
 		} );
 	}
 };
 
-SchedulerWeekDay.prototype.onEventOpen = function ( calendarScheduler, event ) {
-	const appointment = this.getAppointment( event.guid );
-	if ( appointment ) {
-		ext.appointments.util.openAppointmentEditorDialog( appointment, {} )
-			.then( ( res ) => {
-				if ( res && res.entity ) {
-					this.controller.onDatasetChange( res.entity.calendar.guid );
-				}
-			} );
+SchedulerWeekDay.prototype.handleEventClick = function ( browserEvent ) {
+	if ( this.popup ) {
+		this.popup.toggle( false );
 	}
+	if ( !browserEvent || !browserEvent.target || !this.scheduler || !this.scheduler.el ) {
+		return;
+	}
+
+	const eventEl = browserEvent.target.closest( '.lm-schedule-item' );
+	if ( !eventEl || !this.scheduler.el.contains( eventEl ) ) {
+		return;
+	}
+
+	const scheduleEvent = eventEl.event || this.scheduler.getData().find(
+		( event ) => event.guid === eventEl.id
+	);
+	if ( !scheduleEvent ) {
+		return;
+	}
+
+	const appointment = this.getAppointment( scheduleEvent.guid );
+	if ( !appointment ) {
+		return;
+	}
+
+	this.viewer = new AppointmentViewer( { appointment: appointment } );
+	this.viewer.connect( this, {
+		update: ( appointment ) => {
+			this.controller.dataProvider.onAppointmentChange( appointment );
+		},
+		delete: ( appointment ) => {
+			this.controller.dataProvider.onAppointmentDelete( appointment );
+		}
+	} );
+	this.popup = new OO.ui.PopupWidget( {
+		head: false,
+		position: 'after',
+		$content: this.viewer.$element,
+		width: 500,
+		$floatableContainer: $( eventEl )
+	} );
+	this.viewer.setPopup( this.popup );
+	$( 'body' ).append( this.popup.$element );
+	this.popup.connect( this, {
+		toogle: ( visible ) => {
+			if ( !visibile ) {
+				this.popup.$element.remove();
+				this.viewer = null;
+			}
+		}
+	} );
+	this.popup.toggle( true );
 };
 
 SchedulerWeekDay.prototype.handleEventChange = function ( calendarScheduler, newValue, oldValue ) {

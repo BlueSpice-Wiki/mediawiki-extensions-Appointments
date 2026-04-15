@@ -235,21 +235,21 @@ SchedulerMonth.prototype.applyOverflowHandling = function ( grid ) {
 			return;
 		}
 
-		const overflowButton = new AppointmentPopupList( hiddenDaySpans.length );
-		overflowButton.connect( this, {
-			click: () => {
-				const appointments = daySpans.reduce( ( items, span ) => {
-					if (
-						span._appointment &&
-						!items.some( ( item ) => item.guid === span._appointment.guid )
-					) {
-						items.push( span._appointment );
-					}
-					return items;
-				}, [] );
-				overflowButton.setAppointments( appointments, cell );
-			}
+		const overflowButton = new AppointmentPopupList({
+			hiddenCount: hiddenDaySpans.length,
+			controller: this.controller,
+			$cell: $( cell )
 		} );
+		const appointments = daySpans.reduce( ( items, span ) => {
+			if (
+				span._appointment &&
+				!items.some( ( item ) => item.guid === span._appointment.guid )
+			) {
+				items.push( span._appointment );
+			}
+			return items;
+		}, [] );
+		overflowButton.setAppointments( appointments );
 
 		cell.appendChild( overflowButton.$element[0] );
 	} );

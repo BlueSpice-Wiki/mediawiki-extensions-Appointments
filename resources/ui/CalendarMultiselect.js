@@ -58,6 +58,8 @@ calendarMultiselect.prototype.reload = function ( value ) {
 				value[item.getData()] = item.getValue();
 				if ( !selected ) {
 					item.unselectEventTypes();
+				} else {
+					item.selectAllEventTypes();
 				}
 				this.emit( 'select', value, selected );
 			}

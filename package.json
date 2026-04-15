@@ -2,7 +2,7 @@
 	"name": "Appointments",
 	"private": true,
 	"scripts": {
-		"test": "grunt test"
+		"test": "grunt test --force --fix"
 	},
 	"devDependencies": {
 		"eslint-config-wikimedia": "0.28.2",
@@ -13,6 +13,7 @@
 		"stylelint-config-wikimedia": "0.17.2"
 	},
 	"eslintIgnore": [
-		"vendor/**"
+		"vendor/**",
+		"resources/lib/**"
 	]
 }

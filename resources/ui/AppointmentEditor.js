@@ -140,7 +140,7 @@ appointmentEditor.prototype.isDirty = function () {
 };
 
 appointmentEditor.prototype.save = async function ( entity ) {
-	await ext.appointments.api.saveAppointment( entity );
+	return await ext.appointments.api.saveAppointment( entity );
 };
 
 appointmentEditor.prototype.getUpdatedEntity = function () {

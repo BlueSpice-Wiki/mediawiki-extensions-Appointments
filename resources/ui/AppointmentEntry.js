@@ -12,7 +12,7 @@ const appointmentEntry = function (appointment, cell) {
 		$overlay: true,
 		popup: {
 			head: false,
-			//position: 'after',
+			position: 'after',
 			$content: this.viewer.$element,
 			width: 500
 		},

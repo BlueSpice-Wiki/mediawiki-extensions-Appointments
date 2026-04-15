@@ -45,7 +45,10 @@ const scheduler = function ( config ) {
 			ext.appointments.util.openAppointmentEditorDialog( null, { defaultDate: defaultDate } )
 				.then( ( res ) => {
 					if ( res && res.entity ) {
-						this.dataProvider.onAppointmentChange( res.entity );
+						if ( res.res.guid ) {
+							res.entity.guid = res.res.guid;
+							this.dataProvider.onAppointmentChange( res.entity );
+						}
 					}
 				} );
 		},
