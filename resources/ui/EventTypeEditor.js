@@ -1,5 +1,6 @@
 const EventType = require( '../object/EventType.js' );
 const EntityColor = require( './util/EntityColor.js' );
+const EventTypeIcon = require( './util/EventTypeIcon.js' );
 
 const eventTypeEditor = function ( config ) {
 	eventTypeEditor.parent.call( this, $.extend( {
@@ -51,6 +52,12 @@ eventTypeEditor.prototype.init = function () {
 	} );
 	this.color.connect( this, { change: 'onInputChange' } );
 
+	this.icon = new EventTypeIcon( {
+		value: this.eventType ? this.eventType.getIcon() : null,
+		$overlay: this.dialog ? this.dialog.$overlay : true,
+	} );
+	this.icon.connect( this, { change: 'onInputChange' } );
+
 	this.$element.append(
 		new OO.ui.FieldLayout( this.name, {
 			label: mw.message( 'appointments-ui-field-entity-type-name' ).text(),
@@ -61,6 +68,9 @@ eventTypeEditor.prototype.init = function () {
 		new OO.ui.FieldLayout( this.color, {
 			label: mw.message( 'appointments-ui-field-entity-type-color' ).text(),
 		} ).$element,
+		new OO.ui.FieldLayout( this.icon, {
+			label: mw.message( 'appointments-ui-field-entity-type-icon' ).text(),
+		} ).$element
 	);
 };
 
@@ -84,6 +94,7 @@ eventTypeEditor.prototype.getUpdatedEntity = function () {
 	this.eventType.name = this.name.getValue();
 	this.eventType.description = this.description.getValue();
 	this.eventType.setColor( this.color.getValue() );
+	this.eventType.setIcon( this.icon.getValue() );
 
 	return this.eventType;
 };

@@ -55,13 +55,14 @@ calendarMultiselect.prototype.reload = function ( value ) {
 		this.selector.connect( this, {
 			select: ( item, selected ) => {
 				const value = {};
-				value[item.getData()] = item.getValue();
 				if ( !selected ) {
 					item.unselectEventTypes();
 				} else {
 					item.selectAllEventTypes();
 				}
+				value[item.getData()] = item.getValue();
 				this.emit( 'select', value, selected );
+
 			}
 		} );
 		if ( !preValue ) {

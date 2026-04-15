@@ -194,5 +194,14 @@ window.ext.appointments = {
 
 		// Teals
 		'#5FA7A3': true
-	}
+	},
+	EVENT_TYPE_ICONS: [
+		'calendar',
+		'layout',
+		'signature',
+		'puzzle',
+		'paste',
+		'translation',
+		'labFlask'
+	]
 };

@@ -6,7 +6,7 @@ class CalendarDataProvider {
 
 	#loadedCalendars = [];
 	#calendarSet = {};
-	#appointments = {};
+	#appointments = [];
 	#currentRange = null;
 
 	async initialize( calendarSet, range ) {
@@ -57,9 +57,10 @@ class CalendarDataProvider {
 		}
 		for ( const guid of removed ) {
 			delete this.#calendarSet[guid];
-			for ( const appointmentGuid in this.#appointments ) {
-				if ( this.#appointments[appointmentGuid].calendar.guid === guid ) {
-					delete this.#appointments[appointmentGuid];
+			for ( const appIndex in this.#appointments ) {
+				const appointment = this.#appointments[appIndex];
+				if ( this.#appointments.calendar.guid === guid ) {
+					delete this.#appointments[appIndex];
 				}
 			}
 		}
@@ -84,21 +85,25 @@ class CalendarDataProvider {
 		if ( !appointment.guid ) {
 			return;
 		}
-		this.#appointments[appointment.guid] = await ext.appointments.api.getAppointment( appointment.guid );
+		await this.loadCalendar( appointment.calendar.guid, this.#currentRange );
 		this.scheduler.setData( this.getForCalendarSet() );
 	}
 
 	async onAppointmentDelete( appointment ) {
-		if ( appointment.guid in this.#appointments ) {
-			delete this.#appointments[appointment.guid];
+		for ( const appIndex in this.#appointments ) {
+			const app = this.#appointments[appIndex];
+			if ( app.guid === appointment.guid ) {
+				delete this.#appointments[appIndex];
+			}
 			this.scheduler.setData( this.getForCalendarSet() );
+			return;
 		}
 	}
 
 	getForCalendarSet() {
 		const fittingAppointments = [];
-		for ( const guid in this.#appointments ) {
-			const appointment = this.#appointments[guid];
+		for ( const appIndex in this.#appointments ) {
+			const appointment = this.#appointments[appIndex];
 			for ( const calendarGuid in this.#calendarSet ) {
 				const eventTypes = this.#calendarSet[calendarGuid] || [];
 				if ( appointment.calendar.guid === calendarGuid && eventTypes.includes( appointment.eventType.guid ) ) {
@@ -112,7 +117,7 @@ class CalendarDataProvider {
 	async loadRange( range ) {
 		const rangeComparison = this.compareRange( range );
 		if ( rangeComparison.result === 'fresh' ) {
-			this.#appointments = {};
+			this.#appointments = [];
 			this.#currentRange = range;
 			await this.doLoad( range );
 		} else if ( rangeComparison.result === 'adjacent' ) {
@@ -138,10 +143,23 @@ class CalendarDataProvider {
 		const appointments = await ext.appointments.api.getAppointments(
 			calendarGuid, null, this.onlyPersonal, range.start, range.end
 		);
-		for ( const appointment of appointments ) {
-			this.#appointments[appointment.guid] = appointment;
+		for ( const newAppIndex in appointments ) {
+			const newAppointment = appointments[newAppIndex];
+			for ( const appIndex in this.#appointments ) {
+				const existingAppointment = this.#appointments[appIndex];
+				if ( this.areDuplicates( existingAppointment, newAppointment ) ) {
+					delete this.#appointments[appIndex];
+				}
+			}
 		}
+		this.#appointments.push( ...appointments );
 		this.#loadedCalendars.push( calendarGuid );
+	}
+
+	areDuplicates( a, b ) {
+		return a.guid === b.guid &&
+			a.periodDefinition.getStartDate() === b.periodDefinition.getStartDate() &&
+			a.periodDefinition.getEndDate() === b.periodDefinition.getEndDate();
 	}
 
 	compareRange( range ) {

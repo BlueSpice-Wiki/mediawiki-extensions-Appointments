@@ -18,6 +18,8 @@ const eventTypeMultiselect = function ( eventTypes ) {
 		items: options
 	} );
 	this.$element.addClass( 'event-type-multiselect' );
+
+	this.supress = false;
 };
 
 OO.inheritClass( eventTypeMultiselect, OO.ui.CheckboxMultiselectWidget );
@@ -90,6 +92,9 @@ calendarCheckboxMenuOption.prototype.renderEventTypes = function () {
 		this.typeSelector = new eventTypeMultiselect( this.calendar.eventTypes );
 		this.typeSelector.connect( this, {
 			select: () =>  {
+				if ( this.suppress ) {
+					return;
+				}
 				this.emit( 'select', this, this.isSelected() );
 			},
 			edit: () => {
@@ -118,13 +123,17 @@ calendarCheckboxMenuOption.prototype.setValue = function ( value ) {
 
 calendarCheckboxMenuOption.prototype.selectAllEventTypes = function () {
 	if ( this.typeSelector ) {
+		this.suppress = true;
 		this.typeSelector.selectItemsByData( this.calendar.eventTypes.map( eventType => eventType.guid ) );
+		this.suppress = false;
 	}
 };
 
 calendarCheckboxMenuOption.prototype.unselectEventTypes = function () {
 	if ( this.typeSelector ) {
+		this.suppress = true;
 		this.typeSelector.selectItemsByData( [] );
+		this.suppress = false;
 	}
 }
 

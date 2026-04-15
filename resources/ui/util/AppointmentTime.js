@@ -24,8 +24,6 @@ const appointmentTime = function ( period, cfg ) {
 	this.allDayCheck = new OO.ui.CheckboxInputWidget();
 	this.allDayCheck.connect( this, { change: 'onAllDayChange' } );
 
-
-
 	this.render();
 	this.setValue( period );
 
@@ -162,7 +160,8 @@ appointmentTime.prototype.setValue = function ( value ) {
 	if ( !value ) {
 		return;
 	}
-	this.allDayCheck.setValue( value.isAllDay() );
+	this.allDayCheck.setSelected( value.isAllDay() );
+	this.onAllDayChange( value.isAllDay() );
 	if ( value.isAllDay() ) {
 		this.dateStart.setValue( value.getStartDate() );
 		this.dateEnd.setValue( value.getEndDate() );
