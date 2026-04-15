@@ -1,9 +1,12 @@
 const { EventTypeCheckboxMenuOption } = require( './EventTypeMenuOptions.js' );
 
-const eventTypeMultiselect = function ( eventTypes ) {
+const eventTypeMultiselect = function ( calendar ) {
 	const options = [];
+	const eventTypes = calendar.eventTypes || [];
 	for ( const eventType of eventTypes ) {
-		const option = new EventTypeCheckboxMenuOption( eventType );
+		const option = new EventTypeCheckboxMenuOption(
+			eventType, calendar.canEdit(), calendar.canDelete()
+		);
 		option.connect( this, {
 			edit: () => {
 				this.emit( 'edit', arguments );
@@ -33,6 +36,24 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 		label: calendar.name
 	} );
 
+	const actions = [];
+	if ( calendar.canEdit() ) {
+		actions.push( new OO.ui.MenuOptionWidget( {
+			data: 'edit',
+			label: mw.msg( 'appointments-ui-edit-calendar' ),
+			icon: 'edit'
+		} ) );
+	}
+	if ( calendar.canDelete() ) {
+		actions.push( new OO.ui.MenuOptionWidget( {
+			data: 'delete',
+			label: mw.msg( 'appointments-ui-delete-calendar' ),
+			icon: 'trash',
+			flags: [ 'destructive' ]
+		} ) );
+
+	}
+
 	this.options = new OO.ui.ButtonMenuSelectWidget( {
 		icon: 'verticalEllipsis',
 		$overlay: true,
@@ -40,19 +61,7 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 		framed: false,
 		invisibleLabel: true,
 		menu: {
-			items: [
-				new OO.ui.MenuOptionWidget( {
-					data: 'edit',
-					label: mw.msg( 'appointments-ui-edit-calendar' ),
-					icon: 'edit'
-				} ),
-				new OO.ui.MenuOptionWidget( {
-					data: 'delete',
-					label: mw.msg( 'appointments-ui-delete-calendar' ),
-					icon: 'trash',
-					flags: [ 'destructive' ]
-				} )
-			]
+			items: actions
 		}
 	} );
 
@@ -81,7 +90,10 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 		}
 	} );
 
-	this.$element.append( this.options.$element );
+	if ( actions.length ) {
+		this.$element.append( this.options.$element );
+	}
+
 	this.renderEventTypes();
 };
 
@@ -89,7 +101,7 @@ OO.inheritClass( calendarCheckboxMenuOption, OO.ui.CheckboxMultioptionWidget );
 
 calendarCheckboxMenuOption.prototype.renderEventTypes = function () {
 	if ( this.calendar.eventTypes.length > 0 ) {
-		this.typeSelector = new eventTypeMultiselect( this.calendar.eventTypes );
+		this.typeSelector = new eventTypeMultiselect( this.calendar );
 		this.typeSelector.connect( this, {
 			select: () =>  {
 				if ( this.suppress ) {

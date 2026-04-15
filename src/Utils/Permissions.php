@@ -21,7 +21,7 @@ readonly class Permissions {
 		return true;
 	}
 
-	public function canCreateAppointment( Authority $actor, Calendar $calendar ): bool {
+	public function canCreateAppointment( Authority $actor, ?Calendar $calendar ): bool {
 		return true;
 	}
 

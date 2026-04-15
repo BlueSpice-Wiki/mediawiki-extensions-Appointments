@@ -1,10 +1,26 @@
-const eventTypeCheckboxMenuOption = function ( eventType ) {
+const eventTypeCheckboxMenuOption = function ( eventType, canEdit, canDelete ) {
 	eventTypeCheckboxMenuOption.parent.call( this, {
 		data: eventType.guid,
 		label: eventType.name
 	} );
 
 	if ( !eventType.isSystemType() ) {
+		const actions = [];
+		if ( canEdit ) {
+			actions.push( new OO.ui.MenuOptionWidget( {
+				data: 'edit',
+				label: mw.msg( 'appointments-ui-edit-event-type' ),
+				icon: 'edit'
+			} ) );
+		}
+		if ( canDelete ) {
+			actions.push( new OO.ui.MenuOptionWidget( {
+				data: 'delete',
+				label: mw.msg( 'appointments-ui-delete-event-type' ),
+				icon: 'trash',
+				flags: [ 'destructive' ]
+			} ) );
+		}
 		this.options = new OO.ui.ButtonMenuSelectWidget( {
 			icon: 'verticalEllipsis',
 			$overlay: true,
@@ -12,19 +28,7 @@ const eventTypeCheckboxMenuOption = function ( eventType ) {
 			framed: false,
 			invisibleLabel: true,
 			menu: {
-				items: [
-					new OO.ui.MenuOptionWidget( {
-						data: 'edit',
-						label: mw.msg( 'appointments-ui-edit-event-type' ),
-						icon: 'edit'
-					} ),
-					new OO.ui.MenuOptionWidget( {
-						data: 'delete',
-						label: mw.msg( 'appointments-ui-delete-event-type' ),
-						icon: 'trash',
-						flags: [ 'destructive' ]
-					} )
-				]
+				items: actions
 			}
 		} );
 
@@ -53,7 +57,9 @@ const eventTypeCheckboxMenuOption = function ( eventType ) {
 			}
 		} );
 
-		this.$element.append( this.options.$element );
+		if ( actions.length ) {
+			this.$element.append( this.options.$element );
+		}
 	}
 	const icon = eventType.getIcon();
 	if ( icon ) {

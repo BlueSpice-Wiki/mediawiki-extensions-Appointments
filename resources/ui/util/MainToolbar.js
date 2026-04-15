@@ -4,10 +4,13 @@ makeToolbar = function ( view ) {
 	const toolbar = new OO.ui.Toolbar( toolFactory, toolGroupFactory );
 	toolbar.$element.addClass( 'appointments-main-toolbar' );
 
+	const createPermissions = mw.config.get( 'wgAppointmentsPermissions');
+
 	view = view || 'month';
 
 	function NewAppointmentTool() {
 		NewAppointmentTool.super.apply( this, arguments );
+		this.setDisabled( !createPermissions['create-appointment'] );
 	}
 	OO.inheritClass( NewAppointmentTool, OO.ui.Tool );
 

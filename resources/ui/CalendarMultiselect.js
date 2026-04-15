@@ -6,6 +6,7 @@ const calendarMultiselect = function ( config ) {
 	this.$options = $( '<div>' ).addClass( 'ext-appointments-calendar-multiselect-options' );
 	this.$options.html( new OO.ui.ProgressBarWidget( { progress: false } ).$element );
 	this.$element.append( this.$options );
+	this.createPermissions = mw.config.get( 'wgAppointmentsPermissions');
 
 	this.addCalendarButton = new OO.ui.ButtonWidget( {
 		label: mw.message( 'appointments-ui-create-calendar' ).text(),
@@ -22,7 +23,9 @@ const calendarMultiselect = function ( config ) {
 			} );
 		}
 	} );
-	this.$element.append( this.addCalendarButton.$element );
+	if ( this.createPermissions['create-calendar'] ) {
+		this.$element.append( this.addCalendarButton.$element );
+	}
 
 	this.isInitialized = false;
 	this.reload( config.value || null );

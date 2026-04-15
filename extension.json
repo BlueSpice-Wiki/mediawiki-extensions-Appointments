@@ -189,11 +189,16 @@
 		"remoteExtPath": "Appointments/resources"
 	},
 	"Hooks": {
-		"LoadExtensionSchemaUpdates": "runDatabaseUpdates"
+		"LoadExtensionSchemaUpdates": "runDatabaseUpdates",
+		"BeforePageDisplay": "addJSVariables"
 	},
 	"HookHandlers": {
 		"runDatabaseUpdates": {
 			"class": "MediaWiki\\Extension\\Appointments\\Hook\\RunDatabaseUpdates"
+		},
+		"addJSVariables": {
+			"class": "MediaWiki\\Extension\\Appointments\\Hook\\AddJSVariables",
+			"services": [ "Appointments._Permissions" ]
 		}
 	},
 	"ServiceWiringFiles": [
