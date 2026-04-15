@@ -49,30 +49,30 @@ appointmentEditor.prototype.init = function () {
 	} );
 	this.name.connect( this, { change: 'onInputChange' } );
 
+	this.eventType = new EventTypePicker();
+
 	this.calendar = new CalendarPicker( {
 		$overlay: this.dialog ? this.dialog.$overlay : true,
 		value: this.appointment && this.appointment.calendar ? this.appointment.calendar.guid : null,
 	} );
 	this.calendar.connect( this, {
 		select: () => {
-			this.eventType.load( this.calendar.getSelectedCalendar() );
+			this.eventType.load(
+				this.calendar.getSelectedCalendar(),
+				this.appointment && this.appointment.eventType ? this.appointment.eventType.guid : null
+			);
 			this.onInputChange();
 		}
 	} );
+	this.calendar.load();
 
-	this.eventType = new EventTypePicker(
-		this.appointment && this.appointment.eventType ? this.appointment.eventType.guid : null,
-		appointmentData
-	);
 	this.eventType.connect( this, {
-		select: 'onInputChange',
 		selectEventType: ( eventType ) => {
+			this.onInputChange();
 			this.setupCustomPanel( eventType );
 		},
 		typeCustomPanelChange: 'onInputChange'
 	} );
-
-	this.calendar.load();
 
 	this.participants = new OOJSPlus.ui.widget.UserGroupMultiselectWidget( {
 		$overlay: this.dialog ? this.dialog.$overlay : true,

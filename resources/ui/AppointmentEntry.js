@@ -3,8 +3,8 @@ const AppointmentViewer = require( './AppointmentViewer.js' );
 const appointmentEntry = function (appointment, cell) {
 	this.viewer = new AppointmentViewer( { appointment: appointment } );
 	this.viewer.connect( this, {
-		update: ( appointment ) => { this.emit( 'change', appointment.calendar ) },
-		delete: ( appointment ) => { this.emit( 'change', appointment.calendar ) }
+		update: ( appointment ) => { this.emit( 'update', appointment ) },
+		delete: ( appointment ) => { this.emit( 'delete', appointment ) }
 	} );
 	appointmentEntry.parent.call( this, {
 		framed: false,

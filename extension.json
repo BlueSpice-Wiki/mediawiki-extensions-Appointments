@@ -8,7 +8,10 @@
 	"url": "https://www.mediawiki.org/wiki/Extension:Appointments",
 	"descriptionmsg": "appointments-desc",
 	"requires": {
-		"MediaWiki": ">= 1.43.0"
+		"MediaWiki": ">= 1.43.0",
+		"extensions": {
+			"OOJSPlus": "*"
+		}
 	},
 	"attributes": {
 		"Appointments": {
@@ -74,6 +77,7 @@
 				"object/Appointment.js",
 				"object/EventType.js",
 				"object/eventType/Meeting.js",
+				"CalendarDataProvider.js",
 				{
 					"name": "config.json",
 					"callback": "MediaWiki\\Extension\\Appointments\\ResourceLoader\\ConfigCallback::handleConfigRequest"
@@ -183,10 +187,18 @@
 		{
 			"method": "GET",
 			"path": "/appointments/v0/appointments",
-			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentGetHandler",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentsGetHandler",
 			"services": [
 				"Appointments.CalendarStore", "Appointments.AppointmentStore", "Appointments.EventTypeStore",
 				"Appointments._UserInterface", "Appointments._Permissions"
+			]
+		},
+		{
+			"method": "GET",
+			"path": "/appointments/v0/appointment/{guid}",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentGetHandler",
+			"services": [
+				"Appointments.AppointmentStore", "Appointments._UserInterface", "Appointments._Permissions"
 			]
 		},
 		{

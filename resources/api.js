@@ -35,6 +35,21 @@ const api = {
 			calendarData.permissions || {}
 		);
 	},
+	toAppointment: function( appointmentData ) {
+		return new ext.appointments.objects.Appointment(
+			appointmentData.guid,
+			appointmentData.title,
+			appointmentData.participants.map( p => new ext.appointments.objects.Participant( p.key, p.value ) ),
+			api.toCalendar( appointmentData.calendar ),
+			api.toEventType( appointmentData.eventType ),
+			new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodDefinition ) ),
+			new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodUTC ) ),
+			new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.userPeriod ) ),
+			appointmentData.creator,
+			appointmentData.data,
+			appointmentData.permissions
+		);
+	},
 	getCalendars: async function () {
 		const res = await ext.appointments.api._get( 'calendars' );
 
@@ -89,28 +104,22 @@ const api = {
 		if ( endDate !== undefined ) {
 			params.append( 'endDate', endDate );
 		}
-		params.append( 'eventTypes', eventTypes ? eventTypes.join( '|' ) : '' );
+		if ( eventTypes ) {
+			params.append( 'eventTypes', eventTypes.join( '|' ) );
+		}
+
 		const res = await ext.appointments.api._get( `appointments?${ params.toString() }` );
 		const appointments = [];
 		for ( let i = 0; i < res.length; i++ ) {
 			const appointmentData = res[ i ];
-
-			const appointment = new ext.appointments.objects.Appointment(
-				appointmentData.guid,
-				appointmentData.title,
-				appointmentData.participants.map( p => new ext.appointments.objects.Participant( p.key, p.value ) ),
-				api.toCalendar( appointmentData.calendar ),
-				api.toEventType( appointmentData.eventType ),
-				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodDefinition ) ),
-				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodUTC ) ),
-				new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.userPeriod ) ),
-				appointmentData.creator,
-				appointmentData.data,
-				appointmentData.permissions
-			);
-			appointments.push( appointment );
+			appointments.push( api.toAppointment( appointmentData ) );
 		}
 		return appointments;
+	},
+
+	getAppointment: async function ( guid ) {
+		const res = await ext.appointments.api._get( `appointment/${guid}` );
+		return api.toAppointment( res );
 	},
 	saveAppointment: function ( appointment ) {
 		return ext.appointments.api._post( 'appointment', {

@@ -77,8 +77,12 @@ SchedulerMonth.prototype.renderNavigation = function () {
 		title: mw.msg( 'appointments-previous-month' ),
 		flags: [ 'progressive' ]
 	} );
-	this.nextButton.on( 'click', () => this.calendar.next() );
-	this.prevButton.on( 'click', () => this.calendar.prev() );
+	this.nextButton.connect( this, {
+		click: () => this.calendar.next()
+	} );
+	this.prevButton.connect( this, {
+		click: () => this.calendar.prev()
+	} );
 
 	const header = this.$element[ 0 ].querySelector( '.lm-calendar-header > div:first-child' );
 	const labels = header ? header.querySelector( '.lm-calendar-labels' ) : null;
@@ -317,8 +321,11 @@ SchedulerMonth.prototype.addMultiDayAppointment = function ( appointment, start,
 
 		const entry = new AppointmentEntry( appointment, cell );
 		entry.connect( this, {
-			change: ( calendar ) => {
-				this.controller.onDatasetChange( calendar );
+			update: ( calendar ) => {
+				this.controller.onAppointmentUpdate( appointment );
+			},
+			delete: ( appointment ) => {
+				this.controller.onAppointmentDelete( appointment );
 			}
 		} );
 
@@ -428,6 +435,50 @@ SchedulerMonth.prototype.stampCells = function () {
 		const date = new Date( Date.UTC( year, month, dayOffset ) );
 		cell.setAttribute( 'data-date', date.toISOString().substring( 0, 10 ) );
 	} );
+};
+
+SchedulerMonth.prototype.setData = function( data ) {
+	const range = this.last;
+	// Sort all-day appointments first, then longest visible spans first
+	data.sort( ( a, b ) => {
+		const aAllDay = a.periodDefinition.isAllDay();
+		const bAllDay = b.periodDefinition.isAllDay();
+		if ( aAllDay !== bAllDay ) {
+			return aAllDay ? -1 : 1;
+		}
+
+		const aStart = a.periodDefinition.getStartDate() < range.start ?
+			range.start :
+			a.periodDefinition.getStartDate();
+		const aEnd = a.periodDefinition.getEndDate() > range.end ?
+			range.end :
+			a.periodDefinition.getEndDate();
+		const bStart = b.periodDefinition.getStartDate() < range.start ?
+			range.start :
+			b.periodDefinition.getStartDate();
+		const bEnd = b.periodDefinition.getEndDate() > range.end ?
+			range.end :
+			b.periodDefinition.getEndDate();
+		const aSpan = new Date( aEnd ) - new Date( aStart );
+		const bSpan = new Date( bEnd ) - new Date( bStart );
+		if ( bSpan !== aSpan ) {
+			return bSpan - aSpan;
+		}
+
+		const aTime = aAllDay ? '00:00' : a.periodDefinition.getStartTime();
+		const bTime = bAllDay ? '00:00' : b.periodDefinition.getStartTime();
+		if ( aStart !== bStart ) {
+			return aStart.localeCompare( bStart );
+		}
+		return aTime.localeCompare( bTime );
+	} );
+
+	// Clear all and render in one pass
+	this.removeAllAppointments();
+	data.forEach( ( app ) => {
+		this.addAppointment( app );
+	} );
+	this.layoutSpanningEntries();
 };
 
 module.exports = SchedulerMonth;

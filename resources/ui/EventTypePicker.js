@@ -1,10 +1,7 @@
 const { EventTypeMenuOption } = require( './util/EventTypeMenuOptions.js' );
 
-const eventTypePicker = function ( value, appointmentData ) {
+const eventTypePicker = function () {
 	eventTypePicker.parent.call( this );
-
-	this.value = value || null;
-	this.appointmentData = appointmentData || null;
 	this.eventTypes = {};
 
 	this.menu.connect( this, {
@@ -20,11 +17,11 @@ const eventTypePicker = function ( value, appointmentData ) {
 
 OO.inheritClass( eventTypePicker, OO.ui.DropdownWidget );
 
-eventTypePicker.prototype.load = async function ( calendar ) {
+eventTypePicker.prototype.load = async function ( calendar, value ) {
 	this.menu.clearItems();
 	this.setLabel( '' );
 	this.setIcon( '' );
-	this.value = '';
+	this.value = value;
 
 	this.eventTypes = {};
 	calendar.eventTypes.forEach( eventType => {

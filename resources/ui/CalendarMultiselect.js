@@ -24,8 +24,8 @@ const calendarMultiselect = function ( config ) {
 	} );
 	this.$element.append( this.addCalendarButton.$element );
 
+	this.isInitialized = false;
 	this.reload();
-
 };
 
 OO.inheritClass( calendarMultiselect, OO.ui.Widget );
@@ -42,11 +42,11 @@ calendarMultiselect.prototype.reload = function () {
 					value[item.getData()] = item.getValue();
 					this.emit( 'select', value, selected );
 				},
-				edit: ( updatedCalendar ) => {
-					this.emit( 'datasetUpdate', updatedCalendar );
+				edit: () => {
+					this.reload();
 				},
-				delete: ( deletedCalendarGuid ) => {
-					this.emit( 'datasetUpdate', deletedCalendarGuid );
+				delete: () => {
+					this.reload();
 				}
 			} );
 			items.push( option );
@@ -69,6 +69,12 @@ calendarMultiselect.prototype.reload = function () {
 			this.setValue( preValue );
 		}
 		this.$options.html( this.selector.$element );
+		if ( !this.isInitialized ) {
+			this.emit( 'initialize', this.getValue() );
+			this.isInitialized = true;
+		} else {
+			this.emit('reload', this.getValue());
+		}
 	} ).catch( ( e ) => {
 		console.error( e ); // eslint-disable-line no-console
 		this.$element.html( new OO.ui.MessageWidget( {

@@ -2,6 +2,7 @@ const CalendarJS = require( 'ext.appointments.lib.calendarjs' );
 const ExtensionConfig = require( './../config.json' );
 const PeriodDefinition = require( './../object/PeriodDefinition.js' );
 const Appointment = require( './../object/Appointment.js' );
+const AppointmentEntry = require( './AppointmentEntry.js' );
 
 const SchedulerWeekDay = function ( config ) {
 	this.view = config.view;
@@ -100,8 +101,12 @@ SchedulerWeekDay.prototype.renderNavigation = function () {
 		flags: [ 'progressive' ]
 	} );
 
-	this.prevButton.on( 'click', () => this.scheduler.prev() );
-	this.nextButton.on( 'click', () => this.scheduler.next() );
+	this.prevButton.connect( this, {
+		click: () => this.scheduler.prev()
+	} );
+	this.nextButton.connect( this, {
+		click: () => this.scheduler.next()
+	} );
 
 	this.$navigation.empty().append(
 		this.prevButton.$element,
@@ -382,21 +387,198 @@ SchedulerWeekDay.prototype.setData = function ( appointments ) {
 	if ( !this.scheduler ) {
 		return;
 	}
-	const data = [];
+	this.appointments = appointments;
+
+	const timedEvents = [];
+	const allDayEvents = [];
+
 	for ( let i = 0; i < appointments.length; i++ ) {
 		const app = appointments[ i ];
-		data.push( {
-			guid: app.guid,
-			title: app.title,
-			start: app.periodDefinition.getStartTime(),
-			end: app.periodDefinition.getEndTime(),
-			date: app.periodDefinition.getStartDate(),
-			color: app.eventType.getColor()
-		} );
+		if ( app.periodDefinition.isAllDay() || app.periodDefinition.isMultiDay() ) {
+			allDayEvents.push( app );
+		} else {
+			timedEvents.push( {
+				guid: app.guid,
+				title: app.title,
+				start: app.periodDefinition.getStartTime(),
+				end: app.periodDefinition.getEndTime(),
+				date: app.periodDefinition.getStartDate(),
+				color: app.eventType.getColor()
+			} );
+		}
 	}
-	this.appointments = appointments;
-	this.scheduler.setData( data );
+
+	this.scheduler.setData( timedEvents );
+	this.renderAllDaySection( allDayEvents );
 	setTimeout( () => this.decorateEventIcons(), 1 );
+};
+
+SchedulerWeekDay.prototype.getColumnDates = function () {
+	const range = this.getVisibleRange();
+	if ( !range ) {
+		return [];
+	}
+
+	const dates = [];
+	const current = new Date( range.start + 'T00:00:00Z' );
+	const end = new Date( range.end + 'T00:00:00Z' );
+
+	while ( current <= end ) {
+		dates.push( current.toISOString().slice( 0, 10 ) );
+		current.setUTCDate( current.getUTCDate() + 1 );
+	}
+
+	return dates;
+};
+
+SchedulerWeekDay.prototype.daySpan = function ( startDate, endDate ) {
+	const start = new Date( startDate + 'T00:00:00Z' );
+	const end = new Date( endDate + 'T00:00:00Z' );
+	return Math.round( ( end - start ) / 86400000 ) + 1;
+};
+
+SchedulerWeekDay.prototype.renderAllDaySection = function ( allDayAppointments ) {
+	const table = this.$schedule[ 0 ].querySelector( '.lm-schedule table' );
+	if ( !table ) {
+		return;
+	}
+
+	// Remove previously injected all-day tbody
+	const existing = table.querySelector( '.appointments-allday-tbody' );
+	if ( existing ) {
+		existing.remove();
+	}
+
+	if ( !allDayAppointments.length ) {
+		return;
+	}
+
+	const columnDates = this.getColumnDates();
+	const numDays = columnDates.length;
+	if ( !numDays ) {
+		return;
+	}
+
+	const sorted = allDayAppointments.slice().sort( ( a, b ) => {
+		const aDays = this.daySpan(
+			a.periodDefinition.getStartDate(), a.periodDefinition.getEndDate()
+		);
+		const bDays = this.daySpan(
+			b.periodDefinition.getStartDate(), b.periodDefinition.getEndDate()
+		);
+		if ( bDays !== aDays ) {
+			return bDays - aDays;
+		}
+		if ( a.periodDefinition.getStartDate() !== b.periodDefinition.getStartDate() ) {
+			return a.periodDefinition.getStartDate() < b.periodDefinition.getStartDate() ? -1 : 1;
+		}
+		return 0;
+	} );
+
+	// slots[row][col] = appointment reference or null
+	const slots = [];
+
+	for ( let i = 0; i < sorted.length; i++ ) {
+		const app = sorted[ i ];
+		const startDate = app.periodDefinition.getStartDate();
+		const endDate = app.periodDefinition.getEndDate();
+
+		let startCol = columnDates.indexOf( startDate );
+		let endCol = columnDates.indexOf( endDate );
+
+		if ( startCol === -1 ) {
+			startCol = startDate < columnDates[ 0 ] ? 0 : numDays - 1;
+		}
+		if ( endCol === -1 ) {
+			endCol = endDate > columnDates[ numDays - 1 ] ? numDays - 1 : 0;
+		}
+
+		if ( startCol > endCol ) {
+			continue;
+		}
+
+		// Find available row (collision detection)
+		let row = 0;
+		while ( true ) {
+			if ( !slots[ row ] ) {
+				slots[ row ] = new Array( numDays ).fill( null );
+			}
+			let fits = true;
+			for ( let c = startCol; c <= endCol; c++ ) {
+				if ( slots[ row ][ c ] ) {
+					fits = false;
+					break;
+				}
+			}
+			if ( fits ) {
+				break;
+			}
+			row++;
+		}
+
+		for ( let c = startCol; c <= endCol; c++ ) {
+			slots[ row ][ c ] = app;
+		}
+	}
+
+	const totalRows = slots.length;
+	const allDayTbody = document.createElement( 'tbody' );
+	allDayTbody.className = 'appointments-allday-tbody';
+	const mainTbody = table.querySelector( 'tbody' );
+
+	for ( let row = 0; row < totalRows; row++ ) {
+		const tr = document.createElement( 'tr' );
+		tr.className = 'appointments-allday-row';
+
+		// Label cell on first row, spanning all rows
+		if ( row === 0 ) {
+			const labelTd = document.createElement( 'td' );
+			labelTd.className = 'appointments-allday-label';
+			labelTd.rowSpan = totalRows;
+			labelTd.textContent = mw.msg( 'appointments-ui-all-day' );
+			tr.appendChild( labelTd );
+		}
+
+		let col = 0;
+		while ( col < numDays ) {
+			const app = slots[ row ][ col ];
+
+			if ( app ) {
+				let spanEnd = col;
+				while ( spanEnd + 1 < numDays && slots[ row ][ spanEnd + 1 ] === app ) {
+					spanEnd++;
+				}
+				const span = spanEnd - col + 1;
+
+				const td = document.createElement( 'td' );
+				td.colSpan = span;
+				td.className = 'appointments-allday-bar-cell';
+
+				const entry = new AppointmentEntry( app, td );
+				entry.connect( this, {
+					update: () => {
+						this.controller.onAppointmentUpdate( app );
+					},
+					delete: () => {
+						this.controller.onAppointmentDelete( app );
+					}
+				} );
+				entry.$element.addClass( 'appointments-allday-entry' );
+				td.appendChild( entry.$element[ 0 ] );
+				tr.appendChild( td );
+
+				col = spanEnd + 1;
+			} else {
+				const td = document.createElement( 'td' );
+				tr.appendChild( td );
+				col++;
+			}
+		}
+
+		allDayTbody.appendChild( tr );
+	}
+
+	table.insertBefore( allDayTbody, mainTbody );
 };
 
 module.exports = SchedulerWeekDay;

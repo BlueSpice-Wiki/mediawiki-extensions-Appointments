@@ -2,6 +2,7 @@ const CalendarMultiselect = require( './CalendarMultiselect.js' );
 const makeToolbar = require( './util/MainToolbar.js' );
 const MonthView = require( './SchedulerMonthView.js' );
 const WeekDayView = require( './SchedulerWeekDayView.js' );
+const CalendarDataProvider = require( './../CalendarDataProvider.js' );
 
 const scheduler = function ( config ) {
 	scheduler.parent.call( this, $.extend( {
@@ -10,16 +11,19 @@ const scheduler = function ( config ) {
 	}, config ) );
 
 	this.views = { month: null, week: null, day: null };
+	this.dataProvider = new CalendarDataProvider( this );
 
 	this.onlyPersonal = config.onlyPersonal;
 
 	this.$calendarPicker = $( '<div>' ).addClass( 'ext-appointments-scheduler-calendars' );
 	this.$header = $( '<div>' ).addClass( 'ext-appointments-scheduler-header' );
-	this.$calendarCnt = $( '<div>' )
-		.attr( 'id', 'appointments-calendar' )
-		.addClass( 'ext-appointments-scheduler-calendar-cnt' );
+	this.calendarBooklet = new OO.ui.BookletLayout( {
+		classes: [ 'ext-appointments-scheduler-calendar-cnt' ],
+		expanded: false,
+		outlined: false
+	} );
 
-	this.$element.append(  this.$header, this.$calendarPicker, this.$calendarCnt );
+	this.$element.append(  this.$header, this.$calendarPicker, this.calendarBooklet.$element );
 	this.$element.addClass( 'ext-appointments-scheduler' );
 
 	this.view = 'month';
@@ -39,177 +43,128 @@ const scheduler = function ( config ) {
 			ext.appointments.util.openAppointmentEditorDialog( null, { defaultDate: defaultDate } )
 				.then( ( res ) => {
 					if ( res && res.entity ) {
-						this.onDatasetChange( res.entity.calendar );
+						this.dataProvider.onAppointmentChange( res.entity );
 					}
 				} );
 		},
-		viewChange: ( view ) => {
+		viewChange: async ( view ) => {
 			this.view = view;
-			this.renderScheduler();
-			this.loadForVisibleCalendars();
+			await this.renderScheduler().then( ( range ) => {
+				this.dataProvider.onViewChange( range );
+			} );
+
 		}
 	} );
 	this.$header.append( this.toolbar.$element );
 
 	this.calendarPicker = new CalendarMultiselect( {} );
 	this.calendarPicker.connect( this, {
-		datasetUpdate: async () => {
-			await this.calendarPicker.reload();
-		},
-		select: async ( value, selected ) => {
-			this.onCalendarSetChange( value, selected );
+		reload: async ( value ) => {
+			this.dataProvider.onCalendarUpdate( value );
 		}
 	} );
+	const calendarInitializationPromise = new Promise( resolve => {
+		this.calendarPicker.connect( this, {
+			initialize: ( value ) => {
+				this.calendarPicker.connect( this, {
+					select: ( value, selected ) => {
+						this.dataProvider.onCalendarSetChange( value, selected );
+					}
+				} );
+				resolve( value );
+			}
+		} );
+	} );
+
 	this.$calendarPicker.append( this.calendarPicker.$element );
 	this.visibleCalendars = {};
-	this.appointmentCache = {};
 
-	this.renderScheduler();
+	const initialRenderPromise = this.renderScheduler();
+
+	// When both calendars and initial view are ready, load data for the view
+	Promise.all( [ calendarInitializationPromise, initialRenderPromise ] ).then( ( [ calendarSet, range ] ) => {
+		this.dataProvider.initialize( calendarSet, range );
+	} );
 };
 
 OO.inheritClass( scheduler, OO.ui.PanelLayout );
 
-scheduler.prototype.onCalendarSetChange = async function ( calendars, selected ) {
-	// When calendar selection changes, we need to load appointments for newly added calendars and remove appointments for removed calendars
-	if ( !this.views[this.view] ) {
-		return;
-	}
-	const view = this.views[this.view];
-	let needsReload = false;
-
-	for ( const guid in calendars ) {
-		const selectedTypes = calendars[ guid ];
-		if ( selectedTypes.length === 0 || !selected ) {
-			// Calendar was visible but now is not, remove it
-			if ( !this.visibleCalendars[ guid ] ) {
-				continue;
-			}
-			delete this.visibleCalendars[ guid ];
-			view.removeForCalendar( guid );
-		} else {
-			if ( this.visibleCalendars[ guid ] && this.visibleCalendars[ guid ].join() === selectedTypes.join() ) {
-				// Calendar is already visible with the same event types, no need to do anything
-				continue;
-			}
-			// Calendar is still visible, but event types selection changed
-			this.visibleCalendars[ guid ] = selectedTypes;
-			needsReload = true;
-		}
-	}
-	if ( needsReload ) {
-		this.loadForVisibleCalendars();
-	}
-};
-
-scheduler.prototype.loadForVisibleCalendars = async function ( range, onlyForCalendar ) {
-	if ( !this.visibleCalendars ) {
-		return;
-	}
+scheduler.prototype.setData = function ( data ) {
 	const view = this.views[ this.view ];
 	if ( !view ) {
 		return;
 	}
+	view.setData( data );
+};
 
-	if ( !range ) {
-		range = await new Promise( ( resolve ) => {
-			setTimeout( () => {
-				resolve( view.getVisibleRange() );
-			}, 100 );
-		} );
-	}
-	if ( !range ) {
-		return;
-	}
-
-	const allApps = [];
-	for ( const guid in this.visibleCalendars ) {
-		const apps = await ext.appointments.api.getAppointments(
-			guid, this.visibleCalendars[ guid ], this.onlyPersonal, range.start, range.end
-		);
-		allApps.push( ...apps );
-	}
-
-	if ( this.view === 'month' ) {
-		// Sort all-day appointments first, then longest visible spans first
-		allApps.sort( ( a, b ) => {
-			const aAllDay = a.periodDefinition.isAllDay();
-			const bAllDay = b.periodDefinition.isAllDay();
-			if ( aAllDay !== bAllDay ) {
-				return aAllDay ? -1 : 1;
-			}
-
-			const aStart = a.periodDefinition.getStartDate() < range.start ?
-				range.start :
-				a.periodDefinition.getStartDate();
-			const aEnd = a.periodDefinition.getEndDate() > range.end ?
-				range.end :
-				a.periodDefinition.getEndDate();
-			const bStart = b.periodDefinition.getStartDate() < range.start ?
-				range.start :
-				b.periodDefinition.getStartDate();
-			const bEnd = b.periodDefinition.getEndDate() > range.end ?
-				range.end :
-				b.periodDefinition.getEndDate();
-			const aSpan = new Date( aEnd ) - new Date( aStart );
-			const bSpan = new Date( bEnd ) - new Date( bStart );
-			if ( bSpan !== aSpan ) {
-				return bSpan - aSpan;
-			}
-
-			const aTime = aAllDay ? '00:00' : a.periodDefinition.getStartTime();
-			const bTime = bAllDay ? '00:00' : b.periodDefinition.getStartTime();
-			if ( aStart !== bStart ) {
-				return aStart.localeCompare( bStart );
-			}
-			return aTime.localeCompare( bTime );
-		} );
-
-		// Clear all and render in one pass
-		if ( typeof view.removeAllAppointments === 'function' ) {
-			view.removeAllAppointments();
-		}
-		allApps.forEach( ( app ) => {
-			view.addAppointment( app );
-		} );
-		if ( typeof view.layoutSpanningEntries === 'function' ) {
-			view.layoutSpanningEntries();
-		}
+scheduler.prototype.onDataError = function( error ) {
+	if ( this.errorMessage ) {
+		this.errorMessage.setLabel( error );
 	} else {
-		console.log( allApps );
-		view.setData( allApps );
+		this.errorMessage = new OO.ui.MessageWidget( {
+			type: 'error',
+			label: error
+		} );
 	}
 };
 
-scheduler.prototype.onDatasetChange = function ( calendar ) {
-	this.loadForVisibleCalendars( null, calendar );
+scheduler.prototype.getRange = function () {
+	const view = this.views[ this.view ];
+	if ( view && typeof view.getVisibleRange === 'function' ) {
+		return view.getVisibleRange();
+	}
+	return null;
+}
+
+scheduler.prototype.onAppointmentUpdate = function ( appointment ) {
+	this.dataProvider.onAppointmentChange( appointment );
+};
+
+scheduler.prototype.onAppointmentDelete = function ( appointment ) {
+	this.dataProvider.onAppointmentDelete( appointment );
 };
 
 scheduler.prototype.renderScheduler = function () {
-	let wasNew = false;
-	if ( this.view === 'month' ) {
-		if ( !this.views['month'] ) {
-			this.views['month'] = new MonthView( { controller: this } );
-			wasNew = true;
-		}
-		this.$calendarCnt.empty().append( this.views['month'].$element );
-	} else {
-		if ( !this.views[this.view] ) {
-			this.views[this.view] = new WeekDayView( { view: this.view, controller: this } );
-			 wasNew = true;
-		}
-		this.$calendarCnt.empty().append( this.views[this.view].$element );
-	}
-
-	if ( wasNew ) {
-		setTimeout( () => {
-			this.views[this.view].connect( this, {
+	return new Promise( async ( resolve ) =>  {
+		let needsRender = false;
+		if ( this.view && !this.views[this.view] ) {
+			let view;
+			if ( this.view === 'month' ) {
+				view = new MonthView( { controller: this } );
+			} else {
+				view = new WeekDayView( { view: this.view, controller: this } );
+			}
+			const page = this.getPage( this.view, view );
+			this.views[this.view] = view;
+			this.calendarBooklet.addPages( [ page ] );
+			view.connect( this, {
 				rangeChange: ( span ) => {
-					this.loadForVisibleCalendars( span );
+					this.dataProvider.onRangeChange( span );
 				}
 			} );
-			this.views[this.view].render();
-		}, 100 );
+			needsRender = true;
+		}
+		this.calendarBooklet.setPage( this.view );
+		if ( needsRender ) {
+			setTimeout( () => {
+				this.views[this.view].render();
+				resolve( this.views[this.view].getVisibleRange() );
+			}, 1 );
+		} else {
+			 resolve( this.views[this.view].getVisibleRange() );
+		}
+	} );
+};
+
+scheduler.prototype.getPage = function( name, view ) {
+	function page( name, view ) {
+		page.super.call( this, name, { expanded: false, padded: false } );
+		this.$element.append( view.$element );
 	}
+
+	OO.inheritClass( page, OO.ui.PageLayout );
+
+	return new page( name, view );
 };
 
 module.exports = scheduler;

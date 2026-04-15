@@ -173,6 +173,9 @@ class EventTypeStore {
 	 * @return void
 	 */
 	public function assignToCalendar( array $eventTypes, Calendar $calendar ): void {
+		if ( empty( $eventTypes ) ) {
+			return;
+		}
 		$rows = [];
 		foreach ( $eventTypes as $eventType ) {
 			$rows[] = [
