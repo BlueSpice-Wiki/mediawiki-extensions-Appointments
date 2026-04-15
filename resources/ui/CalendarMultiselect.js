@@ -25,13 +25,13 @@ const calendarMultiselect = function ( config ) {
 	this.$element.append( this.addCalendarButton.$element );
 
 	this.isInitialized = false;
-	this.reload();
+	this.reload( config.value || null );
 };
 
 OO.inheritClass( calendarMultiselect, OO.ui.Widget );
 
-calendarMultiselect.prototype.reload = function () {
-	const preValue = this.getValue();
+calendarMultiselect.prototype.reload = function ( value ) {
+	const preValue = value || this.getValue();
 	ext.appointments.api.getCalendars().then( calendars => {
 		const items = [];
 		for ( const calendar of calendars ) {

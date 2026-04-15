@@ -66,7 +66,13 @@ makeToolbar = function ( view ) {
 			name: 'actions',
 			classes: [ 'default-actions' ],
 			type: 'bar',
-			include: [ 'addAppointment', 'calendar_view' ]
+			include: [ 'addAppointment' ]
+		},
+		{
+			name: 'actions',
+			classes: [ 'right-actions' ],
+			type: 'bar',
+			include: [ 'calendar_view' ]
 		}
 	] );
 	return toolbar;

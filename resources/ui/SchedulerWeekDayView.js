@@ -44,13 +44,6 @@ SchedulerWeekDay.prototype.render = function () {
 	const originalNext = this.scheduler.next.bind( this.scheduler );
 	const originalPrev = this.scheduler.prev.bind( this.scheduler );
 	const originalToday = this.scheduler.today.bind( this.scheduler );
-	this.scheduler.el.addEventListener( 'click', ( e ) => {
-		const item = e.target.closest( '.lm-schedule-item' );
-		if ( !item || !this.scheduler.el.contains( item ) ) {
-			return;
-		}
-		console.log( item.event );
-	} );
 
 
 	const originalUpdateEvent = this.scheduler.updateEvent.bind( this.scheduler );
@@ -408,6 +401,14 @@ SchedulerWeekDay.prototype.setData = function ( appointments ) {
 		}
 	}
 
+	const table = this.$schedule[ 0 ].querySelector( '.lm-schedule table' );
+	if ( table ) {
+		const existingAllDay = table.querySelector( '.appointments-allday-tbody' );
+		if ( existingAllDay ) {
+			existingAllDay.remove();
+		}
+	}
+
 	this.scheduler.setData( timedEvents );
 	this.renderAllDaySection( allDayEvents );
 	setTimeout( () => this.decorateEventIcons(), 1 );
@@ -486,6 +487,9 @@ SchedulerWeekDay.prototype.renderAllDaySection = function ( allDayAppointments )
 		let startCol = columnDates.indexOf( startDate );
 		let endCol = columnDates.indexOf( endDate );
 
+		if ( startCol === -1 && endCol === -1 ) {
+			continue;
+		}
 		if ( startCol === -1 ) {
 			startCol = startDate < columnDates[ 0 ] ? 0 : numDays - 1;
 		}
@@ -526,6 +530,7 @@ SchedulerWeekDay.prototype.renderAllDaySection = function ( allDayAppointments )
 	allDayTbody.className = 'appointments-allday-tbody';
 	const mainTbody = table.querySelector( 'tbody' );
 
+	let hasAllDay = false;
 	for ( let row = 0; row < totalRows; row++ ) {
 		const tr = document.createElement( 'tr' );
 		tr.className = 'appointments-allday-row';
@@ -575,10 +580,25 @@ SchedulerWeekDay.prototype.renderAllDaySection = function ( allDayAppointments )
 			}
 		}
 
+		hasAllDay = true;
 		allDayTbody.appendChild( tr );
+	}
+	if ( !hasAllDay ) {
+		return;
 	}
 
 	table.insertBefore( allDayTbody, mainTbody );
+
+	// Make all-day rows sticky below the header
+	const theadHeight = table.querySelector( 'thead' ).offsetHeight;
+	const rows = allDayTbody.querySelectorAll( 'tr' );
+	let cumulativeTop = theadHeight;
+	rows.forEach( ( tr ) => {
+		tr.querySelectorAll( 'td' ).forEach( ( td ) => {
+			td.style.top = cumulativeTop + 'px';
+		} );
+		cumulativeTop += tr.offsetHeight;
+	} );
 };
 
 module.exports = SchedulerWeekDay;

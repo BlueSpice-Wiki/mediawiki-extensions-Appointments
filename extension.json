@@ -78,6 +78,7 @@
 				"object/EventType.js",
 				"object/eventType/Meeting.js",
 				"CalendarDataProvider.js",
+				"UserLocalPreferences.js",
 				{
 					"name": "config.json",
 					"callback": "MediaWiki\\Extension\\Appointments\\ResourceLoader\\ConfigCallback::handleConfigRequest"

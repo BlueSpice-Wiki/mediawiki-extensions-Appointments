@@ -3,6 +3,7 @@ const makeToolbar = require( './util/MainToolbar.js' );
 const MonthView = require( './SchedulerMonthView.js' );
 const WeekDayView = require( './SchedulerWeekDayView.js' );
 const CalendarDataProvider = require( './../CalendarDataProvider.js' );
+const UserLocalPreferences = require( './../UserLocalPreferences.js' );
 
 const scheduler = function ( config ) {
 	scheduler.parent.call( this, $.extend( {
@@ -12,6 +13,7 @@ const scheduler = function ( config ) {
 
 	this.views = { month: null, week: null, day: null };
 	this.dataProvider = new CalendarDataProvider( this );
+	this.localPreferences = new UserLocalPreferences();
 
 	this.onlyPersonal = config.onlyPersonal;
 
@@ -26,7 +28,7 @@ const scheduler = function ( config ) {
 	this.$element.append(  this.$header, this.$calendarPicker, this.calendarBooklet.$element );
 	this.$element.addClass( 'ext-appointments-scheduler' );
 
-	this.view = 'month';
+	this.view = this.localPreferences.getPreference( 'defaultView' ) || 'month';
 
 	this.toolbar = makeToolbar( this.view );
 	this.toolbar.connect( this, {
@@ -49,15 +51,17 @@ const scheduler = function ( config ) {
 		},
 		viewChange: async ( view ) => {
 			this.view = view;
+			this.localPreferences.setPreference( 'defaultView', view );
 			await this.renderScheduler().then( ( range ) => {
 				this.dataProvider.onViewChange( range );
 			} );
-
 		}
 	} );
 	this.$header.append( this.toolbar.$element );
 
-	this.calendarPicker = new CalendarMultiselect( {} );
+	this.calendarPicker = new CalendarMultiselect( {
+		value: this.localPreferences.getPreference( 'selectedCalendars' ) || null
+	} );
 	this.calendarPicker.connect( this, {
 		reload: async ( value ) => {
 			this.dataProvider.onCalendarUpdate( value );
@@ -68,6 +72,7 @@ const scheduler = function ( config ) {
 			initialize: ( value ) => {
 				this.calendarPicker.connect( this, {
 					select: ( value, selected ) => {
+						this.localPreferences.setPreference( 'selectedCalendars', this.calendarPicker.getValue() );
 						this.dataProvider.onCalendarSetChange( value, selected );
 					}
 				} );
@@ -77,7 +82,6 @@ const scheduler = function ( config ) {
 	} );
 
 	this.$calendarPicker.append( this.calendarPicker.$element );
-	this.visibleCalendars = {};
 
 	const initialRenderPromise = this.renderScheduler();
 
