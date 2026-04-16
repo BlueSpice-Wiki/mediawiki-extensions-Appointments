@@ -302,24 +302,32 @@ SchedulerWeekDay.prototype.handleEventClick = function ( browserEvent ) {
 			this.controller.dataProvider.onAppointmentDelete( appointment );
 		}
 	} );
+
 	this.popup = new OO.ui.PopupWidget( {
 		head: false,
-		position: 'after',
+		position: this.view === 'week' ? 'after' : 'below',
 		$content: this.viewer.$element,
 		width: 500,
-		$floatableContainer: $( eventEl )
+		$floatableContainer: $( eventEl.parentElement )
 	} );
 	this.viewer.setPopup( this.popup );
 	$( 'body' ).append( this.popup.$element );
 	this.popup.connect( this, {
-		toogle: ( visible ) => {
-			if ( !visibile ) {
+		toggle: ( visible ) => {
+			if ( !visible ) {
 				this.popup.$element.remove();
+				this.popup = null;
 				this.viewer = null;
 			}
 		}
 	} );
 	this.popup.toggle( true );
+};
+
+SchedulerWeekDay.prototype.onViewChange = function () {
+	if ( this.popup ) {
+		this.popup.toggle( false );
+	}
 };
 
 SchedulerWeekDay.prototype.handleEventChange = function ( calendarScheduler, newValue, oldValue ) {
@@ -619,6 +627,14 @@ SchedulerWeekDay.prototype.renderAllDaySection = function ( allDayAppointments )
 					},
 					delete: () => {
 						this.controller.onAppointmentDelete( app );
+					}
+				} );
+				entry.popup.connect( this, {
+					toggle: () =>  {
+						// When opening "all day" appointment popup, hide any other popup for normal events
+						if ( this.popup ) {
+							this.popup.toggle( false );
+						}
 					}
 				} );
 				entry.$element.addClass( 'appointments-allday-entry' );

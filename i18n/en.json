@@ -105,5 +105,9 @@
 	"appointments-travel-event-type-name": "Travel",
 	"appointments-ui-create-new-event-type": "Create a custom event type",
 	"appointments-ui-select-event-type-icon": "Select event type icon",
-	"appointments-ui-field-entity-type-icon": "Icon"
+	"appointments-ui-field-entity-type-icon": "Icon",
+	"appointments-overview-description": "See and manage appointments",
+	"appointments-action-link-my-appointments": "My appointments",
+	"appointments-config-mainlinks-overview-label": "Show entrypoint \"Appointments\"",
+	"appointments-config-mainlinks-overview-help": "Show entrypoint \"Appointments\" in the left navigation"
 }

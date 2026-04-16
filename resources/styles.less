@@ -54,16 +54,8 @@
 }
 
 .ext-appointments-scheduler {
-	display: grid;
-	grid-template-columns: 300px 1fr;
-	grid-template-rows: auto 1fr;
-	gap: 10px;
-
 	.ext-appointments-scheduler-header {
-		/* "proper" way (1/-1) doesnt work */
-		grid-column-start: 1;
-		grid-column-end: -1;
-		margin-bottom: 20px;
+		width: 100%;
 
 		.oo-ui-tool-name-calendar_view {
 			a {
@@ -73,8 +65,8 @@
 	}
 
 	.ext-appointments-scheduler-calendars {
-		grid-column: 1;
-		width: 300px;
+		min-width: 200px;
+		padding-top: 12px;
 
 		.ext-appointments-calendar-multiselect-options {
 			.oo-ui-checkboxInputWidget {
@@ -106,10 +98,6 @@
 				}
 			}
 		}
-	}
-
-	.ext-appointments-scheduler-calendar-cnt {
-		grid-column: 2;
 	}
 }
 

@@ -29,6 +29,17 @@
 					"class": "MediaWiki\\Extension\\Appointments\\Entity\\EventType\\Vacation"
 				}
 			}
+		},
+		"BlueSpiceFoundation": {
+			"PermissionRegistry": {
+				"manage-appointments": {
+					"type": "global",
+					"roles": [ "editor", "admin" ]
+				}
+			},
+			"ConfigDefinitionRegistry": {
+				"AppointmentsShowInMainLinks": "\\MediaWiki\\Extension\\Appointments\\ConfigDefinition\\MainLinksAppointments::getInstance"
+			}
 		}
 	},
 	"callback": "mwsInitComponents",
@@ -190,7 +201,9 @@
 	},
 	"Hooks": {
 		"LoadExtensionSchemaUpdates": "runDatabaseUpdates",
-		"BeforePageDisplay": "addJSVariables"
+		"BeforePageDisplay": "addJSVariables",
+		"MWStakeCommonUIRegisterSkinSlotComponents": "addLinks",
+		"SkinTemplateNavigation::Universal": "addLinks"
 	},
 	"HookHandlers": {
 		"runDatabaseUpdates": {
@@ -199,6 +212,10 @@
 		"addJSVariables": {
 			"class": "MediaWiki\\Extension\\Appointments\\Hook\\AddJSVariables",
 			"services": [ "Appointments._Permissions" ]
+		},
+		"addLinks": {
+			"class": "MediaWiki\\Extension\\Appointments\\Hook\\AddLinks",
+			"services": [ "SpecialPageFactory", "MainConfig" ]
 		}
 	},
 	"ServiceWiringFiles": [
@@ -292,6 +309,12 @@
 			]
 		}
 	],
+	"config": {
+		"AppointmentsShowInMainLinks": {
+			"value": true,
+			"description": "Whether to show the link to the Appointments special page in the main links section of the user interface."
+		}
+	},
 	"manifest_version": 2,
 	"load_composer_autoloader": true
 }

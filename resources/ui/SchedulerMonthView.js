@@ -24,6 +24,10 @@ const SchedulerMonth = function ( config ) {
 
 OO.inheritClass( SchedulerMonth, OO.ui.PanelLayout );
 
+SchedulerMonth.prototype.onViewChange = function () {
+	// NOOP
+};
+
 SchedulerMonth.prototype.render = function () {
 	this.calendar = CalendarJS.Calendar( this.$element[0], {
 		type: 'inline',
@@ -52,6 +56,50 @@ SchedulerMonth.prototype.render = function () {
 
 	this.stampCells();
 	this.renderNavigation();
+	       this.bindResizeRerender();
+	};
+
+SchedulerMonth.prototype.bindResizeRerender = function () {
+		const calendarElement = this.calendar ? this.calendar.el : null;
+		if ( !calendarElement ) {
+			return;
+		}
+
+		if ( this.resizeObserver ) {
+			this.resizeObserver.disconnect();
+		}
+
+		if ( this.windowResizeHandler ) {
+			window.removeEventListener( 'resize', this.windowResizeHandler );
+			this.windowResizeHandler = null;
+		}
+
+		if ( typeof ResizeObserver !== 'function' ) {
+			this.windowResizeHandler = this.rerenderAppointmentsForSizeChange.bind( this );
+			window.addEventListener( 'resize', this.windowResizeHandler );
+			return;
+		}
+
+		this.resizeObserver = new ResizeObserver( () => {
+		if ( this.resizeRerenderTimer ) {
+			clearTimeout( this.resizeRerenderTimer );
+		}
+		this.resizeRerenderTimer = setTimeout( () => {
+			this.resizeRerenderTimer = null;
+				this.rerenderAppointmentsForSizeChange();
+			}, 0 );
+		} );
+
+		this.resizeObserver.observe( calendarElement );
+	};
+
+SchedulerMonth.prototype.rerenderAppointmentsForSizeChange = function () {
+		if ( !this.calendar ) {
+			return;
+		}
+
+		this.stampCells();
+		this.layoutSpanningEntries();
 };
 
 SchedulerMonth.prototype.emitRangeChangeIfChanged = function () {

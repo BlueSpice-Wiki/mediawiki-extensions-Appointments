@@ -17,15 +17,17 @@ const scheduler = function ( config ) {
 
 	this.onlyPersonal = config.onlyPersonal;
 
-	this.$calendarPicker = $( '<div>' ).addClass( 'ext-appointments-scheduler-calendars' );
 	this.$header = $( '<div>' ).addClass( 'ext-appointments-scheduler-header' );
-	this.calendarBooklet = new OO.ui.BookletLayout( {
-		classes: [ 'ext-appointments-scheduler-calendar-cnt' ],
-		expanded: false,
-		outlined: false
-	} );
 
-	this.$element.append(  this.$header, this.$calendarPicker, this.calendarBooklet.$element );
+	this.mainBooklet = new OO.ui.BookletLayout( {
+		classes: [ 'ext-appointments-scheduler-main-booklet', 'ext-appointments-scheduler-calendar-cnt' ],
+		expanded: false,
+		outlined: true
+	} );
+	this.mainBooklet.$menu.empty();
+	this.mainBooklet.$menu.addClass( 'ext-appointments-scheduler-calendars' );
+
+	this.$element.append(  this.$header, this.mainBooklet.$element, );
 	this.$element.addClass( 'ext-appointments-scheduler' );
 
 	this.view = this.localPreferences.getPreference( 'defaultView' ) || 'month';
@@ -53,6 +55,9 @@ const scheduler = function ( config ) {
 				} );
 		},
 		viewChange: async ( view ) => {
+			if ( this.view && this.views[this.view] ) {
+				this.views[this.view].onViewChange();
+			}
 			this.view = view;
 			this.localPreferences.setPreference( 'defaultView', view );
 			await this.renderScheduler().then( ( range ) => {
@@ -84,7 +89,7 @@ const scheduler = function ( config ) {
 		} );
 	} );
 
-	this.$calendarPicker.append( this.calendarPicker.$element );
+	this.mainBooklet.$menu.append( this.calendarPicker.$element );
 
 	const initialRenderPromise = this.renderScheduler();
 
@@ -143,7 +148,7 @@ scheduler.prototype.renderScheduler = function () {
 			}
 			const page = this.getPage( this.view, view );
 			this.views[this.view] = view;
-			this.calendarBooklet.addPages( [ page ] );
+			this.mainBooklet.addPages( [ page ] );
 			view.connect( this, {
 				rangeChange: ( span ) => {
 					this.dataProvider.onRangeChange( span );
@@ -151,7 +156,8 @@ scheduler.prototype.renderScheduler = function () {
 			} );
 			needsRender = true;
 		}
-		this.calendarBooklet.setPage( this.view );
+		this.views[this.view].onViewChange();
+		this.mainBooklet.setPage( this.view );
 		if ( needsRender ) {
 			setTimeout( () => {
 				this.views[this.view].render();
