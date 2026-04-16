@@ -8,7 +8,9 @@
 	"globals": {
 		"ext": "readonly",
 		"OOJSPlus": "readonly",
-		"ve": "readonly"
+		"ve": "readonly",
+		"moment": "readonly",
+		"FullCalendar": "readonly"
 	},
 	"rules": {}
 }

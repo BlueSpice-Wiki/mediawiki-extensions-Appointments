@@ -8,7 +8,7 @@
 	}
 
 	const scheduler = new ext.appointments.ui.Scheduler( {
-		onlyPersonal: false
+		onlyPersonal: app.dataset.onlypersonal === "1"
 	} );
 	app.replaceChildren( scheduler.$element[ 0 ] );
 }() );

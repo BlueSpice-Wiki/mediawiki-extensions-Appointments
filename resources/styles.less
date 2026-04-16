@@ -10,6 +10,12 @@
 	}
 }
 
+.appointments-time-picker {
+	.oo-ui-dropdownWidget-handle {
+		width: 80px;
+	}
+}
+
 .appointments-time-picker-menu {
 	max-height: 200px !important;
 }
@@ -132,71 +138,93 @@
 		cursor: default;
 	}
 
-	.lm-calendar-navigation {
-		display: none;
-	}
+	// FullCalendar month view
+	.fc {
+		.fc-daygrid-event {
+			border-radius: 4px;
+			cursor: pointer;
 
-	.lm-calendar-header > .appointments-scheduler-period-navigation {
-		margin-bottom: 0;
-	}
+			a:hover {
+				text-decoration: none !important;
+			}
+		}
 
-	.lm-calendar-content {
-		position: relative;
-	}
+		.fc-daygrid-dot-event {
+			padding: 2px 4px;
+		}
 
-	.lm-calendar-content > div {
-		position: relative;
-	}
+		.fc-daygrid-day.appointments-fc-selected-date,
+		.fc-timegrid-col.appointments-fc-selected-date {
+			background-color: #eaf3ff;
+		}
 
-	.appointment-day-overflow {
-		position: absolute;
-		left: 2px;
-		right: 2px;
-		bottom: 2px;
-		z-index: 2;
-		height: 24px;
-		margin: 0 !important;
+		.fc-day-today {
+			background-color: #d5d5d5;
+		}
 
-		a {
+		.fc-more-link {
+			padding: 4px;
 			width: 100%;
-			height: 24px;
-			min-height: 24px;
-			padding: 0 !important;
+			text-align: center;
 		}
 	}
 
-	.appointment-entry-span {
-		position: absolute;
-		box-sizing: border-box;
+	.appointments-fc-event-content {
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		min-width: 0;
 		overflow: hidden;
 		white-space: nowrap;
-		text-overflow: ellipsis;
-		border-radius: 4px;
-		pointer-events: auto;
-		height: 24px;
-
-		&.selected {
-			opacity: 0.9;
-		}
+		padding-left: 4px;
 	}
 
-	.lm-calendar-content > div > .appointment-entry {
-		width: 100%;
-		display: block;
-		margin: 0;
+	.appointments-fc-event-icon {
+		flex: 0 0 auto;
+		width: 14px;
+		min-width: 14px;
+		height: 14px;
+		background-size: 14px;
 	}
 
-	.lm-calendar-content > div > .appointment-entry > a {
-		width: 100%;
-		text-align: left;
-		margin: 0;
-		padding: 4px 2px;
-	}
-
-	.lm-calendar-content > div > .appointment-entry > a .appointment-entry-start-time {
+	.appointments-fc-event-time {
+		flex: 0 0 auto;
+		font-size: 0.7em;
 		font-weight: normal;
-		margin-right: 4px;
-		cursor: pointer;
+	}
+
+	.appointments-fc-event-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		min-width: 0;
+	}
+
+	.appointments-fc-event-icon {
+		filter: invert( 1 );
+	}
+
+	.appointments-fc-event-recurring-icon {
+		flex: 0 0 auto;
+		width: 12px;
+		min-width: 12px;
+		height: 12px;
+		background-size: 12px;
+		filter: invert( 1 );
+	}
+
+	.appointments-fc-dark-text {
+		.fc-event-main {
+			color: #000;
+		}
+
+		.appointments-fc-event-recurring-icon {
+			filter: invert( 0 );
+		}
+
+		.appointments-fc-event-icon {
+			filter: invert( 0 );
+		}
 	}
 
 	.lm-schedule-item.appointment-schedule-item-with-icon {
@@ -371,6 +399,16 @@
 .appointments-main-toolbar {
 	.right-actions {
 		float: right;
+	}
+
+	.oo-ui-tool-name-addAppointment {
+		margin-left: 0 !important;
+	}
+
+	.oo-ui-tool-name-toggleCalendars {
+		a {
+			padding: 22px;
+		}
 	}
 }
 

@@ -9,22 +9,16 @@ const appointmentPopupList = function ( config ) {
 	this.$cell = config.$cell;
 
 	appointmentPopupList.parent.call( this, {
-		label: '+' + this.hiddenCount,
-		title: mw.msg( 'appointments-more-appointments', this.hiddenCount ),
-		classes: [ 'appointment-day-overflow' ],
-		framed: false,
-		$overlay: true,
-		popup: {
-			head: false,
-			$content: this.appointmentList.$element,
-			width: 500,
-			position: 'after',
-			$floatableContainer: this.$cell
-		}
+		head: false,
+		$content: this.appointmentList.$element,
+		width: 500,
+		position: 'after',
+		autoClose: true,
+		$floatableContainer: this.$cell
 	} );
 };
 
-OO.inheritClass( appointmentPopupList, OO.ui.PopupButtonWidget );
+OO.inheritClass( appointmentPopupList, OO.ui.PopupWidget );
 
 appointmentPopupList.prototype.makeAppointmentList = function () {
 	this.contentPanel = new OO.ui.PanelLayout( { expanded: false, padded: true, classes: [ 'appointment-popup-list' ] } );

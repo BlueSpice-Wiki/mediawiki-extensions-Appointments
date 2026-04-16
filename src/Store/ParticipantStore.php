@@ -70,17 +70,17 @@ class ParticipantStore {
 	 */
 	public function getParticipantCondition( UserIdentity $user, IDatabase $db ): string {
 		$rows = [
-			[
+			$db->makeList( [
 				'ap_key' => 'user',
 				'ap_value' => $user->getName()
-			]
+			], LIST_AND )
 		];
 		$userGroups = $this->getUserGroups( $user );
 		foreach ( $userGroups as $userGroupRow ) {
-			$rows[] = [
+			$rows[] = $db->makeList( [
 				'ap_key' => 'group',
 				'ap_value' => $userGroupRow->ug_group,
-			];
+			], LIST_AND );
 		}
 
 		return $db->makeList( $rows, LIST_OR );

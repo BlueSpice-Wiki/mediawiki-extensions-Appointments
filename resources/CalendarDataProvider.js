@@ -4,6 +4,9 @@ class CalendarDataProvider {
 		this.onlyPersonal = onlyPersonal || false;
 	}
 
+	#initialized = false;
+	#initializing = false;
+
 	#loadedCalendars = [];
 	#calendarSet = {};
 	#appointments = [];
@@ -13,9 +16,12 @@ class CalendarDataProvider {
 		if ( !range ) {
 			return;
 		}
+		this.#initializing = true;
 		this.#calendarSet = calendarSet;
 		await this.loadRange( range );
 		this.scheduler.setData( this.getForCalendarSet() );
+		this.#initialized = true;
+		this.#initializing = false;
 	}
 
 	async onViewChange( range ) {
@@ -59,7 +65,7 @@ class CalendarDataProvider {
 			delete this.#calendarSet[guid];
 			for ( const appIndex in this.#appointments ) {
 				const appointment = this.#appointments[appIndex];
-				if ( this.#appointments.calendar.guid === guid ) {
+				if ( appointment.calendar.guid === guid ) {
 					delete this.#appointments[appIndex];
 				}
 			}
@@ -115,6 +121,9 @@ class CalendarDataProvider {
 	}
 
 	async loadRange( range ) {
+		if ( !this.#initializing && !this.#initialized ) {
+			return;
+		}
 		const rangeComparison = this.compareRange( range );
 		if ( rangeComparison.result === 'fresh' ) {
 			this.#appointments = [];

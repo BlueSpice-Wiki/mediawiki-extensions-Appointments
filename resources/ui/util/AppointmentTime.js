@@ -35,14 +35,12 @@ OO.inheritClass( appointmentTime, OO.ui.Widget );
 appointmentTime.prototype.makeTimed = function () {
 	// Make DatePicker + start and end date dropdowns in 30 minute intervals
 	this.date = new OOJSPlus.ui.widget.DateInputWidget( {
-		mustBeAfter: this.today,
 		$overlay: this.dialog ? this.dialog.$overlay : true,
 		value: this.defaultDate
 	} );
 	this.date.connect( this, { change: 'onItemChange' } );
 	this.startTime = new timePicker( { $overlay: this.dialog ? this.dialog.$overlay : true } );
 	if ( this.defaultStart ) {
-		console.log( this.defaultStart );
 		this.startTime.setValue( this.defaultStart );
 	}
 	this.startTime.connect( this, { change: 'onItemChange' } );
@@ -65,13 +63,11 @@ appointmentTime.prototype.makeTimed = function () {
 appointmentTime.prototype.makeAllDay = function () {
 	// Make DatePicker
 	this.dateStart = new OOJSPlus.ui.widget.DateInputWidget( {
-		mustBeAfter: this.today,
 		$overlay: this.dialog ? this.dialog.$overlay : true,
 		value: this.defaultDate
 	} );
 	this.dateStart.connect( this, { change: 'onItemChange' } );
 	this.dateEnd = new OOJSPlus.ui.widget.DateInputWidget( {
-		mustBeAfter: this.today,
 		$overlay: this.dialog ? this.dialog.$overlay : true,
 		value: this.defaultDate
 	} );

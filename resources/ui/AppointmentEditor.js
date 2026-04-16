@@ -5,6 +5,7 @@ const Calendar = require( '../object/Calendar.js' );
 const CalendarPicker = require( './CalendarPicker.js' );
 const EventTypePicker = require( './EventTypePicker.js' );
 const EventType = require( './../object/EventType.js' );
+const NotifyInAdvancePicker = require( './util/NotifyInAdvancePicker.js' );
 
 const appointmentEditor = function ( config ) {
 	appointmentEditor.parent.call( this, $.extend( {
@@ -106,9 +107,11 @@ appointmentEditor.prototype.init = function () {
 		}
 	} );
 
-	this.notifyInAdvance = new OO.ui.CheckboxInputWidget( {
-		value: appointmentData.notifyInAdvance || false,
-	} );
+	this.notifyInAdvance = new NotifyInAdvancePicker(
+		this.appointment ? this.appointment.data && this.appointment.data.notifyInAdvance : false, {
+			dialog: this.dialog
+		}
+	);
 	this.notifyInAdvance.connect( this, { change: 'onInputChange' } );
 
 	this.$element.append(

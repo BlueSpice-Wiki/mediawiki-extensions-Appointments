@@ -26,6 +26,15 @@ class UserInterface {
 	}
 
 	/**
+	 * @param UserIdentity $user
+	 * @return string
+	 */
+	public function getUserLocale( UserIdentity $user ): string {
+		$lang = $this->getUserLanguage( $user );
+		return $lang->getCode();
+	}
+
+	/**
 	 * @param string $date
 	 * @param string $time
 	 * @param UserIdentity $user

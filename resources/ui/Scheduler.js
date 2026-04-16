@@ -1,7 +1,6 @@
 const CalendarMultiselect = require( './CalendarMultiselect.js' );
 const makeToolbar = require( './util/MainToolbar.js' );
-const MonthView = require( './SchedulerMonthView.js' );
-const WeekDayView = require( './SchedulerWeekDayView.js' );
+const SchedulerView = require( './SchedulerView.js' );
 const CalendarDataProvider = require( './../CalendarDataProvider.js' );
 const UserLocalPreferences = require( './../UserLocalPreferences.js' );
 
@@ -11,11 +10,19 @@ const scheduler = function ( config ) {
 		padded: true
 	}, config ) );
 
-	this.views = { month: null, week: null, day: null };
-	this.dataProvider = new CalendarDataProvider( this );
+	this.viewObject = null;
+
 	this.localPreferences = new UserLocalPreferences();
 
+	this.viewMap = {
+		'year': 'dayGridYear',
+		'month': 'dayGridMonth',
+		'week': 'timeGridWeek',
+		'day': 'timeGridDay',
+	};
+
 	this.onlyPersonal = config.onlyPersonal;
+	this.dataProvider = new CalendarDataProvider( this, this.onlyPersonal );
 
 	this.$header = $( '<div>' ).addClass( 'ext-appointments-scheduler-header' );
 
@@ -35,14 +42,9 @@ const scheduler = function ( config ) {
 	this.toolbar = makeToolbar( this.view );
 	this.toolbar.connect( this, {
 		add: () => {
-			const view = this.views[this.view];
 			let defaultDate = null;
-			if ( view ) {
-				if ( view.calendar && typeof view.calendar.getValue === 'function' ) {
-					defaultDate = view.calendar.getValue();
-				} else if ( view.scheduler && view.scheduler.value ) {
-					defaultDate = view.scheduler.value;
-				}
+			if ( this.viewObject ) {
+				defaultDate = this.viewObject.selectedDate;
 			}
 			ext.appointments.util.openAppointmentEditorDialog( null, { defaultDate: defaultDate } )
 				.then( ( res ) => {
@@ -55,14 +57,15 @@ const scheduler = function ( config ) {
 				} );
 		},
 		viewChange: async ( view ) => {
-			if ( this.view && this.views[this.view] ) {
-				this.views[this.view].onViewChange();
-			}
 			this.view = view;
 			this.localPreferences.setPreference( 'defaultView', view );
-			await this.renderScheduler().then( ( range ) => {
-				this.dataProvider.onViewChange( range );
-			} );
+			if ( this.viewObject ) {
+				const view = this.viewMap[ this.view ];
+				this.viewObject.fc.changeView( view );
+			}
+		},
+		toggleCalendars: ( visible ) => {
+			this.mainBooklet.$menu.toggle( visible );
 		}
 	} );
 	this.$header.append( this.toolbar.$element );
@@ -102,11 +105,9 @@ const scheduler = function ( config ) {
 OO.inheritClass( scheduler, OO.ui.PanelLayout );
 
 scheduler.prototype.setData = function ( data ) {
-	const view = this.views[ this.view ];
-	if ( !view ) {
-		return;
+	if ( this.viewObject ) {
+		this.viewObject.setData( data );
 	}
-	view.setData( data );
 };
 
 scheduler.prototype.onDataError = function( error ) {
@@ -121,9 +122,8 @@ scheduler.prototype.onDataError = function( error ) {
 };
 
 scheduler.prototype.getRange = function () {
-	const view = this.views[ this.view ];
-	if ( view && typeof view.getVisibleRange === 'function' ) {
-		return view.getVisibleRange();
+	if ( this.viewObject ) {
+		return this.viewObject.getVisibleRange();
 	}
 	return null;
 }
@@ -139,15 +139,10 @@ scheduler.prototype.onAppointmentDelete = function ( appointment ) {
 scheduler.prototype.renderScheduler = function () {
 	return new Promise( async ( resolve ) =>  {
 		let needsRender = false;
-		if ( this.view && !this.views[this.view] ) {
-			let view;
-			if ( this.view === 'month' ) {
-				view = new MonthView( { controller: this } );
-			} else {
-				view = new WeekDayView( { view: this.view, controller: this } );
-			}
-			const page = this.getPage( this.view, view );
-			this.views[this.view] = view;
+		if ( !this.viewObject ) {
+			const view = new SchedulerView( { controller: this, view: this.viewMap[ this.view ] } );
+			const page = this.getPage( view );
+			this.viewObject = view;
 			this.mainBooklet.addPages( [ page ] );
 			view.connect( this, {
 				rangeChange: ( span ) => {
@@ -156,28 +151,27 @@ scheduler.prototype.renderScheduler = function () {
 			} );
 			needsRender = true;
 		}
-		this.views[this.view].onViewChange();
 		this.mainBooklet.setPage( this.view );
 		if ( needsRender ) {
 			setTimeout( () => {
-				this.views[this.view].render();
-				resolve( this.views[this.view].getVisibleRange() );
+				this.viewObject.render();
+				resolve( this.viewObject.getVisibleRange() );
 			}, 1 );
 		} else {
-			 resolve( this.views[this.view].getVisibleRange() );
+			 resolve( this.viewObject.getVisibleRange() );
 		}
 	} );
 };
 
-scheduler.prototype.getPage = function( name, view ) {
-	function page( name, view ) {
-		page.super.call( this, name, { expanded: false, padded: false } );
+scheduler.prototype.getPage = function( view ) {
+	function page( view ) {
+		page.super.call( this, 'schedulerView', { expanded: false, padded: false } );
 		this.$element.append( view.$element );
 	}
 
 	OO.inheritClass( page, OO.ui.PageLayout );
 
-	return new page( name, view );
+	return new page( view );
 };
 
 module.exports = scheduler;

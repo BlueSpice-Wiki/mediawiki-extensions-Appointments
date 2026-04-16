@@ -69,8 +69,7 @@
 				"ui/AppointmentEditor.js",
 				"ui/AppointmentEntry.js",
 				"ui/AppointmentViewer.js",
-				"ui/SchedulerWeekDayView.js",
-				"ui/SchedulerMonthView.js",
+				"ui/SchedulerView.js",
 				"ui/util/NewCalendarMenuOption.js",
 				"ui/util/EventTypeMenuOptions.js",
 				"ui/util/AppointmentTime.js",
@@ -83,6 +82,7 @@
 				"ui/util/PanelWithEvents.js",
 				"ui/util/AppointmentPopupList.js",
 				"ui/util/EventTypeIcon.js",
+				"ui/util/NotifyInAdvancePicker.js",
 				"object/PeriodDefinition.js",
 				"object/Participant.js",
 				"object/Calendar.js",
@@ -90,16 +90,11 @@
 				"object/EventType.js",
 				"object/eventType/Meeting.js",
 				"CalendarDataProvider.js",
-				"UserLocalPreferences.js",
-				{
-					"name": "config.json",
-					"callback": "MediaWiki\\Extension\\Appointments\\ResourceLoader\\ConfigCallback::handleConfigRequest"
-				}
+				"UserLocalPreferences.js"
 			],
 			"messages": [
 				"appointments-ui-create-new-calendar",
 				"appointments-ui-new-appointment",
-				"appointments-ui-calendars",
 				"appointments-ui-field-calendar-name",
 				"appointments-ui-field-calendar-description",
 				"appointments-ui-field-calendar-event-types",
@@ -118,7 +113,6 @@
 				"appointments-ui-all-day",
 				"appointments-ui-recurrence",
 				"appointments-ui-recurrence-none",
-				"appointments-ui-recurrence-daily",
 				"appointments-ui-recurrence-weekly",
 				"appointments-ui-recurrence-monthly",
 				"appointments-ui-edit-calendar",
@@ -134,8 +128,6 @@
 				"appointments-ui-entity-type-options",
 				"appointments-ui-edit",
 				"appointments-ui-delete",
-				"appointments-next-period",
-				"appointments-previous-period",
 				"appointments-next-month",
 				"appointments-previous-month",
 				"appointments-ui-delete-appointment-confirmation",
@@ -153,7 +145,6 @@
 				"appointments-ui-view-day",
 				"appointments-ui-view-week",
 				"appointments-ui-view-month",
-				"appointments-more-appointments",
 				"appointments-view-appointment",
 				"appointments-ui-video-link-join",
 				"appointments-ui-field-entity-type-name",
@@ -165,7 +156,7 @@
 			],
 			"dependencies": [
 				"oojs-ui",
-				"ext.appointments.lib.calendarjs",
+				"ext.appointments.lib.fullcalendar",
 				"oojs-ui.styles.icons-location",
 				"oojs-ui.styles.icons-media",
 				"oojs-ui.styles.icons-interactions",
@@ -174,13 +165,10 @@
 				"ext.oOJSPlus.widgets"
 			]
 		},
-		"ext.appointments.lib.calendarjs": {
-			"packageFiles": [
-				"lib/calendarjs/index.min.js",
-				"lib/calendarjs/lemonade.min.js"
-			],
-			"styles": [
-				"lib/calendarjs/style.min.css"
+		"ext.appointments.lib.fullcalendar": {
+			"scripts": [
+				"lib/fullcalendar/index.global.min.js",
+				"lib/fullcalendar/export.js"
 			]
 		},
 		"ext.appointments.special": {
@@ -211,7 +199,7 @@
 		},
 		"addJSVariables": {
 			"class": "MediaWiki\\Extension\\Appointments\\Hook\\AddJSVariables",
-			"services": [ "Appointments._Permissions" ]
+			"services": [ "Appointments._Permissions", "Appointments._UserInterface" ]
 		},
 		"addLinks": {
 			"class": "MediaWiki\\Extension\\Appointments\\Hook\\AddLinks",

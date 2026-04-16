@@ -47,7 +47,7 @@ class AppointmentsGetHandler extends AppointmentGetHandler {
 				throw new \InvalidArgumentException( Message::newFromKey( 'appointments-error-calendar-not-found' )->text() );
 			}
 		}
-		$personalOnly = $params['personalOnly'];
+		$personalOnly = $params['onlyPersonal'];
 		$user = RequestContext::getMain()->getUser();
 		$query = $this->appointmentStore->newQuery();
 
@@ -112,7 +112,7 @@ class AppointmentsGetHandler extends AppointmentGetHandler {
 				ParamValidator::PARAM_TYPE => 'string',
 				ParamValidator::PARAM_DEFAULT => '',
 			],
-			'personalOnly' => [
+			'onlyPersonal' => [
 				static::PARAM_SOURCE => 'query',
 				ParamValidator::PARAM_REQUIRED => false,
 				ParamValidator::PARAM_TYPE => 'boolean',

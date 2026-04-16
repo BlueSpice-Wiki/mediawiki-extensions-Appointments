@@ -22,8 +22,17 @@ class AppointmentsSpecial extends OOJSSpecialPage {
 	protected function doExecute( $subPage ) {
 		parent::doExecute( $subPage );
 
+		$onlyPersonal = false;
+		if ( $subPage === $this->getUser()->getName() ) {
+			$onlyPersonal = true;
+			$this->getOutput()->setPageTitle( $this->msg( 'appointments-personal-title' ) );
+		}
+
 		$this->getOutput()->addModules( [ 'ext.appointments.special' ] );
-		$this->getOutput()->addHTML( Html::element( 'div', [ 'id' => 'appointments-app' ] ) );
+		$this->getOutput()->addHTML( Html::element( 'div', [
+			'id' => 'appointments-app',
+			'data-onlyPersonal' => $onlyPersonal,
+		] ) );
 	}
 
 	/**

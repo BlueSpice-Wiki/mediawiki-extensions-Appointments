@@ -8,6 +8,25 @@ makeToolbar = function ( view ) {
 
 	view = view || 'month';
 
+	function ToggleCalendarsTool() {
+		ToggleCalendarsTool.super.apply( this, arguments );
+		this.calendarsVisible = true;
+		this.setActive( this.calendarsVisible );
+	}
+	OO.inheritClass( ToggleCalendarsTool, OO.ui.Tool );
+
+	ToggleCalendarsTool.static.name = 'toggleCalendars';
+	ToggleCalendarsTool.static.icon = 'menu';
+	ToggleCalendarsTool.static.active = true;
+	ToggleCalendarsTool.static.title = mw.msg( 'appointments-ui-toggle-calendars' );
+	ToggleCalendarsTool.prototype.onSelect = function () {
+		this.calendarsVisible = !this.calendarsVisible;
+		toolbar.emit( 'toggleCalendars', this.calendarsVisible );
+		this.setActive( this.calendarsVisible );
+	};
+	ToggleCalendarsTool.prototype.onUpdateState = function () {};
+	toolFactory.register( ToggleCalendarsTool );
+
 	function NewAppointmentTool() {
 		NewAppointmentTool.super.apply( this, arguments );
 		this.setDisabled( !createPermissions['create-appointment'] );
@@ -41,6 +60,10 @@ makeToolbar = function ( view ) {
 				new OO.ui.ButtonOptionWidget( {
 					data: 'month',
 					label: mw.msg( 'appointments-ui-view-month' )
+				} ),
+				new OO.ui.ButtonOptionWidget( {
+					data: 'year',
+					label: mw.msg( 'appointments-ui-view-year' )
 				} )
 			]
 		} );
@@ -69,7 +92,7 @@ makeToolbar = function ( view ) {
 			name: 'actions',
 			classes: [ 'default-actions' ],
 			type: 'bar',
-			include: [ 'addAppointment' ]
+			include: [ 'toggleCalendars', 'addAppointment' ]
 		},
 		{
 			name: 'actions',
