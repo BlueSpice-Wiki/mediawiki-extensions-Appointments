@@ -8,6 +8,7 @@ use MediaWiki\Extension\Appointments\Store\AppointmentStore;
 use MediaWiki\Extension\Appointments\Store\CalendarStore;
 use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\UserInterface;
+use MediaWiki\Extension\Appointments\Utils\AgendaLinker;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Message\Message;
 use MediaWiki\Rest\Response;
@@ -18,19 +19,20 @@ class AppointmentsGetHandler extends AppointmentGetHandler {
 	/**
 	 * @param CalendarStore $calendarStore
 	 * @param AppointmentStore $appointmentStore
-
 	 * @param EventTypeStore $eventTypeStore
 	 * @param UserInterface $userInterface
 	 * @param Permissions $permissions
+	 * @param AgendaLinker $agendaLinker
 	 */
 	public function __construct(
 		private readonly CalendarStore $calendarStore,
 		AppointmentStore $appointmentStore,
 		private readonly EventTypeStore $eventTypeStore,
 		UserInterface $userInterface,
-		Permissions $permissions
+		Permissions $permissions,
+		AgendaLinker $agendaLinker
 	) {
-		parent::__construct( $appointmentStore, $userInterface, $permissions );
+		parent::__construct( $appointmentStore, $userInterface, $permissions, $agendaLinker );
 	}
 
 	/**

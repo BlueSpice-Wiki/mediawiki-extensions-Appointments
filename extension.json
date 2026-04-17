@@ -35,16 +35,48 @@
 				"manage-appointments": {
 					"type": "global",
 					"roles": [ "editor", "admin" ]
+				},
+				"change-appointment-permissions": {
+					"type": "global",
+					"roles": [ "admin" ]
 				}
 			},
 			"ConfigDefinitionRegistry": {
 				"AppointmentsShowInMainLinks": "\\MediaWiki\\Extension\\Appointments\\ConfigDefinition\\MainLinksAppointments::getInstance"
+			}
+		},
+		"NotifyMe": {
+			"Events": {
+				"appointments-assignment": {
+					"spec": {
+						"class": "\\MediaWiki\\Extension\\Appointments\\Event\\AppointmentAssignedEvent"
+					},
+					"buckets": [ "personal" ],
+					"description": "appointments-event-assign-desc"
+				},
+				"appointments-reminder": {
+					"spec": {
+						"class": "\\MediaWiki\\Extension\\Appointments\\Event\\AppointmentReminderEvent"
+					},
+					"buckets": [ "personal" ],
+					"description": "appointments-event-remind-desc"
+				}
 			}
 		}
 	},
 	"callback": "mwsInitComponents",
 	"MessagesDirs": {
 		"Appointments": "i18n"
+	},
+	"AvailableRights": [
+		"manage-appointments",
+		"change-appointment-permissions"
+	],
+	"GroupPermissions": {
+		"sysop": {
+			"manage-appointments": true,
+			"change-appointment-permissions": true
+		}
 	},
 	"ExtensionMessagesFiles": {
 		"AppointmentsAlias": "Appointments.alias.php"
@@ -70,6 +102,7 @@
 				"ui/AppointmentEntry.js",
 				"ui/AppointmentViewer.js",
 				"ui/SchedulerView.js",
+				"ui/CalendarPermissionEditor.js",
 				"ui/util/NewCalendarMenuOption.js",
 				"ui/util/EventTypeMenuOptions.js",
 				"ui/util/AppointmentTime.js",
@@ -94,6 +127,7 @@
 			],
 			"messages": [
 				"appointments-ui-create-new-calendar",
+				"appointments-ui-error-saving-appointment",
 				"appointments-ui-new-appointment",
 				"appointments-ui-field-calendar-name",
 				"appointments-ui-field-calendar-description",
@@ -145,6 +179,7 @@
 				"appointments-ui-view-day",
 				"appointments-ui-view-week",
 				"appointments-ui-view-month",
+				"appointments-ui-view-year",
 				"appointments-view-appointment",
 				"appointments-ui-video-link-join",
 				"appointments-ui-field-entity-type-name",
@@ -152,7 +187,27 @@
 				"appointments-ui-field-entity-type-color",
 				"appointments-ui-create-new-event-type",
 				"appointments-ui-select-event-type-icon",
-				"appointments-ui-field-entity-type-icon"
+				"appointments-ui-field-entity-type-icon",
+				"appointments-ui-toggle-calendars",
+				"appointments-ui-field-agenda-title",
+				"appointments-ui-field-agenda-title-placeholder",
+				"appointments-ui-related-pages",
+				"appointments-ui-view-agenda",
+				"appointments-ui-notify-1h",
+				"appointments-ui-notify-3h",
+				"appointments-ui-notify-day",
+				"appointments-ui-notify-week",
+				"appointments-ui-calendar-permissions",
+				"appointments-ui-calendar-permissions-nothing",
+				"appointments-ui-calendar-permissions-edit",
+				"appointments-ui-calendar-permissions-read-edit",
+				"appointments-ui-calendar-permissions-role-reader",
+				"appointments-ui-calendar-permissions-role-editor",
+				"appointments-ui-calendar-permissions-role-deleter",
+				"appointments-ui-edit-calendar-permissions",
+				"appointments-ui-calendar-permissions-role-reader-placeholder",
+				"appointments-ui-calendar-permissions-role-edit-delete-placeholder",
+				"appointments-ui-calendar-permissions-disclaimer"
 			],
 			"dependencies": [
 				"oojs-ui",
@@ -191,7 +246,10 @@
 		"LoadExtensionSchemaUpdates": "runDatabaseUpdates",
 		"BeforePageDisplay": "addJSVariables",
 		"MWStakeCommonUIRegisterSkinSlotComponents": "addLinks",
-		"SkinTemplateNavigation::Universal": "addLinks"
+		"SkinTemplateNavigation::Universal": "addLinks",
+		"AppointmentsAppointmentModified": "sendNotifications",
+		"AppointmentsAppointmentCreated": "sendNotifications",
+		"MediaWikiServices": "registerCron"
 	},
 	"HookHandlers": {
 		"runDatabaseUpdates": {
@@ -204,6 +262,13 @@
 		"addLinks": {
 			"class": "MediaWiki\\Extension\\Appointments\\Hook\\AddLinks",
 			"services": [ "SpecialPageFactory", "MainConfig" ]
+		},
+		"sendNotifications": {
+			"class": "MediaWiki\\Extension\\Appointments\\Hook\\SendNotificationsOnUpdate",
+			"services": [ "Appointments._UserResolver", "MWStake.Notifier", "SpecialPageFactory", "ContentLanguage" ]
+		},
+		"registerCron": {
+			"class": "MediaWiki\\Extension\\Appointments\\Hook\\RegisterCron"
 		}
 	},
 	"ServiceWiringFiles": [
@@ -221,7 +286,7 @@
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentsGetHandler",
 			"services": [
 				"Appointments.CalendarStore", "Appointments.AppointmentStore", "Appointments.EventTypeStore",
-				"Appointments._UserInterface", "Appointments._Permissions"
+				"Appointments._UserInterface", "Appointments._Permissions", "Appointments._AgendaLinker"
 			]
 		},
 		{
@@ -229,7 +294,7 @@
 			"path": "/appointments/v0/appointment/{guid}",
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentGetHandler",
 			"services": [
-				"Appointments.AppointmentStore", "Appointments._UserInterface", "Appointments._Permissions"
+				"Appointments.AppointmentStore", "Appointments._UserInterface", "Appointments._Permissions", "Appointments._AgendaLinker"
 			]
 		},
 		{
@@ -250,8 +315,8 @@
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentSaveHandler",
 			"services": [
 				"Appointments.CalendarStore", "Appointments.AppointmentStore",  "Appointments.EventTypeStore",
-				"Appointments._UserInterface", "Appointments._Permissions", "Appointments._ParticipantResolver",
-				"HookContainer", "Appointments._Logger"
+				"Appointments._UserInterface", "Appointments._Permissions", "Appointments._UserResolver",
+				"HookContainer", "Appointments._Logger", "Appointments._AgendaLinker"
 			]
 		},
 		{

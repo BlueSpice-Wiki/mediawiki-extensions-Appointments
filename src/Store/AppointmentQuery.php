@@ -84,6 +84,18 @@ class AppointmentQuery {
 	}
 
 	/**
+	 * @return self
+	 */
+	public function forNextWeek(): self {
+		$now = ( new \DateTime() )->setTime( 0, 0, 0 );
+		$nextWeek = ( new \DateTime() )->modify( '+1 week' )->modify( '+1 day' )->setTime( 0, 0, 0 );
+		$this->conds[] = 'app_start >= ' . $this->db->addQuotes( $now->format( 'YmdHis' ) );
+		$this->conds[] = 'app_start <= ' . $this->db->addQuotes( $nextWeek->format( 'YmdHis' ) );
+
+		return $this;
+	}
+
+	/**
 	 * @return Appointment[]
 	 */
 	public function execute(): array {

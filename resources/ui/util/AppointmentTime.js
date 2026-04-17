@@ -179,13 +179,13 @@ appointmentTime.prototype.isValid = function () {
 	let startDate;
 	if ( this.allDayCheck.isSelected() ) {
 		startDate = this.dateStart.getValue();
-		return startDate && startDate >= this.today &&
+		return startDate &&
 			this.dateEnd.getValue() && startDate <= this.dateEnd.getValue();
 	} else {
 		const startTime = this.startTime.getRaw();
 		const endTime = this.endTime.getRaw();
 		startDate = this.date.getValue();
-		return startDate && startDate >= this.today && endTime > startTime;
+		return startDate && endTime > startTime;
 	}
 };
 

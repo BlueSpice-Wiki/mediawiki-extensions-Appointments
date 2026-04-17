@@ -108,11 +108,20 @@ appointmentEditor.prototype.init = function () {
 	} );
 
 	this.notifyInAdvance = new NotifyInAdvancePicker(
-		this.appointment ? this.appointment.data && this.appointment.data.notifyInAdvance : false, {
+		appointmentData.notifyInAdvance || null, {
 			dialog: this.dialog
 		}
 	);
 	this.notifyInAdvance.connect( this, { change: 'onInputChange' } );
+
+	this.agendaTitle = new OOJSPlus.ui.widget.TitleInputWidget( {
+		placeholder: mw.message( 'appointments-ui-field-agenda-title-placeholder' ).text(),
+		$overlay: this.dialog ? this.dialog.$overlay : true,
+	} );
+	this.agendaTitle.connect( this, { change: 'onInputChange' } );
+	if ( this.appointment && this.appointment.data && this.appointment.data.agendaPage ) {
+		this.agendaTitle.setValue( this.appointment.data.agendaPage );
+	}
 
 	this.$element.append(
 		new OO.ui.FieldLayout( this.name, {
@@ -130,9 +139,12 @@ appointmentEditor.prototype.init = function () {
 		new OO.ui.FieldLayout( this.notifyInAdvance, {
 			label: mw.message( 'appointments-ui-field-notify-in-advance' ).text()
 		} ).$element,
+		new OO.ui.FieldLayout( this.agendaTitle, {
+			label: mw.message( 'appointments-ui-field-agenda-title' ).text()
+		} ).$element,
 		new OO.ui.FieldLayout( this.time, {
 			label: mw.message( 'appointments-ui-field-time' ).text()
-		} ).$element
+		} ).$element,
 	);
 
 	this.setAbilities();
@@ -159,6 +171,7 @@ appointmentEditor.prototype.getUpdatedEntity = function () {
 		Object.assign( data, this.eventTypeObject.getCustomFieldValues( this.eventTypeCustomPanel ) );
 	}
 	data.notifyInAdvance = this.notifyInAdvance.getValue();
+	data.agendaPage = this.agendaTitle.getMWTitle() ? this.agendaTitle.getMWTitle().getPrefixedDb() : null;
 	this.appointment.data = data;
 
 	this.appointment.participants = this.participants.getValue()

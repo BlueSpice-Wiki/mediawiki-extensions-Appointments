@@ -27,6 +27,17 @@ class Calendar {
 	canDelete() {
 		return this.permissions.delete || false;
 	}
+
+	setRestrictions( type, readers, editors, deleters ) {
+		this.data = $.extend( {}, this.data, {
+			access: {
+				type: type,
+				readers: readers,
+				editors: editors,
+				deleters: deleters
+			}
+		} );
+	}
 }
 
 module.exports = Calendar;

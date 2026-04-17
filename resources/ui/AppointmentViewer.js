@@ -54,6 +54,24 @@ appointmentViewer.prototype.render = function () {
 	if ( this.appointment.participants.length ) {
 		this.$element.append( new ParticipantView( this.appointment.participants ).$element );
 	}
+	if ( this.appointment.agendaLink ) {
+		this.agendaLink = new OO.ui.ButtonWidget( {
+			label: mw.message( 'appointments-ui-view-agenda' ).text(),
+			href: this.appointment.agendaLink,
+			framed: false,
+			flags: [ 'progressive' ]
+		} );
+		this.$element.append( new OO.ui.HorizontalLayout( {
+			items: [
+				new OO.ui.IconWidget( {
+					icon: 'articles',
+					title: mw.message( 'appointments-ui-related-pages' ).text()
+				} ),
+				this.agendaLink
+			],
+			classes: [ 'entity-wrapper' ]
+		} ).$element );
+	}
 };
 
 appointmentViewer.prototype.buildButtons = function () {

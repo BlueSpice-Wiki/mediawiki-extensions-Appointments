@@ -49,9 +49,11 @@ const scheduler = function ( config ) {
 			ext.appointments.util.openAppointmentEditorDialog( null, { defaultDate: defaultDate } )
 				.then( ( res ) => {
 					if ( res && res.entity ) {
-						if ( res.res.guid ) {
+						if ( res.res && res.res.guid ) {
 							res.entity.guid = res.res.guid;
 							this.dataProvider.onAppointmentChange( res.entity );
+						} else {
+							mw.notify( mw.message( 'appointments-ui-error-saving-appointment' ).text(), { type: 'error' } );
 						}
 					}
 				} );

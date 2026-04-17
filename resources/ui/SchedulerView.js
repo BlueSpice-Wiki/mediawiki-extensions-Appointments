@@ -362,7 +362,6 @@ SchedulerView.prototype.onEventChange = function ( info ) {
 	if ( !appointment ) {
 		return;
 	}
-	console.log( newRange );
 	const oldPeriod = appointment.periodDefinition;
 	const newPeriod = new PeriodDefinition(
 		newRange.startDate, newRange.startTime || oldPeriod.getStartTime(),

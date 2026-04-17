@@ -6,6 +6,7 @@ use MediaWiki\Context\RequestContext;
 use MediaWiki\Extension\Appointments\Entity\Appointment;
 use MediaWiki\Extension\Appointments\Store\AppointmentStore;
 use MediaWiki\Extension\Appointments\UserInterface;
+use MediaWiki\Extension\Appointments\Utils\AgendaLinker;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Message\Message;
 use MediaWiki\Rest\Response;
@@ -18,11 +19,13 @@ class AppointmentGetHandler extends SimpleHandler {
 	 * @param AppointmentStore $appointmentStore
 	 * @param UserInterface $userInterface
 	 * @param Permissions $permissions
+	 * @param AgendaLinker $agendaLinker
 	 */
 	public function __construct(
 		protected readonly AppointmentStore $appointmentStore,
 		protected readonly UserInterface $userInterface,
-		protected readonly Permissions $permissions
+		protected readonly Permissions $permissions,
+		private readonly AgendaLinker $agendaLinker
 	) {
 	}
 
@@ -81,6 +84,7 @@ class AppointmentGetHandler extends SimpleHandler {
 			'participants' => $appointment->participants,
 			'creator' => $appointment->creator->getName(),
 			'data' => $appointment->data,
+			'agendaLink' => $this->agendaLinker->getAgendaLink( $appointment ),
 			'permissions' => [
 				'edit' => $this->permissions->canModifyAppointment( $user, $appointment, $appointment->calendar ),
 				'delete' => $this->permissions->canDeleteAppointment( $user, $appointment, $appointment->calendar ),

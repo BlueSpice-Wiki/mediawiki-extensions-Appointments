@@ -72,7 +72,7 @@ editorDialog.prototype.getBodyHeight = function () {
 	if ( !this.$errors.hasClass( 'oo-ui-element-hidden' ) ) {
 		return this.$element.find( '.oo-ui-processDialog-errors' )[ 0 ].scrollHeight;
 	}
-	return this.$element.find( '.oo-ui-window-body' )[ 0 ].scrollHeight;
+	return this.$element.find( '.oo-ui-window-body' )[ 0 ].scrollHeight + 20;
 };
 
 editorDialog.prototype.onDismissErrorButtonClick = function () {

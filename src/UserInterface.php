@@ -81,7 +81,9 @@ class UserInterface {
 	public function formatDateTimeForUser( DateTime $time, UserIdentity $user ): array {
 		$lang = $this->getUserLanguage( $user );
 		return [
-			'time' => $lang->userTime( $time->format( 'YmdHis' ), $user, [ 'timecorrection' => true ] ),
+			'time' => $lang->userTime(
+				$time->format( 'YmdHis' ), $user, [ 'timecorrection' => true, 'format' => 'HH:mm' ]
+			),
 			'date' => $lang->userDate( $time->format( 'YmdHis' ), $user, [ 'timecorrection' => true ] ),
 			'dateTime' => $lang->userTimeAndDate( $time->format( 'YmdHis' ), $user, [ 'timecorrection' => true ] )
 		];

@@ -36,12 +36,21 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 		label: calendar.name
 	} );
 
+	const globalPermissions = mw.config.get( 'wgAppointmentsPermissions' );
+
 	const actions = [];
 	if ( calendar.canEdit() ) {
 		actions.push( new OO.ui.MenuOptionWidget( {
 			data: 'edit',
 			label: mw.msg( 'appointments-ui-edit-calendar' ),
 			icon: 'edit'
+		} ) );
+	}
+	if ( globalPermissions['change-calendar-permissions'] ) {
+		actions.push( new OO.ui.MenuOptionWidget( {
+			data: 'permissions',
+			label: mw.msg( 'appointments-ui-calendar-permissions' ),
+			icon: 'lock'
 		} ) );
 	}
 	if ( calendar.canDelete() ) {
@@ -84,6 +93,12 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 				ext.appointments.util.deleteCalendarWithConfirm( calendar ).then( ( res ) => {
 					if ( res ) {
 						this.emit( 'delete', calendar.guid );
+					}
+				} );
+			} else if ( item.getData() === 'permissions' ) {
+				ext.appointments.util.openCalendarPermissionsDialog(calendar).then( ( res ) => {
+					if ( res && res.entity ) {
+						window.location.reload();
 					}
 				} );
 			}

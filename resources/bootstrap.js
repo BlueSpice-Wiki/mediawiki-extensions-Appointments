@@ -2,6 +2,7 @@ const editorClass = require("./ui/EditorDialog.js");
 const appointmentEditor = require("./ui/AppointmentEditor.js");
 const eventTypeEditor = require("./ui/EventTypeEditor.js");
 const calendarEditor = require("./ui/CalendarEditor.js");
+const calendarPermissionEditor = require("./ui/CalendarPermissionEditor.js");
 
 window.ext = window.ext || {};
 window.ext.appointments = {
@@ -55,6 +56,16 @@ window.ext.appointments = {
 				entity: new eventTypeEditor( $.extend( {
 					eventType: eventType
 				}, config ) )
+			} );
+
+			return this.openDialog( dialog );
+		},
+		openCalendarPermissionsDialog: function ( calendar ) {
+			const dialog = new editorClass( {
+				entity: new calendarPermissionEditor( {
+					calendar: calendar
+				} ),
+				size: 'large'
 			} );
 
 			return this.openDialog( dialog );

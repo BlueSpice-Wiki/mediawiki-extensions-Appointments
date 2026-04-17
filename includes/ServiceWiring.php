@@ -5,7 +5,8 @@ use MediaWiki\Extension\Appointments\Store\CalendarStore;
 use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\Store\ParticipantStore;
 use MediaWiki\Extension\Appointments\UserInterface;
-use MediaWiki\Extension\Appointments\Utils\ParticipantResolver;
+use MediaWiki\Extension\Appointments\Utils\AgendaLinker;
+use MediaWiki\Extension\Appointments\Utils\UserResolver;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Logger\LoggerFactory;
 use MediaWiki\MediaWikiServices;
@@ -55,16 +56,23 @@ return [
 			$services->getMainConfig()
 		);
 	},
-	'Appointments._ParticipantResolver' => static function ( MediaWikiServices $services ) {
-		return new ParticipantResolver(
+	'Appointments._UserResolver' => static function ( MediaWikiServices $services ) {
+		return new UserResolver(
 			$services->getDBLoadBalancer(),
 			$services->getUserFactory()
 		);
 	},
 	'Appointments._Permissions' => static function ( MediaWikiServices $services ) {
-		return new Permissions( $services->getPermissionManager() );
+		return new Permissions(
+			$services->getPermissionManager(), $services->getService( 'Appointments._UserResolver' )
+		);
 	},
 	'Appointments._Logger' => static function () {
 		return LoggerFactory::getInstance( 'Appointments' );
+	},
+	'Appointments._AgendaLinker' => static function( MediaWikiServices $services ) {
+		return new AgendaLinker(
+			$services->getTitleFactory()
+		);
 	},
 ];

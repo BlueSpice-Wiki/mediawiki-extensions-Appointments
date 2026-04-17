@@ -10,10 +10,12 @@ class Appointment {
 	 * @param {PeriodDefinition} userPeriod
 	 * @param {string} creator Username of the creator
 	 * @param {Object} data
+	 * @param {string} agendaLink
 	 * @param {Object} permissions
 	 */
 	constructor( guid, title, participants, calendar, eventType,
-				 periodDefinition, periodUTC, userPeriod, creator, data, permissions
+				 periodDefinition, periodUTC, userPeriod,
+				 creator, data, agendaLink, permissions
 	) {
 		this.guid = guid;
 		this.title = title;
@@ -25,6 +27,7 @@ class Appointment {
 		this.userPeriod = userPeriod;
 		this.creator = creator;
 		this.data = data;
+		this.agendaLink = agendaLink;
 		this.permissions = permissions || {};
 	}
 

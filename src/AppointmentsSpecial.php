@@ -22,6 +22,9 @@ class AppointmentsSpecial extends OOJSSpecialPage {
 	protected function doExecute( $subPage ) {
 		parent::doExecute( $subPage );
 
+		if ( $subPage === '_personal' ) {
+			$subPage = $this->getOutput()->getUser()->getName();
+		}
 		$onlyPersonal = false;
 		if ( $subPage === $this->getUser()->getName() ) {
 			$onlyPersonal = true;

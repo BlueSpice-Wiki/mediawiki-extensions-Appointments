@@ -1,5 +1,3 @@
-const periodDefinition = require( './../../object/PeriodDefinition.js' );
-
 const appointmentTimeView = function ( period ) {
 	this.period = period;
 	this.timeLabel = new OO.ui.LabelWidget( {

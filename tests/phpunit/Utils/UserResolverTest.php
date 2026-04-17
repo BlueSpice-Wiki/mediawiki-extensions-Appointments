@@ -4,7 +4,7 @@ namespace MediaWiki\Extension\Appointments\Tests\Utils;
 
 use InvalidArgumentException;
 use MediaWiki\Extension\Appointments\Entity\Participant;
-use MediaWiki\Extension\Appointments\Utils\ParticipantResolver;
+use MediaWiki\Extension\Appointments\Utils\UserResolver;
 use MediaWiki\User\User;
 use MediaWiki\User\UserFactory;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ use Wikimedia\Rdbms\SelectQueryBuilder;
 class ParticipantResolverTest extends TestCase {
 
 	public function testParticipantsFromDataCreatesParticipantObjects(): void {
-		$resolver = new ParticipantResolver(
+		$resolver = new UserResolver(
 			$this->createMock( ILoadBalancer::class ),
 			$this->createMock( UserFactory::class )
 		);
@@ -38,7 +38,7 @@ class ParticipantResolverTest extends TestCase {
 	}
 
 	public function testParticipantsFromDataRejectsInvalidData(): void {
-		$resolver = new ParticipantResolver(
+		$resolver = new UserResolver(
 			$this->createMock( ILoadBalancer::class ),
 			$this->createMock( UserFactory::class )
 		);
@@ -59,7 +59,7 @@ class ParticipantResolverTest extends TestCase {
 			static fn ( string $name ) => $name === 'Alice' ? $validUser : null
 		);
 
-		$resolver = new ParticipantResolver(
+		$resolver = new UserResolver(
 			$this->createMock( ILoadBalancer::class ),
 			$userFactory
 		);
@@ -69,7 +69,7 @@ class ParticipantResolverTest extends TestCase {
 	}
 
 	public function testResolveToUsersReturnsEmptyForUnknownParticipantKey(): void {
-		$resolver = new ParticipantResolver(
+		$resolver = new UserResolver(
 			$this->createMock( ILoadBalancer::class ),
 			$this->createMock( UserFactory::class )
 		);
@@ -84,7 +84,7 @@ class ParticipantResolverTest extends TestCase {
 		$userFactory = $this->createMock( UserFactory::class );
 		$userFactory->method( 'newFromName' )->willReturn( $unregistered );
 
-		$resolver = new ParticipantResolver(
+		$resolver = new UserResolver(
 			$this->createMock( ILoadBalancer::class ),
 			$userFactory
 		);
@@ -124,14 +124,14 @@ class ParticipantResolverTest extends TestCase {
 			->with( ILoadBalancer::DB_REPLICA )
 			->willReturn( $db );
 
-		$resolver = new ParticipantResolver( $loadBalancer, $userFactory );
+		$resolver = new UserResolver( $loadBalancer, $userFactory );
 		$users = $resolver->resolveToUsers( new Participant( 'group', 'sysop' ) );
 
 		$this->assertSame( [ $validUser ], $users );
 	}
 
 	public function testGetParticipantDifferenceReturnsRemovedAndAddedLists(): void {
-		$resolver = new ParticipantResolver(
+		$resolver = new UserResolver(
 			$this->createMock( ILoadBalancer::class ),
 			$this->createMock( UserFactory::class )
 		);

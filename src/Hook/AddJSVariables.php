@@ -27,6 +27,7 @@ readonly class AddJSVariables implements BeforePageDisplayHook {
 			'wgAppointmentsPermissions' => [
 				'create-appointment' => $this->permissions->canCreateAppointment( $out->getUser(), null ),
 				'create-calendar' => $this->permissions->canCreateCalendar( $out->getUser() ),
+				'change-calendar-permissions' => $this->permissions->canChangeCalendarPermissions( $out->getUser() ),
 			],
 			'wgAppointmentsLocale' => $this->userInterface->getUserLocale( $out->getUser() ),
 		] );

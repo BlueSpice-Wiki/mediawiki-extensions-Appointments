@@ -4,13 +4,16 @@ namespace MediaWiki\Extension\Appointments\Rest;
 
 use MediaWiki\Context\RequestContext;
 use MediaWiki\Extension\Appointments\Entity\Appointment;
+use MediaWiki\Extension\Appointments\Entity\Calendar;
+use MediaWiki\Extension\Appointments\Entity\EventType;
 use MediaWiki\Extension\Appointments\Entity\PeriodDefinition;
 use MediaWiki\Extension\Appointments\Store\AppointmentStore;
 use MediaWiki\Extension\Appointments\Store\CalendarStore;
 use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\UserInterface;
+use MediaWiki\Extension\Appointments\Utils\AgendaLinker;
 use MediaWiki\Extension\Appointments\Utils\GuidGenerator;
-use MediaWiki\Extension\Appointments\Utils\ParticipantResolver;
+use MediaWiki\Extension\Appointments\Utils\UserResolver;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Extension\Appointments\Utils\RecurrenceRule;
 use MediaWiki\HookContainer\HookContainer;
@@ -30,9 +33,10 @@ class AppointmentSaveHandler extends SimpleHandler {
 	 * @param EventTypeStore $eventTypeStore
 	 * @param UserInterface $userInterface
 	 * @param Permissions $permissions
-	 * @param ParticipantResolver $participantResolver
+	 * @param UserResolver $participantResolver
 	 * @param HookContainer $hookContainer
 	 * @param LoggerInterface $logger
+	 * @param AgendaLinker $agendaLinker
 	 */
 	public function __construct(
 		private readonly CalendarStore $calendarStore,
@@ -40,9 +44,10 @@ class AppointmentSaveHandler extends SimpleHandler {
 		private readonly EventTypeStore $eventTypeStore,
 		private readonly UserInterface $userInterface,
 		private readonly Permissions $permissions,
-		private readonly ParticipantResolver $participantResolver,
+		private readonly UserResolver $participantResolver,
 		private readonly HookContainer $hookContainer,
-		private readonly LoggerInterface $logger
+		private readonly LoggerInterface $logger,
+		private readonly AgendaLinker $agendaLinker
 	) {}
 
 	/**
@@ -98,7 +103,9 @@ class AppointmentSaveHandler extends SimpleHandler {
 			recurrenceRule: $recurrenceRule
 		);
 
-		$this->assertDataJsonSerializable( $body['data'] );
+		$appointmentData = $body['data'];
+		$this->assertDataJsonSerializable( $appointmentData );
+		$this->assertAgendaTitle( $calendar, $eventType, $periodDefinition, $body['title'], $appointmentData );
 
 		$appointment = new Appointment(
 			guid: $oldAppointment ? $oldAppointment->guid : $guidGenerator->generateAppointmentGuid(),
@@ -108,7 +115,7 @@ class AppointmentSaveHandler extends SimpleHandler {
 			calendar: $calendar,
 			periodDefinition: $periodDefinition,
 			creator: $oldAppointment ? $oldAppointment->creator : $user,
-			data: $body['data']
+			data: $appointmentData
 		);
 
 		$this->appointmentStore->storeAppointment( $appointment );
@@ -216,5 +223,28 @@ class AppointmentSaveHandler extends SimpleHandler {
 			throw new HttpException( Message::newFromKey( 'appointments-error-data-not-serializable' )->text() );
 		}
 	}
+
+	/**
+	 * @param Calendar $calendar
+	 * @param EventType $eventType
+	 * @param PeriodDefinition $periodDefinition
+	 * @param string $appTitle
+	 * @param array $appointmentData
+	 * @return void
+	 */
+	private function assertAgendaTitle(
+		Calendar $calendar, EventType $eventType, PeriodDefinition $periodDefinition,
+		string $appTitle, array &$appointmentData
+	): void {
+		if ( !empty( $appointmentData['agendaPage'] ) ) {
+			return;
+		}
+		$title = $this->agendaLinker->getAgendaTitle( $calendar, $eventType, $periodDefinition, $appTitle );
+		if ( !$title ) {
+			$appointmentData['agendaPage'] = null;
+		}
+		$appointmentData['agendaPage'] = $title->getPrefixedDBkey();
+	}
+
 
 }

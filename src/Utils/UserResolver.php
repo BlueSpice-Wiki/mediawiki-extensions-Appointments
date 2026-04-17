@@ -6,7 +6,7 @@ use MediaWiki\Extension\Appointments\Entity\Participant;
 use MediaWiki\User\UserFactory;
 use Wikimedia\Rdbms\ILoadBalancer;
 
-readonly class ParticipantResolver {
+readonly class UserResolver {
 
 	/**
 	 * @param ILoadBalancer $lb
@@ -27,6 +27,21 @@ readonly class ParticipantResolver {
 		}
 		if ( $participant->getKey() === 'group' ) {
 			$users = $this->getUsersInGroup( $participant->getValue() );
+			return $this->getValidatedUsers( $users );
+		}
+		return [];
+	}
+
+	/**
+	 * @param array $data
+	 * @return array
+	 */
+	public function resolveToUsersFromData( array $data ): array {
+		if ( $data['key'] === 'user' ) {
+			return $this->getValidatedUsers( [ $data['value'] ] );
+		}
+		if ( $data['key'] === 'group' ) {
+			$users = $this->getUsersInGroup( $data['value'] );
 			return $this->getValidatedUsers( $users );
 		}
 		return [];

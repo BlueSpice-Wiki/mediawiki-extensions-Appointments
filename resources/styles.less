@@ -7,6 +7,10 @@
 		align-items: center;
 		gap: 44px;
 		margin: 10px 0;
+
+		.oo-ui-fieldLayout-field {
+			width: auto !important;
+		}
 	}
 }
 
@@ -351,7 +355,24 @@
 
 .appointments-ui-editor-dialog-body {
 	.oo-ui-fieldLayout-field {
-		width: 70%;
+		width: 70% !important;
+	}
+
+	.calendar-permission-editor {
+		.oo-ui-fieldLayout-field {
+			width: 100% !important;
+			.oo-ui-tagMultiselectWidget-group {
+				width: 100%;
+
+				> input {
+					width: 100%;
+				}
+			}
+		}
+	}
+
+	.notify-in-advance-period {
+		width: 250px;
 	}
 }
 

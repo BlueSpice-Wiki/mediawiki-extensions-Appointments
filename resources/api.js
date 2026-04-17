@@ -47,6 +47,7 @@ const api = {
 			new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.userPeriod ) ),
 			appointmentData.creator,
 			appointmentData.data,
+			appointmentData.agendaLink,
 			appointmentData.permissions
 		);
 	},

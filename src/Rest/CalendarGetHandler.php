@@ -27,6 +27,9 @@ class CalendarGetHandler extends SimpleHandler {
 		$user = RequestContext::getMain()->getUser();
 		$calendars = [];
 		foreach ( $this->calendarStore->getCalendars() as $calendar ) {
+			if ( !$this->permissions->canReadCalendar( $user, $calendar ) ) {
+				continue;
+			}
 			$calendarData = $calendar->jsonSerialize();
 			$calendarData['permissions'] = [
 				'edit' => $this->permissions->canModifyCalendar( $user, $calendar ),
