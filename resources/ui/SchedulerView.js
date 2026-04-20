@@ -19,6 +19,12 @@ const SchedulerView = function ( config ) {
 	this.resizeRerenderTimer = null;
 	this.overflowPopups = {};
 	this.appointments = {};
+	this.editable = typeof config.editable === 'boolean' ? config.editable : true;
+	this.isList = config.isList || false;
+
+	if ( this.isList ) {
+		this.$element.addClass( 'appointments-scheduler-list-view' );
+	}
 };
 
 OO.inheritClass( SchedulerView, OO.ui.PanelLayout );
@@ -38,7 +44,7 @@ SchedulerView.prototype.render = function () {
 		initialView: this.view,
 		initialDate: this.today,
 		headerToolbar: false,
-		editable: true,
+		editable: this.editable,
 		eventStartEditable: true,
 		eventDurationEditable: true,
 		dayMaxEvents: 4,
@@ -69,7 +75,9 @@ SchedulerView.prototype.render = function () {
 
 	this.fc.render();
 	this.last = this.getVisibleRange();
-	this.renderNavigation();
+	if ( this.editable ) {
+		this.renderNavigation();
+	}
 
 	this.calendar = {
 		getValue: () => moment( this.fc.getDate() ).format( 'YYYY-MM-DD' )
@@ -294,7 +302,7 @@ SchedulerView.prototype.renderEventContent = function ( arg ) {
 		container.appendChild( iconWidget.$element[ 0 ] );
 	}
 
-	if ( !appointment.periodDefinition.isAllDay() ) {
+	if ( !appointment.periodDefinition.isAllDay() && !this.isList ) {
 		const timeSpan = document.createElement( 'span' );
 		timeSpan.className = 'appointments-fc-event-time';
 		timeSpan.textContent = appointment.periodDefinition.getStartTime();
@@ -392,14 +400,14 @@ SchedulerView.prototype.onEventClick = function ( info ) {
 	this.hideAllOverflowPopups();
 
 	const appointment = info.event.extendedProps.appointment;
-	const viewer = new AppointmentViewer( { appointment: appointment } );
+	const viewer = new AppointmentViewer( { appointment: appointment, editable: this.editable } );
 
 	const popup = new OO.ui.PopupWidget( {
 		$floatableContainer: $( info.el ),
 		$content: viewer.$element,
 		padded: false,
 		width: 500,
-		position: 'after',
+		position: this.isList ? 'below' : 'after',
 		autoClose: true,
 		head: false,
 		$overlay: true

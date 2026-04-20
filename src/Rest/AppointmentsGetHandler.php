@@ -9,6 +9,7 @@ use MediaWiki\Extension\Appointments\Store\CalendarStore;
 use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\UserInterface;
 use MediaWiki\Extension\Appointments\Utils\AgendaLinker;
+use MediaWiki\Extension\Appointments\Utils\AppointmentSerializer;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Message\Message;
 use MediaWiki\Rest\Response;
@@ -21,18 +22,16 @@ class AppointmentsGetHandler extends AppointmentGetHandler {
 	 * @param AppointmentStore $appointmentStore
 	 * @param EventTypeStore $eventTypeStore
 	 * @param UserInterface $userInterface
-	 * @param Permissions $permissions
-	 * @param AgendaLinker $agendaLinker
+	 * @param AppointmentSerializer $serializer
 	 */
 	public function __construct(
 		private readonly CalendarStore $calendarStore,
 		AppointmentStore $appointmentStore,
 		private readonly EventTypeStore $eventTypeStore,
-		UserInterface $userInterface,
-		Permissions $permissions,
-		AgendaLinker $agendaLinker
+		private readonly UserInterface $userInterface,
+		AppointmentSerializer $serializer
 	) {
-		parent::__construct( $appointmentStore, $userInterface, $permissions, $agendaLinker );
+		parent::__construct( $appointmentStore, $serializer );
 	}
 
 	/**
@@ -91,7 +90,7 @@ class AppointmentsGetHandler extends AppointmentGetHandler {
 		$appointments = $query->execute();
 		$data = [];
 		foreach( $appointments as $appointment ) {
-			$data[] = $this->serializeAppointment( $appointment );
+			$data[] = $this->serializer->serializeForOutput( $appointment, $user );
 		}
 		return $this->getResponseFactory()->createJson( $data );
 

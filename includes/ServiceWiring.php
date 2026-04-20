@@ -6,6 +6,7 @@ use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\Store\ParticipantStore;
 use MediaWiki\Extension\Appointments\UserInterface;
 use MediaWiki\Extension\Appointments\Utils\AgendaLinker;
+use MediaWiki\Extension\Appointments\Utils\AppointmentSerializer;
 use MediaWiki\Extension\Appointments\Utils\UserResolver;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Logger\LoggerFactory;
@@ -73,6 +74,13 @@ return [
 	'Appointments._AgendaLinker' => static function( MediaWikiServices $services ) {
 		return new AgendaLinker(
 			$services->getTitleFactory()
+		);
+	},
+	'Appointments._AppointmentSerializer' => static function( MediaWikiServices $services ) {
+		return new AppointmentSerializer(
+			$services->getService( 'Appointments._Permissions' ),
+			$services->getService( 'Appointments._AgendaLinker' ),
+			$services->getService( 'Appointments._UserInterface' )
 		);
 	},
 ];

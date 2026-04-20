@@ -8,6 +8,7 @@ const appointmentViewer = function ( config ) {
 	}, config ) );
 
 	this.appointment = config.appointment;
+	this.editable = config.editable;
 	this.render();
 	this.$element.addClass( 'appointment-viewer' );
 };
@@ -75,6 +76,9 @@ appointmentViewer.prototype.render = function () {
 };
 
 appointmentViewer.prototype.buildButtons = function () {
+	if ( !this.editable ) {
+		return new OO.ui.Widget();
+	}
 	const buttons = [];
 
 	if ( this.appointment.canEdit() ) {

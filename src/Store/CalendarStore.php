@@ -75,6 +75,27 @@ class CalendarStore {
 	}
 
 	/**
+	 * @param string $name
+	 * @return Calendar|null
+	 */
+	public function getCalendarByName( string $name ): ?Calendar {
+		$row = $this->lb->getConnection( DB_REPLICA )->newSelectQueryBuilder()
+			->select( static::CALENDAR_FIELDS )
+			->from( 'calendars' )
+			->where( [ 'cal_name' => $name ] )
+			->caller( __METHOD__ )
+			->fetchRow();
+
+		if ( !$row ) {
+			return null;
+		}
+		if ( isset( $this->calendars[ $row->cal_guid ] ) ) {
+			return $this->calendars[ $row->cal_guid ];
+		}
+		return $this->rowToCalendar( $row );
+	}
+
+	/**
 	 * @return array
 	 */
 	public function getCalendars(): array {

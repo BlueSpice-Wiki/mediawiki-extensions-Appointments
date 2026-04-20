@@ -89,6 +89,7 @@
 		"ext.appointments.main": {
 			"packageFiles": [
 				"bootstrap.js",
+				"consts.js",
 				"api.js",
 				"ui/Scheduler.js",
 				"ui/CalendarMultiselect.js",
@@ -207,7 +208,8 @@
 				"appointments-ui-edit-calendar-permissions",
 				"appointments-ui-calendar-permissions-role-reader-placeholder",
 				"appointments-ui-calendar-permissions-role-edit-delete-placeholder",
-				"appointments-ui-calendar-permissions-disclaimer"
+				"appointments-ui-calendar-permissions-disclaimer",
+				"appointments-ui-calendar-picker-none"
 			],
 			"dependencies": [
 				"oojs-ui",
@@ -218,6 +220,9 @@
 				"oojs-ui.styles.icons-editing-advanced",
 				"oojs-ui.styles.icons-editing-core",
 				"ext.oOJSPlus.widgets"
+			],
+			"styles": [
+				"styles.less"
 			]
 		},
 		"ext.appointments.lib.fullcalendar": {
@@ -226,15 +231,27 @@
 				"lib/fullcalendar/export.js"
 			]
 		},
+		"ext.appointments.timeline.tag": {
+			"packageFiles": [
+				"tag.js",
+				"formelement/CalendarPicker.js",
+				"formelement/EventTypePicker.js",
+				"ui/util/EventTypeMenuOptions.js",
+				"ui/CalendarPicker.js",
+				"ui/EventTypePicker.js"
+			],
+			"dependencies": [
+				"ext.appointments.main",
+				"ext.forms.formelements.bootstrap",
+				"ext.oOJSPlus.formelements"
+			]
+		},
 		"ext.appointments.special": {
 			"packageFiles": [
 				"specialPage.js"
 			],
 			"dependencies": [
 				"ext.appointments.main"
-			],
-			"styles": [
-				"styles.less"
 			]
 		}
 	},
@@ -249,7 +266,8 @@
 		"SkinTemplateNavigation::Universal": "addLinks",
 		"AppointmentsAppointmentModified": "sendNotifications",
 		"AppointmentsAppointmentCreated": "sendNotifications",
-		"MediaWikiServices": "registerCron"
+		"MediaWikiServices": "registerCron",
+		"MWStakeGenericTagHandlerInitTags": "registerTags"
 	},
 	"HookHandlers": {
 		"runDatabaseUpdates": {
@@ -269,6 +287,10 @@
 		},
 		"registerCron": {
 			"class": "MediaWiki\\Extension\\Appointments\\Hook\\RegisterCron"
+		},
+		"registerTags": {
+			"class": "MediaWiki\\Extension\\Appointments\\Hook\\AddTag",
+			"services": [ "UserFactory", "Appointments.CalendarStore", "Appointments.EventTypeStore" ]
 		}
 	},
 	"ServiceWiringFiles": [
@@ -286,7 +308,7 @@
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentsGetHandler",
 			"services": [
 				"Appointments.CalendarStore", "Appointments.AppointmentStore", "Appointments.EventTypeStore",
-				"Appointments._UserInterface", "Appointments._Permissions", "Appointments._AgendaLinker"
+				"Appointments._UserInterface", "Appointments._AppointmentSerializer"
 			]
 		},
 		{
@@ -294,7 +316,7 @@
 			"path": "/appointments/v0/appointment/{guid}",
 			"class": "MediaWiki\\Extension\\Appointments\\Rest\\AppointmentGetHandler",
 			"services": [
-				"Appointments.AppointmentStore", "Appointments._UserInterface", "Appointments._Permissions", "Appointments._AgendaLinker"
+				"Appointments.AppointmentStore", "Appointments._AppointmentSerializer"
 			]
 		},
 		{

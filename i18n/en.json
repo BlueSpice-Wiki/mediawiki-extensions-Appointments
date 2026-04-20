@@ -115,5 +115,17 @@
 	"appointments-event-remind-key": "Appointment approaching",
 	"appointments-event-remind-message": "Appointment \"$1\" ($2), is taking place soon, on $3",
 	"appointments-event-link-target-label": "See your appointments",
-	"appointments-ui-calendar-permissions-disclaimer": "Wiki administrators can view, edit and delete all calendars, regardless of the permission configuration"
+	"appointments-ui-calendar-permissions-disclaimer": "Wiki administrators can view, edit and delete all calendars, regardless of the permission configuration",
+	"appointments-param-validation-event-type": "Invalid event type(s) specified: $2",
+	"appointments-param-validation-calendar": "Invalid calendar specified: $2",
+	"appointments-ve-attr-user": "Only for user",
+	"appointments-ve-calendar": "Calendar",
+	"appointments-ve-event-types": "Event types",
+	"appointments-ve-period": "Period",
+	"appointments-ve-period-week": "Next week",
+	"appointments-ve-period-month": "Next month",
+	"appointments-ve-period-year": "Next year",
+	"appointments-tag-timeline": "Appointment timeline",
+	"appointments-tag-timeline-desc": "Shows list of upcoming appointments",
+	"appointments-ui-calendar-picker-none": "All calendars"
 }
