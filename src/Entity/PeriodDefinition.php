@@ -83,7 +83,8 @@ class PeriodDefinition extends NaivePeriod {
 	public function overlapsWith( NaivePeriod $toCheck ): bool {
 		$startsWithin = $this->start >= $toCheck->getStart() && $this->start <= $toCheck->getEnd();
 		$endsWithin = $this->end >= $toCheck->getStart() && $this->end <= $toCheck->getEnd();
-		return $startsWithin || $endsWithin;
+		$fullyContained = $this->start <= $toCheck->getStart() && $this->end >= $toCheck->getEnd();
+		return $startsWithin || $endsWithin || $fullyContained;
 	}
 
 	/**
