@@ -48,17 +48,17 @@ class CalendarSaveHandler extends SimpleHandler {
 			if ( !$oldCalendar ) {
 				throw new HttpException( Message::newFromKey( 'appointments-error-calendar-not-found' )->text() );
 			}
-			 if ( !$this->permissions->canModifyCalendar( RequestContext::getMain()->getUser(), $oldCalendar ) ) {
+			if ( !$this->permissions->canModifyCalendar( RequestContext::getMain()->getUser(), $oldCalendar ) ) {
 				throw new HttpException( Message::newFromKey( 'appointments-error-no-permission' )->text(), 403 );
-			 }
+			}
 		}
 
 		$data = $body['data'] ?? [];
 		if ( $data ) {
 			$data = json_decode( $data, true );
-			 if ( json_last_error() !== JSON_ERROR_NONE ) {
+			if ( json_last_error() !== JSON_ERROR_NONE ) {
 				throw new HttpException( Message::newFromKey( 'appointments-error-invalid-data' )->text(), 400 );
-			 }
+			}
 		}
 
 		$wikiId = WikiMap::getCurrentWikiId();
@@ -101,7 +101,6 @@ class CalendarSaveHandler extends SimpleHandler {
 
 		return $this->getResponseFactory()->createJson( [ 'success' => true ] );
 	}
-
 
 	public function getBodyParamSettings(): array {
 		return [

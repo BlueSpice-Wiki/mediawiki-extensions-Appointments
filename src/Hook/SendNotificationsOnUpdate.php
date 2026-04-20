@@ -17,11 +17,12 @@ use MWStake\MediaWiki\Component\Events\Notifier;
 readonly class SendNotificationsOnUpdate implements AppointmentsAppointmentModified, AppointmentsAppointmentCreated {
 
 	public function __construct(
-		private UserResolver       $userResolver,
-		private Notifier           $notifier,
+		private UserResolver $userResolver,
+		private Notifier $notifier,
 		private SpecialPageFactory $specialPageFactory,
-		private Language           $contentLanguage
-	) {}
+		private Language $contentLanguage
+	) {
+	}
 
 	/**
 	 * @inheritDoc

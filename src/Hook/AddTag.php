@@ -16,8 +16,8 @@ readonly class AddTag implements MWStakeGenericTagHandlerInitTagsHook {
 	 * @param EventTypeStore $eventTypeStore
 	 */
 	public function __construct(
-		private UserFactory    $userFactory,
-		private CalendarStore  $calendarStore,
+		private UserFactory $userFactory,
+		private CalendarStore $calendarStore,
 		private EventTypeStore $eventTypeStore
 	) {
 	}

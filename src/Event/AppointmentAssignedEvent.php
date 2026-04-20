@@ -58,7 +58,6 @@ class AppointmentAssignedEvent extends NotificationEvent {
 		$params[] = '2026-02-02, 10:00 - 10:30';
 		$params[] = $services->getSpecialPageFactory()->getPage( 'Appointment' );
 
-
 		return $params;
 	}
 

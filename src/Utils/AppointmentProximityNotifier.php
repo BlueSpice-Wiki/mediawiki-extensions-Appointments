@@ -74,7 +74,8 @@ readonly final class AppointmentProximityNotifier {
 							$appointment->title,
 							$appointment->eventType->name,
 							$users,
-							( new NotificationDateTimeFormatter( $this->contentLanguage ) )->getTimeString( $appointment ),
+							( new NotificationDateTimeFormatter( $this->contentLanguage ) )
+								->getTimeString( $appointment ),
 							$this->specialPageFactory->getPage( 'Appointments' )?->getPageTitle( '_personal' )
 						);
 						$this->notifier->emit( $event );

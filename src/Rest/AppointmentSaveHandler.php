@@ -13,9 +13,9 @@ use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\UserInterface;
 use MediaWiki\Extension\Appointments\Utils\AgendaLinker;
 use MediaWiki\Extension\Appointments\Utils\GuidGenerator;
-use MediaWiki\Extension\Appointments\Utils\UserResolver;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Extension\Appointments\Utils\RecurrenceRule;
+use MediaWiki\Extension\Appointments\Utils\UserResolver;
 use MediaWiki\HookContainer\HookContainer;
 use MediaWiki\Message\Message;
 use MediaWiki\Rest\HttpException;
@@ -48,7 +48,8 @@ class AppointmentSaveHandler extends SimpleHandler {
 		private readonly HookContainer $hookContainer,
 		private readonly LoggerInterface $logger,
 		private readonly AgendaLinker $agendaLinker
-	) {}
+	) {
+	}
 
 	/**
 	 * @return Response
@@ -79,8 +80,12 @@ class AppointmentSaveHandler extends SimpleHandler {
 		}
 
 		try {
-			$start = $this->userInterface->convertUserInputToUTC( $body['start_date' ], $body['start_time'], $user, $body['is_all_day'] );
-			$end = $this->userInterface->convertUserInputToUTC( $body['end_date' ], $body['end_time'], $user, $body['is_all_day'] );
+			$start = $this->userInterface->convertUserInputToUTC(
+				$body['start_date' ], $body['start_time'], $user, $body['is_all_day']
+			);
+			$end = $this->userInterface->convertUserInputToUTC(
+				$body['end_date' ], $body['end_time'], $user, $body['is_all_day']
+			);
 		} catch ( \Exception $e ) {
 			throw new HttpException( Message::newFromKey( 'appointments-error-invalid-date-time' )->text() );
 		}
@@ -88,7 +93,9 @@ class AppointmentSaveHandler extends SimpleHandler {
 		$eventType = $this->eventTypeStore->getEventType( $body['event_type'] );
 		if ( !$eventType ) {
 			throw new HttpException(
-				Message::newFromKey( 'appointments-error-event-type-not-found', [ 'guid' => $body['eventType'] ] )->text()
+				Message::newFromKey(
+					'appointments-error-event-type-not-found', [ 'guid' => $body['eventType'] ]
+				)->text()
 			);
 		}
 
@@ -130,14 +137,13 @@ class AppointmentSaveHandler extends SimpleHandler {
 			);
 			$this->hookContainer->run( 'AppointmentsAppointmentModified', [ $appointment, $user, $removed, $added ] );
 			$this->logger->info( "Appointment modified: {$appointment->guid} by user {$user->getId()}", [
-				'removed_participants' => array_map( fn( $p ) => $p->getUser()->getName(), $removed ),
-				'added_participants' => array_map( fn( $p ) => $p->getUser()->getName(), $added )
+				'removed_participants' => array_map( fn ( $p ) => $p->getUser()->getName(), $removed ),
+				'added_participants' => array_map( fn ( $p ) => $p->getUser()->getName(), $added )
 			] );
 		}
 
 		return $this->getResponseFactory()->createJson( [ 'guid' => $appointment->guid ] );
 	}
-
 
 	public function getBodyParamSettings(): array {
 		return [
@@ -229,7 +235,7 @@ class AppointmentSaveHandler extends SimpleHandler {
 	 * @param EventType $eventType
 	 * @param PeriodDefinition $periodDefinition
 	 * @param string $appTitle
-	 * @param array $appointmentData
+	 * @param array &$appointmentData
 	 * @return void
 	 */
 	private function assertAgendaTitle(
@@ -245,6 +251,5 @@ class AppointmentSaveHandler extends SimpleHandler {
 		}
 		$appointmentData['agendaPage'] = $title->getPrefixedDBkey();
 	}
-
 
 }

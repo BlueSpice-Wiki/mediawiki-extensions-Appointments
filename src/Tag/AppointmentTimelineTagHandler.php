@@ -68,7 +68,7 @@ class AppointmentTimelineTagHandler implements ITagHandler {
 
 		return Html::element( 'div', [
 			'class' => 'appointment-timeline-tag ext-appointments-scheduler-calendar-cnt',
-			'data-appointments' => json_encode( array_map( function( Appointment $appointment ) use ( $user ) {
+			'data-appointments' => json_encode( array_map( function ( Appointment $appointment ) use ( $user ) {
 				return $this->serializer->serializeForOutput( $appointment, $user );
 			}, $appointments ) ),
 			'data-view' => $view,
@@ -76,10 +76,10 @@ class AppointmentTimelineTagHandler implements ITagHandler {
 	}
 
 	private function getPeriod( array $params, UserIdentity $user ): ?NaivePeriod {
-		$now = new DateTime('now', new DateTimeZone('UTC'));
+		$now = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
 		$start = $this->userInterface->convertDateTimeForUser( $now, $user );
 
-		$end = clone ( $start );
+		$end = clone $start;
 		$period = $params['period'] ?? 'week';
 		switch ( $period ) {
 			case 'week':

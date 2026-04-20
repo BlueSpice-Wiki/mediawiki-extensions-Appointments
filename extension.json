@@ -62,6 +62,13 @@
 					"description": "appointments-event-remind-desc"
 				}
 			}
+		},
+		"ContentDroplets": {
+			"Droplets": {
+				"appointment-timeline": {
+					"class": "\\MediaWiki\\Extension\\Appointments\\ContentDroplets\\AppointmentTimelineDroplet"
+				}
+			}
 		}
 	},
 	"callback": "mwsInitComponents",
@@ -235,10 +242,8 @@
 			"packageFiles": [
 				"tag.js",
 				"formelement/CalendarPicker.js",
-				"formelement/EventTypePicker.js",
-				"ui/util/EventTypeMenuOptions.js",
-				"ui/CalendarPicker.js",
-				"ui/EventTypePicker.js"
+				"formelement/EventTypePickerAnything.js",
+				"ui/CalendarPicker.js"
 			],
 			"dependencies": [
 				"ext.appointments.main",

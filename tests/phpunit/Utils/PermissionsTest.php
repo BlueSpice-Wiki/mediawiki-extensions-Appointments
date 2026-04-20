@@ -81,4 +81,3 @@ class PermissionsTest extends TestCase {
 		);
 	}
 }
-

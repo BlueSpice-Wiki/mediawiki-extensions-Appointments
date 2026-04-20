@@ -42,7 +42,9 @@ class UserInterface {
 	 * @return DateTime
 	 * @throws \Exception
 	 */
-	public function convertUserInputToUTC( string $date, string $time, UserIdentity $user, bool $isAllDay = false ): DateTime {
+	public function convertUserInputToUTC(
+		string $date, string $time, UserIdentity $user, bool $isAllDay = false
+	): DateTime {
 		$userTZ = $this->getUserTimezone( $user );
 		$dateTimeStr = $date . ' ' . $time;
 

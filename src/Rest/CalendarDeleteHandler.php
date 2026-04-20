@@ -29,7 +29,8 @@ class CalendarDeleteHandler extends SimpleHandler {
 		private readonly Permissions $permissions,
 		private readonly HookContainer $hookContainer,
 		private readonly LoggerInterface $logger
-	) {}
+	) {
+	}
 
 	/**
 	 * @return Response

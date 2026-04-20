@@ -40,4 +40,3 @@ class GuidGeneratorTest extends TestCase {
 		$this->assertNotSame( $first, $second );
 	}
 }
-

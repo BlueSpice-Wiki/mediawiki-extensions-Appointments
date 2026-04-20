@@ -10,6 +10,7 @@ use MediaWiki\Extension\Appointments\Utils\RecurrenceRule;
 use MediaWiki\User\UserFactory;
 use stdClass;
 use Wikimedia\Rdbms\ILoadBalancer;
+use Wikimedia\Rdbms\IResultWrapper;
 
 readonly class AppointmentStore {
 
@@ -26,11 +27,11 @@ readonly class AppointmentStore {
 	 * @param EventTypeStore $eventTypeStore
 	 */
 	public function __construct(
-		private ILoadBalancer    $lb,
+		private ILoadBalancer $lb,
 		private ParticipantStore $participantStore,
-		private CalendarStore    $calendarStore,
-		private UserFactory      $userFactory,
-		private EventTypeStore   $eventTypeStore
+		private CalendarStore $calendarStore,
+		private UserFactory $userFactory,
+		private EventTypeStore $eventTypeStore
 	) {
 	}
 
@@ -185,7 +186,7 @@ readonly class AppointmentStore {
 	}
 
 	/**
-	 * @param $res
+	 * @param IResultWrapper $res
 	 * @return array
 	 */
 	private function appointmentsFromResultSet( $res ): array {

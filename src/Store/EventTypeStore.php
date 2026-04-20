@@ -22,9 +22,9 @@ class EventTypeStore {
 	 * @param array $systemTypes
 	 */
 	public function __construct(
-		private ILoadBalancer    $lb,
-		private UserFactory 	 $userFactory,
-		private array			 $systemTypes
+		private ILoadBalancer $lb,
+		private UserFactory $userFactory,
+		private array $systemTypes
 	) {
 	}
 
@@ -138,7 +138,6 @@ class EventTypeStore {
 			->caller( __METHOD__ )
 			->fetchResultSet();
 
-
 		$eventTypes = [];
 		foreach ( $systemAssignments as $assignment ) {
 			if ( isset( $this->systemTypes[$assignment->aeta_type] ) ) {
@@ -156,7 +155,7 @@ class EventTypeStore {
 	 * @param EventType $eventType
 	 * @return void
 	 */
-	public function deleteEventType( EventType $eventType ): void  {
+	public function deleteEventType( EventType $eventType ): void {
 		if ( $eventType->isSystem() ) {
 			throw new \InvalidArgumentException( 'Cannot delete system event type' );
 		}

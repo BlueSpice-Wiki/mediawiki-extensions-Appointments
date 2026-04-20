@@ -93,4 +93,3 @@ class RecurrenceRuleTest extends TestCase {
 		];
 	}
 }
-

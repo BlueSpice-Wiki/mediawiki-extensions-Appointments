@@ -30,7 +30,9 @@ class AppointmentGetHandler extends SimpleHandler {
 
 		$appointment = $this->appointmentStore->getAppointment( $params['guid'] );
 		if ( !$appointment ) {
-			throw new \InvalidArgumentException( Message::newFromKey( 'appointments-error-appointment-not-found' )->text() );
+			throw new \InvalidArgumentException(
+				Message::newFromKey( 'appointments-error-appointment-not-found' )->text()
+			);
 		}
 		return $this->getResponseFactory()->createJson(
 			$this->serializer->serializeForOutput( $appointment, RequestContext::getMain()->getUser() )

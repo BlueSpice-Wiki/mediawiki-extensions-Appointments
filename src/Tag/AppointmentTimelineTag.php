@@ -6,7 +6,6 @@ use MediaWiki\Extension\Appointments\Store\CalendarStore;
 use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\Utils\CalendarValueParam;
 use MediaWiki\Extension\Appointments\Utils\EventTypeListValueParam;
-use MediaWiki\Language\Language;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Message\Message;
 use MediaWiki\User\UserFactory;
@@ -57,7 +56,7 @@ class AppointmentTimelineTag extends GenericTag {
 
 		$eventType = new EventTypeListValueParam( $this->eventTypeStore );
 		$eventType->setRequired( false );
-		$eventType->setListSeparator(',' );
+		$eventType->setListSeparator( ',' );
 
 		$period = new KeywordValue();
 		$period->setRequired( false );
@@ -95,9 +94,10 @@ class AppointmentTimelineTag extends GenericTag {
 		$formSpec = new StandaloneFormSpecification();
 		$formSpec->setItems( [
 			[
-				'type' => 'user',
+				'type' => 'user_picker',
 				'name' => 'user',
 				'label' => Message::newFromKey( 'appointments-ve-attr-user' )->text(),
+				'help' => Message::newFromKey( 'appointments-ve-attr-user-help' )->text(),
 			],
 			[
 				'type' => 'appointment_calendar',

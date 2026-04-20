@@ -81,6 +81,6 @@ readonly final class AgendaLinker {
 	 */
 	private function getPreloadTemplate( Appointment $appointment ): ?Title {
 		$key = $appointment->calendar->name . '/' . $appointment->eventType->name;
-		return $this->titleFactory->makeTitle( NS_TEMPLATE,  $key );
+		return $this->titleFactory->makeTitle( NS_TEMPLATE, $key );
 	}
 }

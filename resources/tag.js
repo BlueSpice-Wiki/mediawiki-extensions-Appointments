@@ -1,5 +1,5 @@
 require( './formelement/CalendarPicker.js' );
-require( './formelement/EventTypePicker.js' );
+require( './formelement/EventTypePickerAnything.js' );
 
 ( function () {
 	$( '.appointment-timeline-tag' ).each( function () {

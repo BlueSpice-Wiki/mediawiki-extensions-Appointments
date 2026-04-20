@@ -19,15 +19,15 @@ final class RecurrenceRule {
 
 	private static array $secondsInPeriod = [
 		self::RECURRENCE_WEEKLY => 7 * 24 * 3600,
-		self::RECURRENCE_MONTHLY => 30 * 24 * 3600, // Approximation
-		self::RECURRENCE_YEARLY => 365 * 24 * 3600 // Approximation
+		self::RECURRENCE_MONTHLY => 30 * 24 * 3600,
+		self::RECURRENCE_YEARLY => 365 * 24 * 3600
 	];
 
 	/**
 	 * @param string $rule
 	 */
 	public function __construct( private string $rule ) {
-		if ( !in_array( $rule, RecurrenceRule::$validRules ) ) {
+		if ( !in_array( $rule, self::$validRules ) ) {
 			throw new InvalidArgumentException( "Invalid recurrence rule: $rule" );
 		}
 	}
@@ -48,7 +48,7 @@ final class RecurrenceRule {
 	public function supportsAppointmentDuration( DateTime $start, DateTime $end ): bool {
 		$secDuration = $end->getTimestamp() - $start->getTimestamp();
 
-		return $secDuration < RecurrenceRule::$secondsInPeriod[$this->rule];
+		return $secDuration < self::$secondsInPeriod[$this->rule];
 	}
 
 	/**

@@ -7,8 +7,8 @@ use MediaWiki\Extension\Appointments\Store\ParticipantStore;
 use MediaWiki\Extension\Appointments\UserInterface;
 use MediaWiki\Extension\Appointments\Utils\AgendaLinker;
 use MediaWiki\Extension\Appointments\Utils\AppointmentSerializer;
-use MediaWiki\Extension\Appointments\Utils\UserResolver;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
+use MediaWiki\Extension\Appointments\Utils\UserResolver;
 use MediaWiki\Logger\LoggerFactory;
 use MediaWiki\MediaWikiServices;
 
@@ -71,12 +71,12 @@ return [
 	'Appointments._Logger' => static function () {
 		return LoggerFactory::getInstance( 'Appointments' );
 	},
-	'Appointments._AgendaLinker' => static function( MediaWikiServices $services ) {
+	'Appointments._AgendaLinker' => static function ( MediaWikiServices $services ) {
 		return new AgendaLinker(
 			$services->getTitleFactory()
 		);
 	},
-	'Appointments._AppointmentSerializer' => static function( MediaWikiServices $services ) {
+	'Appointments._AppointmentSerializer' => static function ( MediaWikiServices $services ) {
 		return new AppointmentSerializer(
 			$services->getService( 'Appointments._Permissions' ),
 			$services->getService( 'Appointments._AgendaLinker' ),

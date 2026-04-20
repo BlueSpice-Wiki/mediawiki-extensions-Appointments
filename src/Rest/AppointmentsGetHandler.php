@@ -8,9 +8,7 @@ use MediaWiki\Extension\Appointments\Store\AppointmentStore;
 use MediaWiki\Extension\Appointments\Store\CalendarStore;
 use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\UserInterface;
-use MediaWiki\Extension\Appointments\Utils\AgendaLinker;
 use MediaWiki\Extension\Appointments\Utils\AppointmentSerializer;
-use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Message\Message;
 use MediaWiki\Rest\Response;
 use Wikimedia\ParamValidator\ParamValidator;
@@ -45,7 +43,9 @@ class AppointmentsGetHandler extends AppointmentGetHandler {
 		if ( $calendarName ) {
 			$calendar = $this->calendarStore->getCalendar( $calendarName );
 			if ( !$calendar ) {
-				throw new \InvalidArgumentException( Message::newFromKey( 'appointments-error-calendar-not-found' )->text() );
+				throw new \InvalidArgumentException(
+					Message::newFromKey( 'appointments-error-calendar-not-found' )->text()
+				);
 			}
 		}
 		$personalOnly = $params['onlyPersonal'];
@@ -89,11 +89,10 @@ class AppointmentsGetHandler extends AppointmentGetHandler {
 
 		$appointments = $query->execute();
 		$data = [];
-		foreach( $appointments as $appointment ) {
+		foreach ( $appointments as $appointment ) {
 			$data[] = $this->serializer->serializeForOutput( $appointment, $user );
 		}
 		return $this->getResponseFactory()->createJson( $data );
-
 	}
 
 	/**

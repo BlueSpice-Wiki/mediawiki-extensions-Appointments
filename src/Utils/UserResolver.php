@@ -14,8 +14,9 @@ readonly class UserResolver {
 	 */
 	public function __construct(
 		private ILoadBalancer $lb,
-		private UserFactory   $userFactory
-	) {}
+		private UserFactory $userFactory
+	) {
+	}
 
 	/**
 	 * @param Participant $participant
@@ -121,7 +122,6 @@ readonly class UserResolver {
 			$users[] = $row->user_name;
 		}
 		return $users;
-
 	}
 
 	/**

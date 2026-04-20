@@ -84,7 +84,6 @@ class ParticipantStore {
 		}
 
 		return $db->makeList( $rows, LIST_OR );
-
 	}
 
 	/**

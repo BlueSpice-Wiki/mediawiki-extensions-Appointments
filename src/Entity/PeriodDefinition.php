@@ -18,7 +18,7 @@ class PeriodDefinition extends NaivePeriod {
 		parent::__construct( $start, $end );
 		if ( $this->isAllDay ) {
 			$this->start->setTime( 0, 0 );
-			$this->end->setTime( 0, 0,);
+			$this->end->setTime( 0, 0, );
 		}
 		$this->validate();
 	}

@@ -9,14 +9,14 @@ use MediaWiki\User\User;
 use MediaWiki\User\UserFactory;
 use PHPUnit\Framework\TestCase;
 use Wikimedia\Rdbms\FakeResultWrapper;
-use Wikimedia\Rdbms\ILoadBalancer;
 use Wikimedia\Rdbms\IDatabase;
+use Wikimedia\Rdbms\ILoadBalancer;
 use Wikimedia\Rdbms\SelectQueryBuilder;
 
 /**
  * @covers \MediaWiki\Extension\Appointments\Utils\ParticipantResolver
  */
-class ParticipantResolverTest extends TestCase {
+class UserResolverTest extends TestCase {
 
 	public function testParticipantsFromDataCreatesParticipantObjects(): void {
 		$resolver = new UserResolver(
@@ -145,4 +145,3 @@ class ParticipantResolverTest extends TestCase {
 		$this->assertSame( [], $added );
 	}
 }
-

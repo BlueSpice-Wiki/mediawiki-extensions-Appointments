@@ -26,7 +26,8 @@ class AppointmentQuery {
 		private readonly AppointmentStore $appointmentStore,
 		private readonly IDatabase $db,
 		private readonly ParticipantStore $participantStore
-	) {}
+	) {
+	}
 
 	/**
 	 * @param Calendar $calendar
@@ -77,7 +78,7 @@ class AppointmentQuery {
 	 */
 	public function forEventTypes( array $eventTypes ): self {
 		$this->conds[] = 'app_event_type IN (' .
-			$this->db->makeList( array_map( fn( $et ) => $et->guid, $eventTypes ) ) .
+			$this->db->makeList( array_map( fn ( $et ) => $et->guid, $eventTypes ) ) .
 		')';
 
 		return $this;

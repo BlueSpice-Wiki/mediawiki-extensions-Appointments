@@ -21,9 +21,9 @@ class CalendarStore {
 	 * @param EventTypeStore $eventTypeStore
 	 */
 	public function __construct(
-		private ILoadBalancer    $lb,
-		private UserFactory 	 $userFactory,
-		private EventTypeStore   $eventTypeStore
+		private ILoadBalancer $lb,
+		private UserFactory $userFactory,
+		private EventTypeStore $eventTypeStore
 	) {
 	}
 
@@ -117,7 +117,6 @@ class CalendarStore {
 	 * @return Calendar
 	 */
 	private function rowToCalendar( stdClass $row ): Calendar {
-
 		return new Calendar(
 			guid: $row->cal_guid,
 			name: $row->cal_name,

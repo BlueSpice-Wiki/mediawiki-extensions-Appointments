@@ -17,7 +17,8 @@ class AppointmentSerializer {
 		private Permissions $permissions,
 		private AgendaLinker $agendaLinker,
 		private UserInterface $userInterface
-	) {}
+	) {
+	}
 
 	/**
 	 * @param Appointment $appointment
