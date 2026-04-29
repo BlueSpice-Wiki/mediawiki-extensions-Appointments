@@ -1,7 +1,7 @@
 eventTypeIcon = function ( cfg ) {
 	cfg = cfg || {};
 
-	this.value = cfg.value || 'calendar';
+	this.value = cfg.value || 'app-meeting';
 	this.$overlay = cfg.$overlay || true;
 
 	this.layout = new OO.ui.PanelLayout( {
@@ -32,7 +32,9 @@ eventTypeIcon = function ( cfg ) {
 		popup: {
 			$overlay: this.$overlay,
 			$content: this.layout.$element,
-			padded: true
+			padded: true,
+			width: 195,
+			classes: [ 'appointments-event-type-icon-popup' ]
 		}
 	} );
 };

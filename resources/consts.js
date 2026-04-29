@@ -36,13 +36,14 @@ CALENDAR_COLORS = {
 };
 
 EVENT_TYPE_ICONS = [
-	'calendar',
-	'layout',
-	'signature',
-	'puzzle',
-	'paste',
-	'translation',
-	'labFlask'
+	'app-meeting',
+	'app-bell',
+	'app-birthday',
+	'app-group',
+	'app-home',
+	'app-travel',
+	'app-user',
+	'app-vacation'
 ];
 
 module.exports = {
