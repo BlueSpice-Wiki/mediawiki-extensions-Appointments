@@ -72,6 +72,9 @@
 		}
 	},
 	"callback": "mwsInitComponents",
+	"ExtensionFunctions": [
+		"MediaWiki\\Extension\\Appointments\\Setup::callback"
+	],
 	"MessagesDirs": {
 		"Appointments": "i18n"
 	},
@@ -271,7 +274,6 @@
 		"SkinTemplateNavigation::Universal": "addLinks",
 		"AppointmentsAppointmentModified": "sendNotifications",
 		"AppointmentsAppointmentCreated": "sendNotifications",
-		"MediaWikiServices": "registerCron",
 		"MWStakeGenericTagHandlerInitTags": "registerTags"
 	},
 	"HookHandlers": {
@@ -289,9 +291,6 @@
 		"sendNotifications": {
 			"class": "MediaWiki\\Extension\\Appointments\\Hook\\SendNotificationsOnUpdate",
 			"services": [ "Appointments._UserResolver", "MWStake.Notifier", "SpecialPageFactory", "ContentLanguage" ]
-		},
-		"registerCron": {
-			"class": "MediaWiki\\Extension\\Appointments\\Hook\\RegisterCron"
 		},
 		"registerTags": {
 			"class": "MediaWiki\\Extension\\Appointments\\Hook\\AddTag",
