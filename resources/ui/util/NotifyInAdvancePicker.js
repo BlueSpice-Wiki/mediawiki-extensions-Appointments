@@ -34,7 +34,7 @@ OO.inheritClass( notifyInAdvancePicker, OO.ui.Widget );
 notifyInAdvancePicker.prototype.getValue = function () {
 	const period = this.period.getMenu().findSelectedItem();
 	return {
-		enabled: this.toggle.isSelected(),
+		enabled: this.toggle.getValue(),
 		period: period ? period.getData() : null
 	}
 };
