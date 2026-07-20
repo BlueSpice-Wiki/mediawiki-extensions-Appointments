@@ -14,7 +14,7 @@ readonly class Travel extends EventType {
 			Message::newFromKey( 'appointments-travel-event-type-name' )->text(),
 			Message::newFromKey( 'appointments-travel-event-type-description' )->text(),
 			true,
-			User::newSystemUser( 'MediaWiki default' ),
+			User::newSystemUser( User::MAINTENANCE_SCRIPT_USER, [ 'steal' => true ] ),
 			[
 				'color' => '#7E5A8F',
 				'icon' => 'calendar'

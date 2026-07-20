@@ -14,7 +14,7 @@ readonly class Vacation extends EventType {
 			Message::newFromKey( 'appointments-vacation-event-type-name' )->text(),
 			Message::newFromKey( 'appointments-vacation-event-type-description' )->text(),
 			true,
-			User::newSystemUser( 'MediaWiki default' ),
+			User::newSystemUser( User::MAINTENANCE_SCRIPT_USER, [ 'steal' => true ] ),
 			[
 				'color' => '#B25F52',
 				'icon' => 'calendar'
