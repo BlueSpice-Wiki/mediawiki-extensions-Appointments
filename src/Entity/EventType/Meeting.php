@@ -14,7 +14,7 @@ readonly class Meeting extends EventType {
 			Message::newFromKey( 'appointments-meeting-event-type-name' )->text(),
 			Message::newFromKey( 'appointments-meeting-event-type-description' )->text(),
 			true,
-			User::newSystemUser( 'MediaWiki default' ),
+			User::newSystemUser( User::MAINTENANCE_SCRIPT_USER, [ 'steal' => true ] ),
 			[
 				'color' => '#4F8F6B',
 				'icon' => 'calendar'

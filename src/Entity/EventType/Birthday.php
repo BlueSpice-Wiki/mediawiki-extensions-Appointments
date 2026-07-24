@@ -14,7 +14,7 @@ readonly class Birthday extends EventType {
 			Message::newFromKey( 'appointments-birthday-event-type-name' )->text(),
 			Message::newFromKey( 'appointments-birthday-event-type-description' )->text(),
 			true,
-			User::newSystemUser( 'MediaWiki default' ),
+			User::newSystemUser( User::MAINTENANCE_SCRIPT_USER, [ 'steal' => true ] ),
 			[
 				'color' => '#4F5F78',
 				'icon' => 'calendar'
