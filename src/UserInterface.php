@@ -4,6 +4,7 @@ namespace MediaWiki\Extension\Appointments;
 
 use DateTime;
 use DateTimeZone;
+use MediaWiki\Config\Config;
 use MediaWiki\Language\Language;
 use MediaWiki\Languages\LanguageFactory;
 use MediaWiki\MainConfigNames;
@@ -21,7 +22,7 @@ class UserInterface {
 		private readonly LanguageFactory $languageFactory,
 		private readonly Language $contentLanguage,
 		private readonly UserOptionsLookup $userOptionsLookup,
-		private readonly \Config $mainConfig
+		private readonly Config $mainConfig
 	) {
 	}
 

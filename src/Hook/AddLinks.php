@@ -2,7 +2,7 @@
 
 namespace MediaWiki\Extension\Appointments\Hook;
 
-use Config;
+use MediaWiki\Config\Config;
 use MediaWiki\Extension\Appointments\Utils\OverviewActionEntryPoint;
 use MediaWiki\Hook\SkinTemplateNavigation__UniversalHook;
 use MediaWiki\SpecialPage\SpecialPageFactory;
