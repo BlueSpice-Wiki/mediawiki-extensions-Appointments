@@ -2,11 +2,11 @@
 
 namespace MediaWiki\Extension\Appointments\Rest;
 
+use MediaWiki\Context\RequestContext;
 use MediaWiki\Extension\Appointments\Store\CalendarStore;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Rest\Response;
 use MediaWiki\Rest\SimpleHandler;
-use RequestContext;
 
 class CalendarGetHandler extends SimpleHandler {
 

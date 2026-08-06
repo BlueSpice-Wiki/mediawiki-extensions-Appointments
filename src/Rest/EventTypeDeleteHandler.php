@@ -2,13 +2,13 @@
 
 namespace MediaWiki\Extension\Appointments\Rest;
 
+use MediaWiki\Context\RequestContext;
 use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Rest\HttpException;
 use MediaWiki\Rest\Response;
 use MediaWiki\Rest\SimpleHandler;
 use Psr\Log\LoggerInterface;
-use RequestContext;
 use Wikimedia\ParamValidator\ParamValidator;
 
 class EventTypeDeleteHandler extends SimpleHandler {

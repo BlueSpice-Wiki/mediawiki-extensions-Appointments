@@ -2,6 +2,7 @@
 
 namespace MediaWiki\Extension\Appointments\Rest;
 
+use MediaWiki\Context\RequestContext;
 use MediaWiki\Extension\Appointments\Entity\EventType;
 use MediaWiki\Extension\Appointments\Store\EventTypeStore;
 use MediaWiki\Extension\Appointments\Utils\GuidGenerator;
@@ -32,7 +33,7 @@ class EventTypeSaveHandler extends SimpleHandler {
 	 * @throws HttpException
 	 */
 	public function execute() {
-		$user = \RequestContext::getMain()->getUser();
+		$user = RequestContext::getMain()->getUser();
 		if ( !$this->permissions->canModifyEventTypes( $user ) ) {
 			throw new \MediaWiki\Rest\HttpException( 'permissiondenied', 403 );
 		}
