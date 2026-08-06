@@ -4,12 +4,12 @@ namespace MediaWiki\Extension\Appointments\Tag;
 
 use DateTime;
 use DateTimeZone;
-use Html;
 use MediaWiki\Extension\Appointments\Entity\Appointment;
 use MediaWiki\Extension\Appointments\Entity\NaivePeriod;
 use MediaWiki\Extension\Appointments\Store\AppointmentStore;
 use MediaWiki\Extension\Appointments\UserInterface;
 use MediaWiki\Extension\Appointments\Utils\AppointmentSerializer;
+use MediaWiki\Html\Html;
 use MediaWiki\Parser\Parser;
 use MediaWiki\Parser\PPFrame;
 use MediaWiki\User\UserFactory;

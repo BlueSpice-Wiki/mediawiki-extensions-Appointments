@@ -2,7 +2,7 @@
 
 namespace MediaWiki\Extension\Appointments;
 
-use Html;
+use MediaWiki\Html\Html;
 use MediaWiki\Html\TemplateParser;
 use OOJSPlus\Special\OOJSSpecialPage;
 
