@@ -127,6 +127,7 @@
 				"ui/util/AppointmentPopupList.js",
 				"ui/util/EventTypeIcon.js",
 				"ui/util/NotifyInAdvancePicker.js",
+				"ui/util/AddCalendarButton.js",
 				"object/PeriodDefinition.js",
 				"object/Participant.js",
 				"object/Calendar.js",
@@ -219,7 +220,15 @@
 				"appointments-ui-calendar-permissions-role-reader-placeholder",
 				"appointments-ui-calendar-permissions-role-edit-delete-placeholder",
 				"appointments-ui-calendar-permissions-disclaimer",
-				"appointments-ui-calendar-picker-none"
+				"appointments-ui-calendar-picker-none",
+				"appointments-ui-no-calendars",
+				"appointments-ui-create-calendar-instructions",
+				"appointments-ui-create-custom-calendar",
+				"appointments-ui-create-predefined-calendar",
+				"appointments-ui-hide-calendar",
+				"appointments-ui-search-calendars",
+				"appointments-ui-action-create",
+				"appointments-ui-notify-remind-period-none"
 			],
 			"dependencies": [
 				"oojs-ui",

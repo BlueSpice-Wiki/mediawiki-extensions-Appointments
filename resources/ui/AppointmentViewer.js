@@ -42,9 +42,11 @@ appointmentViewer.prototype.render = function () {
 
 
 	this.$element.append(
-		titleLabel.$element,
-		calendarAndTypeLabel.$element,
-		this.buildButtons().$element
+		new OO.ui.HorizontalLayout( {
+			classes: [ 'appointment-viewer-header' ],
+			items: [ titleLabel, this.buildButtons() ],
+		} ).$element,
+		calendarAndTypeLabel.$element
 	);
 	if ( customDataPanel ) {
 		this.$element.append( customDataPanel.$element );
@@ -55,12 +57,12 @@ appointmentViewer.prototype.render = function () {
 	if ( this.appointment.participants.length ) {
 		this.$element.append( new ParticipantView( this.appointment.participants ).$element );
 	}
-	if ( this.appointment.agendaLink ) {
+	if ( this.appointment.agendaLink[0] ) {
 		this.agendaLink = new OO.ui.ButtonWidget( {
 			label: mw.message( 'appointments-ui-view-agenda' ).text(),
-			href: this.appointment.agendaLink,
+			href: this.appointment.agendaLink[0],
 			framed: false,
-			flags: [ 'progressive' ]
+			flags: this.appointment.agendaLink[1] ? [ 'progressive' ] : [ 'destructive' ]
 		} );
 		this.$element.append( new OO.ui.HorizontalLayout( {
 			items: [
@@ -83,8 +85,9 @@ appointmentViewer.prototype.buildButtons = function () {
 
 	if ( this.appointment.canEdit() ) {
 		const editButton = new OO.ui.ButtonWidget( {
-			label: mw.message( 'appointments-ui-edit' ).text(),
+			title: mw.message( 'appointments-ui-edit' ).text(),
 			icon: 'edit',
+			framed: false,
 			flags: [ 'primary', 'progressive' ]
 		} );
 		editButton.connect( this, {
@@ -95,8 +98,9 @@ appointmentViewer.prototype.buildButtons = function () {
 
 	if ( this.appointment.canDelete() ) {
 		const deleteButton = new OO.ui.ButtonWidget( {
-			label: mw.message( 'appointments-ui-delete' ).text(),
+			title: mw.message( 'appointments-ui-delete' ).text(),
 			icon: 'trash',
+			framed: false,
 			flags: [ 'destructive', 'progressive' ]
 		} );
 		deleteButton.connect( this, {

@@ -37,6 +37,15 @@ appointmentEditor.prototype.getLabel = function () {
 	}
 };
 
+appointmentEditor.prototype.getSaveLabel = function () {
+	if ( !this.appointment ) {
+		return mw.message( 'appointments-ui-action-create' ).text()
+	} else {
+		// Default - dialog will handle
+		return null;
+	}
+};
+
 appointmentEditor.prototype.focus = function () {
 	this.name.focus();
 };
@@ -133,17 +142,21 @@ appointmentEditor.prototype.init = function () {
 		new OO.ui.FieldLayout( this.eventType, {
 			label: mw.message( 'appointments-ui-field-event-type' ).text()
 		} ).$element,
+
 		new OO.ui.FieldLayout( this.participants, {
+			classes: [ 'appointments-section-start' ],
 			label: mw.message( 'appointments-ui-field-participants' ).text()
-		} ).$element,
-		new OO.ui.FieldLayout( this.notifyInAdvance, {
-			label: mw.message( 'appointments-ui-field-notify-in-advance' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.agendaTitle, {
 			label: mw.message( 'appointments-ui-field-agenda-title' ).text()
 		} ).$element,
+
 		new OO.ui.FieldLayout( this.time, {
+			classes: [ 'appointments-section-start' ],
 			label: mw.message( 'appointments-ui-field-time' ).text()
+		} ).$element,
+		new OO.ui.FieldLayout( this.notifyInAdvance, {
+			label: mw.message( 'appointments-ui-field-notify-in-advance' ).text()
 		} ).$element,
 	);
 
@@ -213,7 +226,7 @@ appointmentEditor.prototype.setupCustomPanel = function ( eventType ) {
 		this.eventTypeCustomPanel.connect( this, {
 			change: 'onInputChange'
 		} );
-		this.$element.append( this.eventTypeCustomPanel.$element );
+		this.$element.append( this.eventTypeCustomPanel.$element.addClass( 'appointments-section-start' ) );
 	}
 	this.dialog.updateSize();
 };

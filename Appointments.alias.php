@@ -3,5 +3,5 @@
 $specialPageAliases = [];
 
 $specialPageAliases['en'] = [
-	'Appointments' => [ 'Appointments' ],
+	'Appointments' => [ 'Calendars' ],
 ];

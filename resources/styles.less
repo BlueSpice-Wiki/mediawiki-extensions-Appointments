@@ -5,11 +5,36 @@
 
 	.appointments-appointment-options {
 		align-items: center;
-		gap: 44px;
 		margin: 10px 0;
 
 		.oo-ui-fieldLayout-field {
 			width: auto !important;
+		}
+	}
+
+	.appointments-date-picker-section {
+		width: 45%;
+
+		&.even-align {
+			justify-content: space-between;
+		}
+
+		&.short {
+			width: 30%;
+		}
+
+		&.checkbox-field .oo-ui-fieldLayout-field {
+			width: 32px !important;
+		}
+
+		&.large-field {
+			.oo-ui-fieldLayout-body {
+				width: 100%;
+
+				.oo-ui-fieldLayout-field {
+					flex-grow: 1;
+				}
+			}
 		}
 	}
 }
@@ -25,8 +50,20 @@
 }
 
 .appointment-viewer {
-	.appointment-viewer-title {
-		font-size: 1.2em;
+	.appointment-viewer-header {
+		align-items: center;
+		flex-wrap: nowrap;
+		gap: 8px;
+
+		.appointment-viewer-title {
+			font-weight: bold;
+			font-size: 1.2em;
+			flex-grow: 1;
+		}
+
+		.appointment-viewer-buttons {
+			flex-wrap: nowrap;
+		}
 	}
 
 	.appointment-viewer-calendar {
@@ -41,10 +78,6 @@
 		}
 	}
 
-	.appointment-viewer-buttons {
-		margin-bottom: 10px;
-	}
-
 	.oo-ui-horizontalLayout.entity-wrapper {
 		align-items: center;
 		border-top: 1px solid #cecece;
@@ -57,8 +90,6 @@
 		display: inline-block;
 		width: auto !important;
 		padding: 4px;
-		border: 1px solid #ccc;
-		border-radius: 4px;
 		min-height: 32px;
 	}
 }
@@ -78,9 +109,57 @@
 		min-width: 200px;
 		padding-top: 12px;
 
+		.ext-appointments-no-calendars-notice-label {
+			font-weight: bold;
+		}
+
+		.ext-appointments-no-calendars-instructions {
+			font-size: 0.8rem;
+		}
+
+		.ext-appointments-create-calendar-button {
+			float: right;
+			text-align: right;
+
+			.ext-appointments-create-calendar-popup {
+				>.oo-ui-buttonWidget,
+				>.oo-ui-buttonWidget a {
+					width: 100%;
+					margin: 0;
+					text-align: right;
+					text-wrap: wrap;
+				}
+			}
+		}
+
+		.ext-appointments-search-button {
+			float: right;
+		}
+
+		.ext-appointments-float-clear {
+			clear: both;
+		}
+
+		.ext-appointments-search-input {
+			margin-bottom: 12px;
+		}
+
 		.ext-appointments-calendar-multiselect-options {
 			.oo-ui-checkboxInputWidget {
 				vertical-align: middle;
+			}
+
+			.calendar-checkbox-option {
+				color: #646363;
+				margin-bottom: 4px;
+
+				.oo-ui-checkboxInputWidget {
+					display: none;
+				}
+
+				.oo-ui-labelElement-label {
+					padding-left: 0;
+				}
 			}
 
 			.oo-ui-checkboxMultioptionWidget {
@@ -92,11 +171,19 @@
 					margin-right: 0;
 					position: absolute;
 					right: 32px;
-					top: -5px;
 					visibility: hidden;
 
 					&:last-of-type {
 						right: 0;
+					}
+
+					a {
+						padding: 10px;
+						min-height: 20px;
+
+						.oo-ui-iconElement-icon {
+							background-size: 16px;
+						}
 					}
 				}
 
@@ -107,6 +194,14 @@
 					}
 				}
 			}
+		}
+	}
+
+	.ext-appointments-scheduler-main-booklet {
+		.ext-appointments-scheduler-new-event-button {
+			float: right;
+			margin: 8px 0;
+
 		}
 	}
 }
@@ -373,7 +468,7 @@
 	}
 
 	.notify-in-advance-period {
-		width: 250px;
+		width: 100%;
 	}
 }
 
@@ -403,10 +498,14 @@
 		background-position: top !important;
 		margin-right: 0.25em;
 	}
-}
 
-.event-type-multiselect {
-	margin-left: 12px;
+	.option-color {
+		width: 10px;
+		height: 10px;
+		border-radius: 10px;
+		display: inline-block;
+		margin-right: 4px;
+	}
 }
 
 .appointment-popup-list {
@@ -546,4 +645,8 @@
 	.oo-ui-buttonElement {
 		margin-left: 0 !important;
 	}
+}
+
+.appointments-section-start {
+	margin-top: 40px !important;
 }

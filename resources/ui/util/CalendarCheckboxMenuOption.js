@@ -53,6 +53,14 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 			icon: 'lock'
 		} ) );
 	}
+	/*if ( this.isSelected() )  {
+		actions.push( new OO.ui.MenuOptionWidget( {
+			data: 'hide',
+			label: mw.msg( 'appointments-ui-hide-calendar' ),
+			icon: 'eyeClosed'
+		} ) )
+	}*/
+
 	if ( calendar.canDelete() ) {
 		actions.push( new OO.ui.MenuOptionWidget( {
 			data: 'delete',
@@ -68,8 +76,10 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 		$overlay: true,
 		label: mw.msg( 'appointments-ui-calendar-options' ),
 		framed: false,
+		classes: [ 'calendar-options' ],
 		invisibleLabel: true,
 		menu: {
+			horizontalPosition: 'end',
 			items: actions
 		}
 	} );
@@ -101,6 +111,8 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 						window.location.reload();
 					}
 				} );
+			} else if ( item.getData() === 'hide' ) {
+				this.setSelected( false );
 			}
 		}
 	} );
@@ -108,8 +120,11 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 	if ( actions.length ) {
 		this.$element.append( this.options.$element );
 	}
+	this.$element.addClass( 'calendar-checkbox-option' );
 
 	this.renderEventTypes();
+	this.setSelected( true );
+	this.setDisabled( true );
 };
 
 OO.inheritClass( calendarCheckboxMenuOption, OO.ui.CheckboxMultioptionWidget );

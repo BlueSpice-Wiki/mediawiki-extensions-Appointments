@@ -101,13 +101,11 @@ SchedulerView.prototype.emitRangeChangeIfChanged = function () {
 SchedulerView.prototype.renderNavigation = function () {
 	this.nextButton = new OO.ui.ButtonWidget( {
 		icon: 'next',
-		title: mw.msg( 'appointments-next-month' ),
-		flags: [ 'progressive' ]
+		title: mw.msg( 'appointments-next-month' )
 	} );
 	this.prevButton = new OO.ui.ButtonWidget( {
 		icon: 'previous',
-		title: mw.msg( 'appointments-previous-month' ),
-		flags: [ 'progressive' ]
+		title: mw.msg( 'appointments-previous-month' )
 	} );
 	this.nextButton.connect( this, {
 		click: () => {

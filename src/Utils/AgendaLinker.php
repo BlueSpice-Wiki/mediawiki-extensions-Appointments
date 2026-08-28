@@ -37,7 +37,7 @@ readonly final class AgendaLinker {
 		if ( $iteration > 1 ) {
 			$key .= '-' . $iteration;
 		}
-		$title = $this->titleFactory->newFromText( "Meeting_Minutes:$key" );
+		$title = $this->titleFactory->newFromText( "Minutes:$key" );
 		if ( !$title ) {
 			return null;
 		}
@@ -55,24 +55,27 @@ readonly final class AgendaLinker {
 
 	/**
 	 * @param Appointment $appointment
-	 * @return string
+	 * @return array<string,bool> Page link, exists
 	 */
-	public function getAgendaLink( Appointment $appointment ): string {
+	public function getAgendaLink( Appointment $appointment ): array {
 		$data = $appointment->data;
 		if ( !isset( $data['agendaPage'] ) ) {
-			return '';
+			return [ '', false ];
 		}
 		$agendaTitle = $this->titleFactory->newFromText( $data['agendaPage'] );
 		if ( !$agendaTitle || !$agendaTitle->canExist() ) {
-			return '';
+			return [ '', false ];
 		}
 		if ( !$agendaTitle->exists() ) {
 			$preload = $this->getPreloadTemplate( $appointment );
 			if ( $preload ) {
-				return $agendaTitle->getLocalURL( [ 'action' => 'edit', 'preload' => $preload->getPrefixedText() ] );
+				return [
+					$agendaTitle->getLocalURL( [ 'action' => 'edit', 'preload' => $preload->getPrefixedText() ] ),
+					false
+				];
 			}
 		}
-		return $agendaTitle->getLocalURL();
+		return [ $agendaTitle->getLocalURL(), true ];
 	}
 
 	/**

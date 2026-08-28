@@ -27,24 +27,6 @@ makeToolbar = function ( view ) {
 	ToggleCalendarsTool.prototype.onUpdateState = function () {};
 	toolFactory.register( ToggleCalendarsTool );
 
-	function NewAppointmentTool() {
-		NewAppointmentTool.super.apply( this, arguments );
-		this.setDisabled( !createPermissions['create-appointment'] );
-	}
-	OO.inheritClass( NewAppointmentTool, OO.ui.Tool );
-
-	NewAppointmentTool.static.name = 'addAppointment';
-	NewAppointmentTool.static.icon = 'add';
-	NewAppointmentTool.static.displayBothIconAndLabel = true;
-	NewAppointmentTool.static.title = mw.msg( 'appointments-ui-new-appointment' );
-	NewAppointmentTool.static.flags = [ 'primary', 'progressive' ];
-	NewAppointmentTool.prototype.onSelect = function () {
-		toolbar.emit( 'add' );
-		return true;
-	};
-	NewAppointmentTool.prototype.onUpdateState = function () {};
-	toolFactory.register( NewAppointmentTool );
-
 	function ModeSwitchTool() {
 		ModeSwitchTool.super.apply( this, arguments );
 		this.control = new OO.ui.ButtonSelectWidget( {
@@ -92,7 +74,7 @@ makeToolbar = function ( view ) {
 			name: 'actions',
 			classes: [ 'default-actions' ],
 			type: 'bar',
-			include: [ 'toggleCalendars', 'addAppointment' ]
+			include: [ 'toggleCalendars' ]
 		},
 		{
 			name: 'actions',

@@ -35,8 +35,10 @@ class CalendarGetHandler extends SimpleHandler {
 				'edit' => $this->permissions->canModifyCalendar( $user, $calendar ),
 				'delete' => $this->permissions->canDeleteCalendar( $user, $calendar ),
 			];
-			$calendars[] = $calendarData;
+			$calendars[$calendar->name] = $calendarData;
 		}
-		return $this->getResponseFactory()->createJson( $calendars );
+		// Sort alphabetically
+		uksort( $calendars, 'strcasecmp' );
+		return $this->getResponseFactory()->createJson( array_values( $calendars ) );
 	}
 }

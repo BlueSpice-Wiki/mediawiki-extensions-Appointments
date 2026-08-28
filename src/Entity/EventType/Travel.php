@@ -17,7 +17,7 @@ readonly class Travel extends EventType {
 			User::newSystemUser( User::MAINTENANCE_SCRIPT_USER, [ 'steal' => true ] ),
 			[
 				'color' => '#7E5A8F',
-				'icon' => 'calendar'
+				'icon' => 'app-travel'
 			]
 		);
 	}

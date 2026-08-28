@@ -13,6 +13,7 @@ const scheduler = function ( config ) {
 	this.viewObject = null;
 
 	this.localPreferences = new UserLocalPreferences();
+	this.permissions = mw.config.get( 'wgAppointmentsPermissions' );
 
 	this.viewMap = {
 		'year': 'dayGridYear',
@@ -41,23 +42,6 @@ const scheduler = function ( config ) {
 
 	this.toolbar = makeToolbar( this.view );
 	this.toolbar.connect( this, {
-		add: () => {
-			let defaultDate = null;
-			if ( this.viewObject ) {
-				defaultDate = this.viewObject.selectedDate;
-			}
-			ext.appointments.util.openAppointmentEditorDialog( null, { defaultDate: defaultDate } )
-				.then( ( res ) => {
-					if ( res && res.entity ) {
-						if ( res.res && res.res.guid ) {
-							res.entity.guid = res.res.guid;
-							this.dataProvider.onAppointmentChange( res.entity );
-						} else {
-							mw.notify( mw.message( 'appointments-ui-error-saving-appointment' ).text(), { type: 'error' } );
-						}
-					}
-				} );
-		},
 		viewChange: async ( view ) => {
 			this.view = view;
 			this.localPreferences.setPreference( 'defaultView', view );
@@ -72,17 +56,61 @@ const scheduler = function ( config ) {
 	} );
 	this.$header.append( this.toolbar.$element );
 
+	this.newEventButton = new OO.ui.ButtonWidget( {
+		label: mw.msg( 'appointments-ui-new-appointment' ),
+		icon: 'add',
+		flags: [ 'primary', 'progressive' ],
+		classes: [ 'ext-appointments-scheduler-new-event-button' ],
+		disabled: true
+	} );
+	this.mainBooklet.$content.children( '.oo-ui-bookletLayout-stackLayout' ).prepend( this.newEventButton.$element );
+
+	this.newEventButton.connect( this, {
+		click: () => {
+			let defaultDate = null;
+			if ( this.viewObject ) {
+				defaultDate = this.viewObject.selectedDate;
+			}
+			ext.appointments.util.openAppointmentEditorDialog( null, { defaultDate: defaultDate } )
+				.then( ( res ) => {
+					if ( res && res.entity ) {
+						if ( res.res && res.res.guid ) {
+							res.entity.guid = res.res.guid;
+							// Make sure the calendar/event type of the new
+							// appointment is selected, otherwise it would not be visible.
+							this.calendarPicker.ensureSelected(
+								res.entity.calendar && res.entity.calendar.guid,
+								res.entity.eventType && res.entity.eventType.guid
+							);
+							this.dataProvider.onAppointmentChange( res.entity );
+						} else {
+							mw.notify( mw.message( 'appointments-ui-error-saving-appointment' ).text(), { type: 'error' } );
+						}
+					}
+				} );
+		}
+	} );
+
 	this.calendarPicker = new CalendarMultiselect( {
 		value: this.localPreferences.getPreference( 'selectedCalendars' ) || null
 	} );
 	this.calendarPicker.connect( this, {
-		reload: async ( value ) => {
+		reload: async ( value, calendarItems ) => {
 			this.dataProvider.onCalendarUpdate( value );
+			if ( calendarItems.length === 0 ) {
+				this.newEventButton.setDisabled( true );
+			}
+		},
+		created: function () {
+			this.enableAddButtonIfAllowed();
 		}
 	} );
 	const calendarInitializationPromise = new Promise( resolve => {
 		this.calendarPicker.connect( this, {
-			initialize: ( value ) => {
+			initialize: ( value, calendarItems ) => {
+				if ( calendarItems.length ) {
+					this.enableAddButtonIfAllowed();
+				}
 				this.calendarPicker.connect( this, {
 					select: ( value, selected ) => {
 						this.localPreferences.setPreference( 'selectedCalendars', this.calendarPicker.getValue() );
@@ -174,6 +202,12 @@ scheduler.prototype.getPage = function( view ) {
 	OO.inheritClass( page, OO.ui.PageLayout );
 
 	return new page( view );
+};
+
+scheduler.prototype.enableAddButtonIfAllowed = function () {
+	if ( this.permissions['create-appointment'] ) {
+		this.newEventButton.setDisabled( false );
+	}
 };
 
 module.exports = scheduler;

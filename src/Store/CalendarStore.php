@@ -96,7 +96,7 @@ class CalendarStore {
 	}
 
 	/**
-	 * @return array
+	 * @return Calendar[]
 	 */
 	public function getCalendars(): array {
 		$res = $this->lb->getConnection( DB_REPLICA )->newSelectQueryBuilder()

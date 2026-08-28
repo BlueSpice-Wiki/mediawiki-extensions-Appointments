@@ -52,9 +52,17 @@ appointmentTime.prototype.makeTimed = function () {
 
 	return new OO.ui.HorizontalLayout( {
 		items: [
-			new OO.ui.FieldLayout( this.date, { label: mw.msg( 'appointments-ui-date' ), align: 'top' } ),
-			new OO.ui.FieldLayout( this.startTime, { label: mw.msg( 'appointments-ui-time-start' ), align: 'top' } ),
-			new OO.ui.FieldLayout( this.endTime, { label: mw.msg( 'appointments-ui-time-end' ), align: 'top' } ),
+			new OO.ui.FieldLayout( this.date, {
+				label: mw.msg( 'appointments-ui-date' ), align: 'top',
+				classes: [ 'appointments-date-picker-section' ]
+			} ),
+			new OO.ui.HorizontalLayout( {
+				items: [
+					new OO.ui.FieldLayout( this.startTime, { label: mw.msg( 'appointments-ui-time-start' ), align: 'top' } ),
+					new OO.ui.FieldLayout( this.endTime, { label: mw.msg( 'appointments-ui-time-end' ), align: 'top' } ),
+				],
+				classes: [ 'appointments-date-picker-section', 'even-align', 'short' ]
+			} )
 		],
 		classes: [ 'appointments-timed-appointment' ]
 	} );
@@ -75,8 +83,14 @@ appointmentTime.prototype.makeAllDay = function () {
 
 	return new OO.ui.HorizontalLayout( {
 		items: [
-			new OO.ui.FieldLayout( this.dateStart, { label: mw.msg( 'appointments-ui-date-start' ), align: 'top' } ),
-			new OO.ui.FieldLayout( this.dateEnd, { label: mw.msg( 'appointments-ui-date-end' ), align: 'top' } ),
+			new OO.ui.FieldLayout( this.dateStart, {
+				label: mw.msg( 'appointments-ui-date-start' ), align: 'top',
+				classes: [ 'appointments-date-picker-section' ]
+			} ),
+			new OO.ui.FieldLayout( this.dateEnd, {
+				label: mw.msg( 'appointments-ui-date-end' ), align: 'top',
+				classes: [ 'appointments-date-picker-section' ]
+			} ),
 		],
 		classes: [ 'appointments-all-day-appointment' ]
 	} );
@@ -94,7 +108,7 @@ appointmentTime.prototype.makeRecurrence = function () {
 		$overlay: this.dialog ? this.dialog.$overlay : true,
 	} );
 	this.recurrenceSelect.connect( this, { change: 'onItemChange' } );
-	return new OO.ui.FieldLayout( this.recurrenceSelect, { label: mw.msg( 'appointments-ui-recurrence' ), align: 'top' } );
+	return this.recurrenceSelect;
 };
 
 appointmentTime.prototype.render = function () {
@@ -103,8 +117,14 @@ appointmentTime.prototype.render = function () {
 		this.allDayAppointment.$element,
 		new OO.ui.HorizontalLayout( {
 			items: [
-				new OO.ui.FieldLayout( this.recurrenceSelect, { label: mw.msg( 'appointments-ui-recurrence' ), align: 'left' } ),
-				new OO.ui.FieldLayout( this.allDayCheck, { label: mw.msg( 'appointments-ui-all-day' ), align: 'inline' } )
+				new OO.ui.FieldLayout( this.allDayCheck, {
+					label: mw.msg( 'appointments-ui-all-day' ), align: 'inline',
+					classes: [ 'appointments-date-picker-section', 'checkbox-field' ]
+				} ),
+				new OO.ui.FieldLayout( this.recurrenceSelect, {
+					label: mw.msg( 'appointments-ui-recurrence' ), align: 'left',
+					classes: [ 'appointments-date-picker-section', 'short', 'large-field' ]
+				} )
 			],
 			classes: [ 'appointments-appointment-options' ]
 		} ).$element

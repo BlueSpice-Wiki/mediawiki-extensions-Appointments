@@ -27,7 +27,7 @@ eventTypeIcon = function ( cfg ) {
 	eventTypeIcon.super.call( this, {
 		icon: this.value,
 		title: mw.msg( 'appointments-ui-select-event-type-icon' ),
-		framed: false,
+		framed: true,
 		$overlay: this.$overlay,
 		popup: {
 			$overlay: this.$overlay,
