@@ -142,7 +142,7 @@ class EventTypeStore {
 		$eventTypes = [];
 		foreach ( $systemAssignments as $assignment ) {
 			if ( isset( $this->systemTypes[$assignment->aeta_type] ) ) {
-				$eventType =  $this->systemTypes[$assignment->aeta_type];
+				$eventType = $this->systemTypes[$assignment->aeta_type];
 				$eventTypes[$eventType->name] = $eventType;
 			}
 		}

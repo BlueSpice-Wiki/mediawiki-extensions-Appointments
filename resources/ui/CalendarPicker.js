@@ -12,6 +12,7 @@ const calendarPicker = function ( config ) {
 		select: ( item ) => {
 			this.value = item.getData();
 			this.selectedCalendar = this.calendars[this.value] || null;
+			this.emit( 'change', this.getValue() );
 			this.emit( 'select', item );
 		}
 	} );

@@ -130,5 +130,14 @@
 	"appointments-ve-period-year": "Option label for VisualEditor timeline period set to next year.",
 	"appointments-tag-timeline": "Label/name for the <timeline> tag in editor interfaces.",
 	"appointments-tag-timeline-desc": "Description of the <timeline> tag feature.",
-	"appointments-ui-calendar-picker-none": "Label for calendar picker option that includes all calendars."
+	"appointments-ui-calendar-picker-none": "Label for calendar picker option that includes all calendars.",
+	"appointments-ui-no-calendars": "Empty-state message shown when there are no calendars yet.",
+	"appointments-ui-create-calendar-instructions": "Instructional text in the empty-state prompting users to add a calendar.",
+	"appointments-ui-create-custom-calendar": "Label for action/menu item to create a new custom calendar.",
+	"appointments-ui-create-predefined-calendar": "Label for action/menu item to add an existing predefined calendar.",
+	"appointments-ui-hide-calendar": "Label for action that hides a calendar from the visible list.",
+	"appointments-ui-search-calendars": "Placeholder text for searching/filtering calendars.",
+	"appointments-ui-action-create": "Generic action label for create buttons.",
+	"appointments-ui-notify-remind-period-none": "Option label for reminder period set to no reminder.",
+	"appointments-param-validation-user-group": "Validation error for invalid user/group parameter value."
 }

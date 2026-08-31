@@ -28,7 +28,7 @@ class UserGroupValue extends StringValue {
 			if ( !isset( $item['type'] ) || !isset( $item['key'] ) ) {
 				return StatusValue::newFatal( 'appointments-param-validation-user-group', $fieldKey, $value );
 			}
-			if ( $item['type'] !== 'user' && $item['type'] !== 'group' ) {#
+			if ( $item['type'] !== 'user' && $item['type'] !== 'group' ) {
 				return StatusValue::newFatal( 'appointments-param-validation-user-group', $fieldKey, $value );
 			}
 			if ( $item['type'] === 'user' ) {
@@ -45,5 +45,4 @@ class UserGroupValue extends StringValue {
 		}
 		return StatusValue::newGood( $res );
 	}
-
 }

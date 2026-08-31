@@ -8,6 +8,7 @@ use MediaWiki\Extension\Appointments\Entity\Calendar;
 use MediaWiki\Extension\Appointments\Entity\EventType;
 use MediaWiki\Extension\Appointments\Entity\PeriodDefinition;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
+use MediaWiki\Extension\Appointments\Utils\UserResolver;
 use MediaWiki\Permissions\Authority;
 use MediaWiki\Permissions\PermissionManager;
 use MediaWiki\User\UserIdentity;
@@ -26,7 +27,12 @@ class PermissionsTest extends TestCase {
 
 		$calendar = $this->newCalendar( $creator );
 		$appointment = $this->newAppointment( $creator, $calendar );
-		$permissions = new Permissions( $this->createMock( PermissionManager::class ) );
+		$permissionManager = $this->createMock( PermissionManager::class );
+		$permissionManager->method( 'userHasRight' )->willReturn( true );
+		$permissions = new Permissions(
+			$permissionManager,
+			$this->createMock( UserResolver::class )
+		);
 
 		$this->assertTrue( $permissions->canModifyAppointment( $actor, $appointment, $calendar ) );
 		$this->assertTrue( $permissions->canDeleteAppointment( $actor, $appointment, $calendar ) );

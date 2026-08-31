@@ -10,6 +10,7 @@ use MediaWiki\Extension\Appointments\Store\AppointmentStore;
 use MediaWiki\Extension\Appointments\UserInterface;
 use MediaWiki\Extension\Appointments\Utils\AppointmentSerializer;
 use MediaWiki\Html\Html;
+use MediaWiki\Html\TemplateParser;
 use MediaWiki\Parser\Parser;
 use MediaWiki\Parser\PPFrame;
 use MediaWiki\User\UserFactory;
@@ -17,6 +18,7 @@ use MediaWiki\User\UserIdentity;
 use MWStake\MediaWiki\Component\GenericTagHandler\ITagHandler;
 
 class AppointmentTimelineTagHandler implements ITagHandler {
+	private TemplateParser $templateParser;
 
 	/**
 	 * @var string[]
@@ -40,6 +42,9 @@ class AppointmentTimelineTagHandler implements ITagHandler {
 		private readonly UserInterface $userInterface,
 		private readonly UserFactory $userFactory
 	) {
+		$this->templateParser = new TemplateParser(
+			dirname( __DIR__, 2 ) . '/resources/templates'
+		);
 	}
 
 	/**
@@ -67,14 +72,22 @@ class AppointmentTimelineTagHandler implements ITagHandler {
 		$appointments = $query->execute();
 		$user = $this->userFactory->newFromUserIdentity( $parser->getUserIdentity() );
 
-		return Html::element( 'div', [
+		$parser->getOutput()->addModules( [ 'ext.oojsplus.special.skeleton.styles' ] );
+		return Html::rawElement( 'div', [
 			'class' => 'appointment-timeline-tag ext-appointments-scheduler-calendar-cnt',
 			'data-appointments' => json_encode( array_map( function ( Appointment $appointment ) use ( $user ) {
 				return $this->serializer->serializeForOutput( $appointment, $user );
 			}, $appointments ) ),
 			'data-view' => $view,
-			'data-initial-date' => $period ? $period->getStart()->format( 'Y-m-d' ) : null,
-		], '' );
+			'data-initial-date' => $period?->getStart()->format( 'Y-m-d' ),
+		], $this->getSkeletonHtml() );
+	}
+
+	/**
+	 * @return string
+	 */
+	private function getSkeletonHtml(): string {
+		return $this->templateParser->processTemplate( 'appointment-timeline-skeleton', [] );
 	}
 
 	private function getPeriod( array $params, UserIdentity $user ): ?NaivePeriod {

@@ -59,7 +59,7 @@ class AppointmentQuery {
 					$rows,
 					$this->participantStore->getConditionRowsForUser( $assignee['key'], $this->db )
 				);
-			} else if ( $assignee['type'] === 'group' ) {
+			} elseif ( $assignee['type'] === 'group' ) {
 				$rows = array_merge(
 					$rows,
 					$this->participantStore->getConditionRowsForGroup( $assignee['key'], $this->db )
@@ -68,7 +68,6 @@ class AppointmentQuery {
 		}
 		$this->conds[] = $this->db->makeList( $rows, LIST_OR );
 		return $this;
-
 	}
 
 	/**
