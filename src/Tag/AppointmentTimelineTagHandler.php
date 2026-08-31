@@ -22,9 +22,10 @@ class AppointmentTimelineTagHandler implements ITagHandler {
 	 * @var string[]
 	 */
 	private $viewMap = [
-		'week' => 'listWeek',
-		'month' => 'listMonth',
-		'year' => 'listYear'
+		'this_week' => 'listWeek',
+		'next_week' => 'listWeek',
+		'this_month' => 'listMonth',
+		'next_month' => 'listMonth',
 	];
 
 	/**
@@ -46,8 +47,8 @@ class AppointmentTimelineTagHandler implements ITagHandler {
 	 */
 	public function getRenderedContent( string $input, array $params, Parser $parser, PPFrame $frame ): string {
 		$query = $this->appointmentStore->newQuery();
-		if ( $params['user'] ) {
-			$query->forUser( $params['user'] );
+		if ( $params['assignees'] ) {
+			$query->forAssignees( $params['assignees'] );
 		}
 		if ( $params['calendar'] ) {
 			$query->forCalendar( $params['calendar'] );
@@ -61,7 +62,7 @@ class AppointmentTimelineTagHandler implements ITagHandler {
 			$query->forPeriod( $period );
 		}
 
-		$view = $this->viewMap[ $params['period'] ?? 'week' ] ?? 'week';
+		$view = $this->viewMap[ $params['period'] ?? 'this_week' ] ?? 'listWeek';
 
 		$appointments = $query->execute();
 		$user = $this->userFactory->newFromUserIdentity( $parser->getUserIdentity() );
@@ -72,24 +73,37 @@ class AppointmentTimelineTagHandler implements ITagHandler {
 				return $this->serializer->serializeForOutput( $appointment, $user );
 			}, $appointments ) ),
 			'data-view' => $view,
+			'data-initial-date' => $period ? $period->getStart()->format( 'Y-m-d' ) : null,
 		], '' );
 	}
 
 	private function getPeriod( array $params, UserIdentity $user ): ?NaivePeriod {
 		$now = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
+		$period = $params['period'] ?? 'this_week';
 		$start = $this->userInterface->convertDateTimeForUser( $now, $user );
-
+		$start->setTime( 0, 0, 0 );
 		$end = clone $start;
-		$period = $params['period'] ?? 'week';
+
 		switch ( $period ) {
-			case 'week':
+			case 'this_week':
+				$start->modify( 'monday this week' );
+				$end = clone $start;
 				$end->modify( '+1 week' );
 				break;
-			case 'month':
+			case 'next_week':
+				$start->modify( 'monday next week' );
+				$end = clone $start;
+				$end->modify( '+1 week' );
+				break;
+			case 'this_month':
+				$start->modify( 'first day of this month' );
+				$end = clone $start;
 				$end->modify( '+1 month' );
 				break;
-			case 'year':
-				$end->modify( '+1 year' );
+			case 'next_month':
+				$start->modify( 'first day of next month' );
+				$end = clone $start;
+				$end->modify( '+1 month' );
 				break;
 			default:
 				return null;

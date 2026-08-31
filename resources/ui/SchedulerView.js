@@ -8,7 +8,7 @@ const SchedulerView = function ( config ) {
 		padded: false
 	}, config ) );
 
-	this.today = moment().format( 'YYYY-MM-DD' );
+	this.today = config.initialDate || moment().format( 'YYYY-MM-DD' );
 	this.controller = config.controller;
 	this.last = null;
 	this.activePopup = null;

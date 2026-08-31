@@ -6,6 +6,7 @@ const calendarPicker = function ( config ) {
 	this.selectedCalendar = null;
 	this.allowNone = config.allowNone || false;
 	this.returnName = config.returnName || false;
+	this.autoLoad = config.autoLoad || false;
 
 	this.menu.connect( this, {
 		select: ( item ) => {
@@ -14,6 +15,10 @@ const calendarPicker = function ( config ) {
 			this.emit( 'select', item );
 		}
 	} );
+
+	if ( this.autoLoad ) {
+		this.load();
+	}
 };
 
 OO.inheritClass( calendarPicker, OO.ui.DropdownWidget );

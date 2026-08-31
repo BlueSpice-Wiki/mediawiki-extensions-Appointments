@@ -123,9 +123,10 @@
 	"appointments-ve-calendar": "Calendar",
 	"appointments-ve-event-types": "Event types",
 	"appointments-ve-period": "Period",
-	"appointments-ve-period-week": "Next week",
-	"appointments-ve-period-month": "Next month",
-	"appointments-ve-period-year": "Next year",
+	"appointments-ve-period-this-week": "This week",
+	"appointments-ve-period-this-month": "This month",
+	"appointments-ve-period-next-week": "Next week",
+	"appointments-ve-period-next-month": "Next month",
 	"appointments-tag-timeline": "Event timeline",
 	"appointments-tag-timeline-desc": "Shows list of upcoming events",
 	"appointments-ui-calendar-picker-none": "All calendars",
@@ -136,5 +137,6 @@
 	"appointments-ui-hide-calendar": "Hide calendar",
 	"appointments-ui-search-calendars": "Search calendars...",
 	"appointments-ui-action-create": "Create",
-	"appointments-ui-notify-remind-period-none": "No reminder"
+	"appointments-ui-notify-remind-period-none": "No reminder",
+	"appointments-param-validation-user-group": "Invalid value"
 }
