@@ -311,6 +311,7 @@ SchedulerView.prototype.renderEventContent = function ( arg ) {
 	titleSpan.className = 'appointments-fc-event-title';
 	titleSpan.textContent = appointment.title;
 	container.appendChild( titleSpan );
+	container.title = appointment.title;
 
 	if ( appointment.periodDefinition.getRecurrenceRule() ) {
 		const recurIcon = new OO.ui.IconWidget( {

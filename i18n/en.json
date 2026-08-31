@@ -100,9 +100,6 @@
 	"appointments-ui-notify-day": "Day before",
 	"appointments-ui-notify-week": "Week before",
 	"appointments-ui-calendar-permissions": "Permissions",
-	"appointments-ui-calendar-permissions-nothing": "Anyone can view, only wiki editors and administrators can edit",
-	"appointments-ui-calendar-permissions-edit": "Anyone can view, only certain users and groups can edit",
-	"appointments-ui-calendar-permissions-read-edit": "Only certain users and groups can view and edit",
 	"appointments-ui-calendar-permissions-role-reader": "Can view",
 	"appointments-ui-calendar-permissions-role-reader-placeholder": "(everyone)",
 	"appointments-ui-calendar-permissions-role-editor": "Can create and edit",
@@ -138,5 +135,6 @@
 	"appointments-ui-search-calendars": "Search calendars...",
 	"appointments-ui-action-create": "Create",
 	"appointments-ui-notify-remind-period-none": "No reminder",
-	"appointments-param-validation-user-group": "Invalid value"
+	"appointments-param-validation-user-group": "Invalid value",
+	"appointments-ui-field-agenda-title-foreign-warning": "This event's agenda page comes from another wiki and can only be edited in the original wiki."
 }

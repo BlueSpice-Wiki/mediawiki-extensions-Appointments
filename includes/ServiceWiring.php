@@ -73,7 +73,8 @@ return [
 	},
 	'Appointments._AgendaLinker' => static function ( MediaWikiServices $services ) {
 		return new AgendaLinker(
-			$services->getTitleFactory()
+			$services->getTitleFactory(),
+			$services->getHookContainer()
 		);
 	},
 	'Appointments._AppointmentSerializer' => static function ( MediaWikiServices $services ) {

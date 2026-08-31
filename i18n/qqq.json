@@ -100,9 +100,6 @@
 	"appointments-ui-notify-day": "Option label for reminder time set to one day before appointment start.",
 	"appointments-ui-notify-week": "Option label for reminder time set to one week before appointment start.",
 	"appointments-ui-calendar-permissions": "Label for calendar permissions section or tab.",
-	"appointments-ui-calendar-permissions-nothing": "Description of permissions preset where everyone can view and only wiki editors/admins can edit.",
-	"appointments-ui-calendar-permissions-edit": "Description of permissions preset where everyone can view and only selected users/groups can edit.",
-	"appointments-ui-calendar-permissions-read-edit": "Description of permissions preset where only selected users/groups can view and edit.",
 	"appointments-ui-calendar-permissions-role-reader": "Label for role assignment field defining who can view a calendar.",
 	"appointments-ui-calendar-permissions-role-reader-placeholder": "Placeholder for viewer role assignment field when everyone can view.",
 	"appointments-ui-calendar-permissions-role-editor": "Label for role assignment field defining who can create/edit appointments.",
@@ -139,5 +136,7 @@
 	"appointments-ui-search-calendars": "Placeholder text for searching/filtering calendars.",
 	"appointments-ui-action-create": "Generic action label for create buttons.",
 	"appointments-ui-notify-remind-period-none": "Option label for reminder period set to no reminder.",
-	"appointments-param-validation-user-group": "Validation error for invalid user/group parameter value."
+	"appointments-param-validation-user-group": "Validation error for invalid user/group parameter value.",
+	"appointments-ui-field-agenda-title-foreign-warning": "Warning shown when the agenda page title is an interwiki title, therefore cannot be edited on this wiki"
+
 }

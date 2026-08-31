@@ -213,9 +213,6 @@
 				"appointments-ui-notify-day",
 				"appointments-ui-notify-week",
 				"appointments-ui-calendar-permissions",
-				"appointments-ui-calendar-permissions-nothing",
-				"appointments-ui-calendar-permissions-edit",
-				"appointments-ui-calendar-permissions-read-edit",
 				"appointments-ui-calendar-permissions-role-reader",
 				"appointments-ui-calendar-permissions-role-editor",
 				"appointments-ui-calendar-permissions-role-deleter",
@@ -231,7 +228,8 @@
 				"appointments-ui-hide-calendar",
 				"appointments-ui-search-calendars",
 				"appointments-ui-action-create",
-				"appointments-ui-notify-remind-period-none"
+				"appointments-ui-notify-remind-period-none",
+				"appointments-ui-field-agenda-title-foreign-warning"
 			],
 			"dependencies": [
 				"oojs-ui",

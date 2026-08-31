@@ -6,15 +6,21 @@ use MediaWiki\Extension\Appointments\Entity\Appointment;
 use MediaWiki\Extension\Appointments\Entity\Calendar;
 use MediaWiki\Extension\Appointments\Entity\EventType;
 use MediaWiki\Extension\Appointments\Entity\PeriodDefinition;
+use MediaWiki\HookContainer\HookContainer;
 use MediaWiki\Title\Title;
 use MediaWiki\Title\TitleFactory;
+use MediaWiki\WikiMap\WikiMap;
 
-readonly final class AgendaLinker {
+final class AgendaLinker {
 
 	/**
 	 * @param TitleFactory $titleFactory
+	 * @param HookContainer $hookContainer
 	 */
-	public function __construct( private readonly TitleFactory $titleFactory ) {
+	public function __construct(
+		private readonly TitleFactory $titleFactory,
+		private readonly HookContainer $hookContainer
+	) {
 	}
 
 	/**
@@ -59,14 +65,28 @@ readonly final class AgendaLinker {
 	 */
 	public function getAgendaLink( Appointment $appointment ): array {
 		$data = $appointment->data;
-		if ( !isset( $data['agendaPage'] ) ) {
+		if ( !isset( $data['agendaPage'] ) || !$data['agendaPage'] ) {
 			return [ '', false ];
 		}
-		$agendaTitle = $this->titleFactory->newFromText( $data['agendaPage'] );
-		if ( !$agendaTitle || !$agendaTitle->canExist() ) {
+		$agendaPageData = $data['agendaPage'];
+		if ( !is_array( $agendaPageData ) ) {
+			$agendaPageData = [ 'title' => $agendaPageData, 'wiki' => WikiMap::getCurrentWikiId() ];
+		}
+		if ( !empty( $agendaPageData['wiki'] ) && $agendaPageData['wiki'] !== WikiMap::getCurrentWikiId() ) {
+			// Interwiki
+			$prefix = '';
+			$this->hookContainer->run( 'GetInterwikiPrefixFromWikiId', [ $agendaPageData['wiki'], &$prefix ] );
+			$agendaTitle = $this->titleFactory->newFromText( $prefix . ':' . $agendaPageData['title'] );
+			$exists = true;
+		} else {
+			$agendaTitle = $this->titleFactory->newFromText( $agendaPageData['title'] );
+			$exists = $agendaTitle->exists();
+		}
+
+		if ( !$agendaTitle ) {
 			return [ '', false ];
 		}
-		if ( !$agendaTitle->exists() ) {
+		if ( !$agendaTitle->exists() && !$agendaTitle->getInterwiki() ) {
 			$preload = $this->getPreloadTemplate( $appointment );
 			if ( $preload ) {
 				return [
@@ -75,7 +95,7 @@ readonly final class AgendaLinker {
 				];
 			}
 		}
-		return [ $agendaTitle->getLocalURL(), true ];
+		return [ $agendaTitle->getFullURL(), $exists ];
 	}
 
 	/**
