@@ -4,25 +4,29 @@ makeToolbar = function ( view ) {
 	const toolbar = new OO.ui.Toolbar( toolFactory, toolGroupFactory );
 	toolbar.$element.addClass( 'appointments-main-toolbar' );
 
-	const createPermissions = mw.config.get( 'wgAppointmentsPermissions');
-
 	view = view || 'month';
 
 	function ToggleCalendarsTool() {
 		ToggleCalendarsTool.super.apply( this, arguments );
+		this.control = new OO.ui.ToggleButtonWidget( {
+			framed: true,
+			icon: 'menu',
+			title: mw.msg( 'appointments-ui-toggle-calendars' ),
+			classes: [ 'ext-appointments-toggle-calendars' ]
+		} );
+		this.control.$element.children( 'a' ).attr( 'aria-controls', 'ext-appointments-scheduler-calendars' );
+		this.control.connect( this, { change: 'onSelect' } );
 		this.calendarsVisible = true;
-		this.setActive( this.calendarsVisible );
+		this.control.setValue( this.calendarsVisible );
+
+		this.$element.html( this.control.$element );
 	}
 	OO.inheritClass( ToggleCalendarsTool, OO.ui.Tool );
 
 	ToggleCalendarsTool.static.name = 'toggleCalendars';
-	ToggleCalendarsTool.static.icon = 'menu';
-	ToggleCalendarsTool.static.active = true;
-	ToggleCalendarsTool.static.title = mw.msg( 'appointments-ui-toggle-calendars' );
-	ToggleCalendarsTool.prototype.onSelect = function () {
-		this.calendarsVisible = !this.calendarsVisible;
+	ToggleCalendarsTool.prototype.onSelect = function ( value ) {
+		this.calendarsVisible = value;
 		toolbar.emit( 'toggleCalendars', this.calendarsVisible );
-		this.setActive( this.calendarsVisible );
 	};
 	ToggleCalendarsTool.prototype.onUpdateState = function () {};
 	toolFactory.register( ToggleCalendarsTool );

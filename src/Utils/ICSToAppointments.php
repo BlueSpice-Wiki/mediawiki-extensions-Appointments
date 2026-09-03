@@ -9,7 +9,6 @@ use Exception;
 use MediaWiki\Extension\Appointments\Entity\Appointment;
 use MediaWiki\Extension\Appointments\Entity\CalendarImported;
 use MediaWiki\Extension\Appointments\Entity\EventType;
-use MediaWiki\Extension\Appointments\Entity\EventType\Meeting;
 use MediaWiki\Extension\Appointments\Entity\PeriodDefinition;
 use MediaWiki\Message\Message;
 use RuntimeException;

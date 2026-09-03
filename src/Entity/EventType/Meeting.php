@@ -8,7 +8,7 @@ use MediaWiki\User\User;
 
 readonly class Meeting extends EventType {
 
-	public function __construct( ) {
+	public function __construct() {
 		parent::__construct(
 			'meeting',
 			Message::newFromKey( 'appointments-meeting-event-type-name' )->text(),

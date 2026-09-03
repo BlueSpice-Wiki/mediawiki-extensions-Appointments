@@ -122,6 +122,7 @@ const scheduler = function ( config ) {
 		} );
 	} );
 
+	this.mainBooklet.$menu.attr( 'id', 'ext-appointments-scheduler-calendars' );
 	this.mainBooklet.$menu.append( this.calendarPicker.$element );
 
 	const initialRenderPromise = this.renderScheduler();
