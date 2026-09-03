@@ -13,12 +13,12 @@ class UserLocalPreferences {
 	}
 
 	load() {
-		const storedPreferences = localStorage.getItem( 'appointmentsUserPreferences' );
+		const storedPreferences = localStorage.getItem( 'appointments-user-prefs' );
 		return storedPreferences ? JSON.parse( storedPreferences ) : {};
 	}
 
 	save() {
-		localStorage.setItem('appointmentsUserPreferences', JSON.stringify(this._preferences));
+		localStorage.setItem('appointments-user-prefs', JSON.stringify(this._preferences));
 	}
 }
 

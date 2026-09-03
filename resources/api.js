@@ -8,6 +8,7 @@ const api = {
 	},
 	toEventType: function ( eventTypeData ) {
 		require( './object/eventType/Meeting.js' );
+		require( './object/eventType/Imported.js' );
 
 		let eventType = new ext.appointments.objects.EventType( eventTypeData.guid );
 		if ( ext.appointments.eventTypeRegistry.lookup( eventTypeData.guid ) ) {
@@ -32,7 +33,8 @@ const api = {
 			calendarData.creator,
 			calendarData.wikiId,
 			calendarData.data || {},
-			calendarData.permissions || {}
+			calendarData.permissions || {},
+			calendarData.imported || false
 		);
 	},
 	toAppointment: function( appointmentData ) {
@@ -84,8 +86,8 @@ const api = {
 			appointmentData.permissions
 		);
 	},
-	getCalendars: async function () {
-		const res = await ext.appointments.api._get( 'calendars' );
+	getCalendars: async function ( onlyAssigned ) {
+		const res = await ext.appointments.api._get( onlyAssigned ? 'calendars?assigned=1' : 'calendars' );
 
 		return api.normalizeCollectionResponse( res )
 			.map( ( calendarData ) => api.toCalendar( calendarData ) );
@@ -98,6 +100,21 @@ const api = {
 			description: calendar.description,
 			data: JSON.stringify( calendar.data )
 		} );
+	},
+	assignCalendar: function ( calendar ) {
+		return ext.appointments.api._post( `calendar/assign/${calendar.guid}` );
+	},
+	unassignCalendar: function ( calendar ) {
+		return ext.appointments.api._post( `calendar/unassign/${calendar.guid}` );
+	},
+	importCalendar: function ( type, data ) {
+		return ext.appointments.api._post( 'calendar/import', {
+			type: type,
+			data: data
+		} );
+	},
+	clearImportedCalendarSync: function ( calendar ) {
+		return ext.appointments.api._post( `calendar/import/clear-sync/${calendar.guid}` );
 	},
 	deleteCalendar: function ( guid, moveAppointmentsTo ) {
 		return ext.appointments.api._post( `calendar/delete/${guid}`, {

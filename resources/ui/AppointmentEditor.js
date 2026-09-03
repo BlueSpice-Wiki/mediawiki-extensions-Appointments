@@ -141,18 +141,23 @@ appointmentEditor.prototype.init = function () {
 		}
 	}
 	const agendaPageLayout = new OO.ui.FieldLayout( this.agendaTitle, {
-		label: mw.message( 'appointments-ui-field-agenda-title' ).text()
+		label: mw.message( 'appointments-ui-field-agenda-title' ).text(),
+		classes: [ 'appointments-section-start' ],
 	} );
 	if ( isForeignAgenda ) {
 		agendaPageLayout.setWarnings( [ mw.message( 'appointments-ui-field-agenda-title-foreign-warning' ).text() ] );
 	}
+
+	this.description = new OO.ui.MultilineTextInputWidget( { rows: 3, value: appointmentData.description || '' } );
+
+	this.$customControlPanel = $( '<div>' ).addClass( 'appointments-section-start' );
 
 	this.$element.append(
 		new OO.ui.FieldLayout( this.name, {
 			label: mw.message( 'appointments-ui-field-appointment-name' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.calendar, {
-			label: mw.message( 'appointments-ui-field-calendar-name' ).text()
+			label: mw.message( 'appointments-ui-field-calendar-label' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.eventType, {
 			label: mw.message( 'appointments-ui-field-event-type' ).text()
@@ -162,7 +167,6 @@ appointmentEditor.prototype.init = function () {
 			classes: [ 'appointments-section-start' ],
 			label: mw.message( 'appointments-ui-field-participants' ).text()
 		} ).$element,
-		agendaPageLayout.$element,
 
 		new OO.ui.FieldLayout( this.time, {
 			classes: [ 'appointments-section-start' ],
@@ -170,6 +174,13 @@ appointmentEditor.prototype.init = function () {
 		} ).$element,
 		new OO.ui.FieldLayout( this.notifyInAdvance, {
 			label: mw.message( 'appointments-ui-field-notify-in-advance' ).text()
+		} ).$element,
+
+		this.$customControlPanel,
+
+		agendaPageLayout.$element,
+		new OO.ui.FieldLayout( this.description, {
+			label: mw.message( 'appointments-ui-field-description' ).text()
 		} ).$element,
 	);
 
@@ -212,6 +223,7 @@ appointmentEditor.prototype.getUpdatedEntity = function () {
 			}
 		}
 	}
+	data.description = this.description.getValue();
 
 	this.appointment.data = data;
 
@@ -254,7 +266,7 @@ appointmentEditor.prototype.setupCustomPanel = function ( eventType ) {
 		this.eventTypeCustomPanel.connect( this, {
 			change: 'onInputChange'
 		} );
-		this.$element.append( this.eventTypeCustomPanel.$element.addClass( 'appointments-section-start' ) );
+		this.$customControlPanel.html( this.eventTypeCustomPanel.$element );
 	}
 	this.dialog.updateSize();
 };

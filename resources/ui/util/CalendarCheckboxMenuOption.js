@@ -3,19 +3,21 @@ const { EventTypeCheckboxMenuOption } = require( './EventTypeMenuOptions.js' );
 const eventTypeMultiselect = function ( calendar ) {
 	const options = [];
 	const eventTypes = calendar.eventTypes || [];
-	for ( const eventType of eventTypes ) {
-		const option = new EventTypeCheckboxMenuOption(
-			eventType, calendar.canEdit(), calendar.canDelete()
-		);
-		option.connect( this, {
-			edit: () => {
-				this.emit( 'edit', arguments );
-			},
-			delete: () => {
-				this.emit( 'delete', );
-			}
-		} );
-		options.push( option );
+	if ( !calendar.imported ) {
+		for ( const eventType of eventTypes ) {
+			const option = new EventTypeCheckboxMenuOption(
+				eventType, calendar.canEdit(), calendar.canDelete()
+			);
+			option.connect( this, {
+				edit: () => {
+					this.emit( 'edit', arguments );
+				},
+				delete: () => {
+					this.emit( 'delete', );
+				}
+			} );
+			options.push( option );
+		}
 	}
 	eventTypeMultiselect.parent.call( this, {
 		items: options
@@ -30,11 +32,20 @@ OO.inheritClass( eventTypeMultiselect, OO.ui.CheckboxMultiselectWidget );
 const calendarCheckboxMenuOption = function ( calendar ) {
 	this.calendar = calendar;
 	this.typeSelector = null;
+	this.imported = calendar.imported;
 
 	calendarCheckboxMenuOption.parent.call( this, {
 		data: calendar.guid,
 		label: calendar.name
 	} );
+
+	if ( this.imported && this.calendar.data['syncError'] ) {
+		this.$label.prepend( new OO.ui.IconWidget( {
+			title: mw.msg( 'appointments-ui-sync-error' ),
+			classes: [ 'ext-appointments-sync-error' ],
+			icon: 'error'
+		} ).$element );
+	}
 
 	const globalPermissions = mw.config.get( 'wgAppointmentsPermissions' );
 
@@ -53,13 +64,18 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 			icon: 'lock'
 		} ) );
 	}
-	/*if ( this.isSelected() )  {
+	if ( calendar.imported ) {
 		actions.push( new OO.ui.MenuOptionWidget( {
-			data: 'hide',
-			label: mw.msg( 'appointments-ui-hide-calendar' ),
-			icon: 'eyeClosed'
-		} ) )
-	}*/
+			data: 'refresh',
+			label: mw.msg( 'appointments-ui-imported-calendar-refresh' ),
+			icon: 'reload'
+		} ) );
+	}
+	actions.push( new OO.ui.MenuOptionWidget( {
+		data: 'hide',
+		label: mw.msg( 'appointments-ui-hide-calendar' ),
+		icon: 'eyeClosed'
+	} ) )
 
 	if ( calendar.canDelete() ) {
 		actions.push( new OO.ui.MenuOptionWidget( {
@@ -108,11 +124,19 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 			} else if ( item.getData() === 'permissions' ) {
 				ext.appointments.util.openCalendarPermissionsDialog(calendar).then( ( res ) => {
 					if ( res && res.entity ) {
-						window.location.reload();
+						this.emit( 'refresh', calendar.guid );
 					}
 				} );
 			} else if ( item.getData() === 'hide' ) {
-				this.setSelected( false );
+				ext.appointments.util.unassignCalendarWithConfirmation(calendar).then( ( res ) => {
+					if ( res ) {
+						this.emit( 'refresh', calendar.guid );
+					}
+				} );
+			} else if ( item.getData() === 'refresh' ) {
+				ext.appointments.api.clearImportedCalendarSync( calendar ).then( () => {
+					this.emit( 'refresh', calendar.guid );
+				} );
 			}
 		}
 	} );
@@ -123,8 +147,12 @@ const calendarCheckboxMenuOption = function ( calendar ) {
 	this.$element.addClass( 'calendar-checkbox-option' );
 
 	this.renderEventTypes();
-	this.setSelected( true );
-	this.setDisabled( true );
+	if ( !this.imported ) {
+		this.setSelected( true );
+		this.setDisabled( true );
+	} else {
+		this.$element.addClass( 'calendar-imported' );
+	}
 };
 
 OO.inheritClass( calendarCheckboxMenuOption, OO.ui.CheckboxMultioptionWidget );
@@ -133,11 +161,11 @@ calendarCheckboxMenuOption.prototype.renderEventTypes = function () {
 	if ( this.calendar.eventTypes.length > 0 ) {
 		this.typeSelector = new eventTypeMultiselect( this.calendar );
 		this.typeSelector.connect( this, {
-			select: () =>  {
+			select: ( item ) =>  {
 				if ( this.suppress ) {
 					return;
 				}
-				this.emit( 'select', this, this.isSelected() );
+				this.emit( 'select', this, item.isSelected() );
 			},
 			edit: () => {
 				this.emit( 'edit' );
@@ -151,6 +179,9 @@ calendarCheckboxMenuOption.prototype.renderEventTypes = function () {
 }
 
 calendarCheckboxMenuOption.prototype.getValue = function () {
+	if ( this.imported ) {
+		return [ 'imported' ];
+	}
 	if ( this.typeSelector ) {
 		return this.typeSelector.findSelectedItemsData();
 	}

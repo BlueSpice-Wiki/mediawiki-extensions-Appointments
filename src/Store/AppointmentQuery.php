@@ -43,7 +43,7 @@ class AppointmentQuery {
 	 * @return $this
 	 */
 	public function forUser( UserIdentity $user ): self {
-		$this->conds[] = $this->participantStore->getParticipantCondition( $user, [], $this->db );
+		$this->conds[] = $this->participantStore->getParticipantCondition( $user, $this->db );
 		return $this;
 	}
 

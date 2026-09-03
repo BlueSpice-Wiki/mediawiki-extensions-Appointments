@@ -8,8 +8,9 @@ class Calendar {
 	 * @param {string} wikiId
 	 * @param {Object} data
 	 * @param {Object} permissions
+	 * @param {boolean} imported
 	 */
-	constructor( guid, name, description, eventTypes, creator, wikiId, data, permissions ) {
+	constructor( guid, name, description, eventTypes, creator, wikiId, data, permissions, imported ) {
 		this.guid = guid;
 		this.name = name;
 		this.description = description;
@@ -18,10 +19,11 @@ class Calendar {
 		this.wikiId = wikiId;
 		this.data = data || {};
 		this.permissions = permissions || {}
+		this.imported = imported || false
 	}
 
 	canEdit() {
-		return this.permissions.edit || false;
+		return !this.imported && ( this.permissions.edit || false );
 	}
 
 	canDelete() {

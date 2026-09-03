@@ -112,7 +112,9 @@ class EventTypeStore {
 			$eventTypes[] = $this->makeFromRow( $row );
 		}
 
-		return array_merge( $this->systemTypes, $eventTypes );
+		$allTypes = array_merge( $this->systemTypes, $eventTypes );
+		unset( $allTypes['imported'] );
+		return $allTypes;
 	}
 
 	/**

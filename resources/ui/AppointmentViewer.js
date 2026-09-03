@@ -8,7 +8,7 @@ const appointmentViewer = function ( config ) {
 	}, config ) );
 
 	this.appointment = config.appointment;
-	this.editable = config.editable;
+	this.editable = config.editable && !this.appointment.calendar.imported;
 	this.render();
 	this.$element.addClass( 'appointment-viewer' );
 };
@@ -24,7 +24,9 @@ appointmentViewer.prototype.render = function () {
 	const calendarAndTypeLabel = new OO.ui.HorizontalLayout( {
 		items: [
 			new OO.ui.LabelWidget( {
-				label: this.appointment.eventType.name + ' (' + this.appointment.calendar.name + ')',
+				label: this.appointment.calendar.imported ?
+					this.appointment.calendar.name :
+					this.appointment.eventType.name + ' (' + this.appointment.calendar.name + ')'
 			} )
 		],
 		classes: [ 'appointment-viewer-calendar' ]
@@ -40,7 +42,6 @@ appointmentViewer.prototype.render = function () {
 
 	const timeView = new AppointmentTimeView( this.appointment.userPeriod );
 
-
 	this.$element.append(
 		new OO.ui.HorizontalLayout( {
 			classes: [ 'appointment-viewer-header' ],
@@ -48,6 +49,7 @@ appointmentViewer.prototype.render = function () {
 		} ).$element,
 		calendarAndTypeLabel.$element
 	);
+
 	if ( customDataPanel ) {
 		this.$element.append( customDataPanel.$element );
 	}
@@ -74,6 +76,11 @@ appointmentViewer.prototype.render = function () {
 			],
 			classes: [ 'entity-wrapper' ]
 		} ).$element );
+	}
+	if ( data.description ) {
+		this.$element
+			.append( $( '<div>' ).html( data.description ) )
+			.addClass( 'appointment-viewer-description' );
 	}
 };
 

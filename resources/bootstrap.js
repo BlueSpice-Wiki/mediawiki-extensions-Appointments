@@ -2,6 +2,8 @@ const editorClass = require("./ui/EditorDialog.js");
 const appointmentEditor = require("./ui/AppointmentEditor.js");
 const eventTypeEditor = require("./ui/EventTypeEditor.js");
 const calendarEditor = require("./ui/CalendarEditor.js");
+const importCalendarEditor = require("./ui/ImportCalendarEditor.js");
+const addExistingCalendarEditor = require( "./ui/AddExistingCalendarEditor.js" );
 const calendarPermissionEditor = require("./ui/CalendarPermissionEditor.js");
 const { CALENDAR_COLORS, EVENT_TYPE_ICONS } = require( './consts.js' );
 
@@ -39,6 +41,20 @@ window.ext.appointments = {
 					calendar: calendar
 				} ),
 				size: 'large'
+			} );
+			return this.openDialog( dialog );
+		},
+		openImportCalendarDialog: function () {
+			const dialog = new editorClass( {
+				entity: new importCalendarEditor( {} ),
+				size: 'large'
+			} );
+			return this.openDialog( dialog );
+		},
+		openAddExistingCalendarDialog: function () {
+			const dialog = new editorClass( {
+				entity: new addExistingCalendarEditor( {} ),
+				size: 'medium'
 			} );
 			return this.openDialog( dialog );
 		},
@@ -108,34 +124,56 @@ window.ext.appointments = {
 		},
 		deleteCalendarWithConfirm: function ( calendar ) {
 			const dfd = $.Deferred();
-
-			OO.ui.confirm(
-				mw.msg( 'appointments-ui-delete-calendar-confirmation' ), {
-					actions: [
-						{
-							label: mw.msg( 'appointments-ui-delete' ),
-							flags: [ 'destructive' ],
-							action: 'accept'
-						},
-						{
-							label: mw.msg( 'appointments-ui-cancel' ),
-							action: 'cancel'
-						}
-					]
-				} )
-				.done( async ( confirmed ) => {
-					if ( !confirmed ) {
-						dfd.reject();
-					} else {
-						try {
-							await ext.appointments.api.deleteCalendar( calendar.guid );
-							dfd.resolve( true );
-						} catch ( e ) {
-							mw.notify( mw.msg( 'appointments-ui-delete-calendar-failed' ), { type: 'error' } );
-							dfd.reject( e );
-						}
-					}
+			const confirmDeleteCalendarDialog = function ( config ) {
+				confirmDeleteCalendarDialog.super.call( this, config );
+			};
+			OO.inheritClass( confirmDeleteCalendarDialog, OO.ui.ProcessDialog );
+			confirmDeleteCalendarDialog.static.name = 'confirmDeleteCalendarDialog';
+			confirmDeleteCalendarDialog.static.title = mw.msg( 'appointments-ui-delete-calendar' ).text();
+			confirmDeleteCalendarDialog.static.actions = [
+				{
+					label: mw.msg( 'appointments-ui-delete' ),
+					flags: [ 'destructive', 'primary' ],
+					action: 'accept'
+				},
+				{
+					label: mw.msg( 'appointments-ui-cancel' ),
+					action: 'cancel',
+					flags: [ 'safe' ]
+				}
+			];
+			confirmDeleteCalendarDialog.prototype.initialize = function () {
+				confirmDeleteCalendarDialog.super.prototype.initialize.apply( this, arguments );
+				this.content = new OO.ui.PanelLayout( {
+					padded: true,
+					expanded: false
 				} );
+				this.content.$element.append(
+					$( '<p>' ).text( mw.msg( 'appointments-ui-delete-calendar-confirmation' ) )
+				);
+				this.$body.append( this.content.$element );
+			};
+			confirmDeleteCalendarDialog.prototype.getActionProcess = function ( action ) {
+				if ( action === 'accept' ) {
+					return new OO.ui.Process( () => this.close( { action } ) );
+				}
+				return new OO.ui.Process( () => this.close( { action: 'cancel' } ) );
+			};
+
+			const dialog = new confirmDeleteCalendarDialog( { size: 'medium' } );
+			this.openDialog( dialog ).done( async ( data ) => {
+				if ( data && data.action === 'accept' ) {
+					try {
+						await ext.appointments.api.deleteCalendar( calendar.guid );
+						dfd.resolve( true );
+					} catch ( e ) {
+						mw.notify( mw.msg( 'appointments-ui-delete-calendar-failed' ), { type: 'error' } );
+						dfd.reject( e );
+					}
+				} else {
+					dfd.reject();
+				}
+			} );
 
 			return dfd.promise();
 		},
@@ -165,6 +203,40 @@ window.ext.appointments = {
 							dfd.resolve( true );
 						} catch ( e ) {
 							mw.notify( mw.msg( 'appointments-ui-delete-event-type-failed' ), { type: 'error' } );
+							dfd.reject( e );
+						}
+					}
+				} );
+
+			return dfd.promise();
+		},
+		unassignCalendarWithConfirmation: function ( calendar ) {
+			const dfd = $.Deferred();
+
+			OO.ui.confirm(
+				mw.msg( 'appointments-ui-unassign-calendar-confirmation' ), {
+					actions: [
+						{
+							label: mw.msg( 'appointments-ui-action-hide' ),
+							flags: [ 'destructive' ],
+							action: 'accept'
+						},
+						{
+							label: mw.msg( 'appointments-ui-cancel' ),
+							action: 'cancel'
+						}
+					],
+					size: 'large'
+				} )
+				.done( async ( confirmed ) => {
+					if ( !confirmed ) {
+						dfd.reject();
+					} else {
+						try {
+							await ext.appointments.api.unassignCalendar( calendar );
+							dfd.resolve( true );
+						} catch ( e ) {
+							mw.notify( mw.msg( 'appointments-ui-unassign-calendar-failed' ), { type: 'error' } );
 							dfd.reject( e );
 						}
 					}

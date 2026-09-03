@@ -55,6 +55,8 @@
 	"appointments-ui-delete-calendar": "Label or tooltip for delete calendar action.",
 	"appointments-ui-delete-calendar-confirmation": "Confirmation text shown before deleting a calendar.",
 	"appointments-ui-delete-calendar-failed": "Error notification shown when deleting a calendar fails.",
+	"appointments-ui-unassign-calendar-confirmation": "Confirmation text shown before removing (unassigning) a calendar from the current wiki.",
+	"appointments-ui-unassign-calendar-failed": "Error notification shown when removing (unassigning) a calendar from the current wiki fails.",
 	"appointments-ui-delete-event-type": "Label or tooltip for delete event type action.",
 	"appointments-ui-delete-event-type-confirmation": "Confirmation text shown before deleting an event type.",
 	"appointments-ui-delete-event-type-failed": "Error notification shown when deleting an event type fails.",
@@ -137,6 +139,8 @@
 	"appointments-ui-action-create": "Generic action label for create buttons.",
 	"appointments-ui-notify-remind-period-none": "Option label for reminder period set to no reminder.",
 	"appointments-param-validation-user-group": "Validation error for invalid user/group parameter value.",
-	"appointments-ui-field-agenda-title-foreign-warning": "Warning shown when the agenda page title is an interwiki title, therefore cannot be edited on this wiki"
+	"appointments-ui-field-agenda-title-foreign-warning": "Warning shown when the agenda page title is an interwiki title, therefore cannot be edited on this wiki",
+	"appointments-ui-imported-calendars": "Section label shown above calendars imported from external sources in the calendar sidebar.",
+	"appointments-imported-appointment-untitled": "Title used for an appointment imported from an external calendar that has no summary."
 
 }

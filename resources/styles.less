@@ -145,6 +145,13 @@
 		}
 
 		.ext-appointments-calendar-multiselect-options {
+			.ext-appointments-calendar-section-label {
+				margin: 12px 0 6px;
+				font-size: 0.85rem;
+				font-weight: 600;
+				color: #54595d;
+			}
+
 			.oo-ui-checkboxInputWidget {
 				vertical-align: middle;
 			}
@@ -153,12 +160,13 @@
 				color: #646363;
 				margin-bottom: 4px;
 
-				.oo-ui-checkboxInputWidget {
-					display: none;
-				}
-
-				.oo-ui-labelElement-label {
-					padding-left: 0;
+				&:not(.calendar-imported) {
+					.oo-ui-checkboxInputWidget {
+						display: none;
+					}
+					.oo-ui-labelElement-label {
+						padding-left: 0;
+					}
 				}
 			}
 
@@ -171,7 +179,6 @@
 					margin-right: 0;
 					position: absolute;
 					right: 32px;
-					visibility: hidden;
 
 					&:last-of-type {
 						right: 0;
@@ -184,6 +191,14 @@
 						.oo-ui-iconElement-icon {
 							background-size: 16px;
 						}
+					}
+				}
+			}
+
+			.oo-ui-checkboxMultiselectWidget {
+				&.event-type-multiselect {
+					.oo-ui-buttonWidget {
+						visibility: hidden;
 					}
 				}
 
@@ -507,6 +522,19 @@
 	}
 }
 
+.ext-appointments-calendar-picker-option {
+	.ext-appointments-calendar-picker-option-name {
+		display: block;
+	}
+
+	.ext-appointments-calendar-picker-option-description {
+		display: block;
+		font-size: 0.85em;
+		color: #72777d;
+		line-height: 1.3;
+	}
+}
+
 .appointment-popup-list {
 	.appointment-viewer {
 		background-color: #eee;
@@ -648,4 +676,18 @@
 
 .appointments-section-start {
 	margin-top: 40px !important;
+}
+
+.appointments-add-existing-calendar-editor {
+	.oo-ui-fieldLayout-field {
+		width: 100% !important;
+	}
+}
+
+.ext-appointments-sync-error {
+	margin-right: 4px;
+}
+
+.entity-wrapper {
+	flex-wrap: nowrap;
 }
