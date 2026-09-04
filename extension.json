@@ -27,6 +27,9 @@
 				},
 				"vacation": {
 					"class": "MediaWiki\\Extension\\Appointments\\Entity\\EventType\\Vacation"
+				},
+				"imported": {
+					"class": "MediaWiki\\Extension\\Appointments\\Entity\\EventType\\Imported"
 				}
 			}
 		},
@@ -69,6 +72,9 @@
 					"class": "\\MediaWiki\\Extension\\Appointments\\ContentDroplets\\AppointmentTimelineDroplet"
 				}
 			}
+		},
+		"VisualEditor": {
+			"PluginModules": [ "ext.appointments.timeline.tag" ]
 		}
 	},
 	"callback": "mwsInitComponents",
@@ -107,6 +113,8 @@
 				"ui/CalendarPicker.js",
 				"ui/EventTypePicker.js",
 				"ui/EditorDialog.js",
+				"ui/AddExistingCalendarEditor.js",
+				"ui/ImportCalendarEditor.js",
 				"ui/CalendarEditor.js",
 				"ui/EventTypeEditor.js",
 				"ui/AppointmentEditor.js",
@@ -127,12 +135,14 @@
 				"ui/util/AppointmentPopupList.js",
 				"ui/util/EventTypeIcon.js",
 				"ui/util/NotifyInAdvancePicker.js",
+				"ui/util/AddCalendarButton.js",
 				"object/PeriodDefinition.js",
 				"object/Participant.js",
 				"object/Calendar.js",
 				"object/Appointment.js",
 				"object/EventType.js",
 				"object/eventType/Meeting.js",
+				"object/eventType/Imported.js",
 				"CalendarDataProvider.js",
 				"UserLocalPreferences.js"
 			],
@@ -180,6 +190,8 @@
 				"appointments-ui-delete-calendar",
 				"appointments-ui-delete-calendar-confirmation",
 				"appointments-ui-delete-calendar-failed",
+				"appointments-ui-unassign-calendar-confirmation",
+				"appointments-ui-unassign-calendar-failed",
 				"appointments-ui-delete-event-type",
 				"appointments-ui-delete-event-type-confirmation",
 				"appointments-ui-delete-event-type-failed",
@@ -209,9 +221,6 @@
 				"appointments-ui-notify-day",
 				"appointments-ui-notify-week",
 				"appointments-ui-calendar-permissions",
-				"appointments-ui-calendar-permissions-nothing",
-				"appointments-ui-calendar-permissions-edit",
-				"appointments-ui-calendar-permissions-read-edit",
 				"appointments-ui-calendar-permissions-role-reader",
 				"appointments-ui-calendar-permissions-role-editor",
 				"appointments-ui-calendar-permissions-role-deleter",
@@ -219,7 +228,27 @@
 				"appointments-ui-calendar-permissions-role-reader-placeholder",
 				"appointments-ui-calendar-permissions-role-edit-delete-placeholder",
 				"appointments-ui-calendar-permissions-disclaimer",
-				"appointments-ui-calendar-picker-none"
+				"appointments-ui-calendar-picker-none",
+				"appointments-ui-no-calendars",
+				"appointments-ui-create-calendar-instructions",
+				"appointments-ui-create-custom-calendar",
+				"appointments-ui-create-predefined-calendar",
+				"appointments-ui-hide-calendar",
+				"appointments-ui-search-calendars",
+				"appointments-ui-action-create",
+				"appointments-ui-notify-remind-period-none",
+				"appointments-ui-field-agenda-title-foreign-warning",
+				"appointments-ui-import-ics-calendar",
+				"appointments-ui-action-import",
+				"appointments-ui-field-calendar-ics-url",
+				"appointments-ui-imported-calendars",
+				"appointments-ui-field-calendar-label",
+				"appointments-ui-imported-calendar-refresh",
+				"appointments-ui-field-description",
+				"appointments-ui-action-hide",
+				"appointments-ui-action-add",
+				"appointments-ui-field-add-existing-calendar-none-label"
+
 			],
 			"dependencies": [
 				"oojs-ui",
@@ -360,6 +389,38 @@
 			"services": [
 				"Appointments.CalendarStore", "Appointments.EventTypeStore",
 				"Appointments._Permissions", "HookContainer", "Appointments._Logger"
+			]
+		},
+		{
+			"method": "POST",
+			"path": "/appointments/v0/calendar/import",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\CalendarImportHandler",
+			"services": [
+				"Appointments.CalendarStore", "Appointments._Permissions", "HookContainer", "Appointments._Logger"
+			]
+		},
+		{
+			"method": "POST",
+			"path": "/appointments/v0/calendar/import/clear-sync/{calendar}",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\ClearCalendarSyncInfo",
+			"services": [
+				"Appointments.CalendarStore", "Appointments._Permissions", "Appointments._Logger"
+			]
+		},
+		{
+			"method": "POST",
+			"path": "/appointments/v0/calendar/assign/{calendar}",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\CalendarAssignHandler",
+			"services": [
+				"Appointments.CalendarStore", "Appointments._Permissions", "Appointments._Logger"
+			]
+		},
+		{
+			"method": "POST",
+			"path": "/appointments/v0/calendar/unassign/{calendar}",
+			"class": "MediaWiki\\Extension\\Appointments\\Rest\\CalendarUnassignHandler",
+			"services": [
+				"Appointments.CalendarStore", "Appointments._Permissions", "Appointments._Logger"
 			]
 		},
 		{

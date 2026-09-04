@@ -5,6 +5,7 @@ const eventTypeMultiselect = function ( config ) {
 	config.menu = config.menu || {};
 	config.menu.filterFromInput = false;
 	config.allowArbitrary = false;
+	config.indicator = 'required';
 
 	eventTypeMultiselect.parent.call( this, Object.assign( {}, config ) );
 	OO.ui.mixin.PendingElement.call( this, Object.assign( {}, config, {

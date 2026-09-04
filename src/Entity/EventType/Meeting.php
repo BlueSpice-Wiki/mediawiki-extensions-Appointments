@@ -17,7 +17,7 @@ readonly class Meeting extends EventType {
 			User::newSystemUser( User::MAINTENANCE_SCRIPT_USER, [ 'steal' => true ] ),
 			[
 				'color' => '#4F8F6B',
-				'icon' => 'calendar'
+				'icon' => 'app-meeting'
 			]
 		);
 	}

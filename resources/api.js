@@ -8,6 +8,7 @@ const api = {
 	},
 	toEventType: function ( eventTypeData ) {
 		require( './object/eventType/Meeting.js' );
+		require( './object/eventType/Imported.js' );
 
 		let eventType = new ext.appointments.objects.EventType( eventTypeData.guid );
 		if ( ext.appointments.eventTypeRegistry.lookup( eventTypeData.guid ) ) {
@@ -32,27 +33,61 @@ const api = {
 			calendarData.creator,
 			calendarData.wikiId,
 			calendarData.data || {},
-			calendarData.permissions || {}
+			calendarData.permissions || {},
+			calendarData.imported || false
 		);
 	},
 	toAppointment: function( appointmentData ) {
+		if ( appointmentData instanceof ext.appointments.objects.Appointment ) {
+			return appointmentData;
+		}
+
+		const participants = ( appointmentData.participants || [] ).map( ( p ) => {
+			const key = p && typeof p.getKey === 'function' ? p.getKey() : p.key;
+			const value = p && typeof p.getValue === 'function' ? p.getValue() : p.value;
+			return new ext.appointments.objects.Participant( key, value );
+		} );
+
+		const toPeriod = ( periodData ) => {
+			if ( periodData instanceof ext.appointments.objects.PeriodDefinition ) {
+				return periodData;
+			}
+
+			const data = periodData || {};
+			const get = ( key, method, fallback = null ) => {
+				if ( data && typeof data[ method ] === 'function' ) {
+					return data[ method ]();
+				}
+				return Object.prototype.hasOwnProperty.call( data, key ) ? data[ key ] : fallback;
+			};
+
+			return new ext.appointments.objects.PeriodDefinition(
+				get( 'startDate', 'getStartDate' ),
+				get( 'startTime', 'getStartTime' ),
+				get( 'endDate', 'getEndDate' ),
+				get( 'endTime', 'getEndTime' ),
+				get( 'isAllDay', 'isAllDay', false ),
+				get( 'recurrenceRule', 'getRecurrenceRule', null )
+			);
+		};
+
 		return new ext.appointments.objects.Appointment(
 			appointmentData.guid,
 			appointmentData.title,
-			appointmentData.participants.map( p => new ext.appointments.objects.Participant( p.key, p.value ) ),
+			participants,
 			api.toCalendar( appointmentData.calendar ),
 			api.toEventType( appointmentData.eventType ),
-			new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodDefinition ) ),
-			new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.periodUTC ) ),
-			new ext.appointments.objects.PeriodDefinition( ...Object.values( appointmentData.userPeriod ) ),
+			toPeriod( appointmentData.periodDefinition ),
+			toPeriod( appointmentData.periodUTC ),
+			toPeriod( appointmentData.userPeriod ),
 			appointmentData.creator,
 			appointmentData.data,
 			appointmentData.agendaLink,
 			appointmentData.permissions
 		);
 	},
-	getCalendars: async function () {
-		const res = await ext.appointments.api._get( 'calendars' );
+	getCalendars: async function ( onlyAssigned ) {
+		const res = await ext.appointments.api._get( onlyAssigned ? 'calendars?assigned=1' : 'calendars' );
 
 		return api.normalizeCollectionResponse( res )
 			.map( ( calendarData ) => api.toCalendar( calendarData ) );
@@ -65,6 +100,21 @@ const api = {
 			description: calendar.description,
 			data: JSON.stringify( calendar.data )
 		} );
+	},
+	assignCalendar: function ( calendar ) {
+		return ext.appointments.api._post( `calendar/assign/${calendar.guid}` );
+	},
+	unassignCalendar: function ( calendar ) {
+		return ext.appointments.api._post( `calendar/unassign/${calendar.guid}` );
+	},
+	importCalendar: function ( type, data ) {
+		return ext.appointments.api._post( 'calendar/import', {
+			type: type,
+			data: data
+		} );
+	},
+	clearImportedCalendarSync: function ( calendar ) {
+		return ext.appointments.api._post( `calendar/import/clear-sync/${calendar.guid}` );
 	},
 	deleteCalendar: function ( guid, moveAppointmentsTo ) {
 		return ext.appointments.api._post( `calendar/delete/${guid}`, {

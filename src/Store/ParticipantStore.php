@@ -51,7 +51,7 @@ class ParticipantStore {
 		$res = $db->newSelectQueryBuilder()
 			->select( 'apa_app' )
 			->from( 'appointment_participants' )
-			->where( $this->getParticipantCondition( $user, $db ) )
+			->where( $this->getParticipantCondition( $user, [], $db ) )
 			->caller( __METHOD__ )
 			->fetchResultSet();
 
@@ -63,12 +63,11 @@ class ParticipantStore {
 	}
 
 	/**
-	 * Get condition to select appointments where the user is a participant.
 	 * @param UserIdentity $user
-	 * @param Database $db
-	 * @return string
+	 * @param IDatabase $db
+	 * @return array
 	 */
-	public function getParticipantCondition( UserIdentity $user, IDatabase $db ): string {
+	public function getConditionRowsForUser( UserIdentity $user, IDatabase $db ): array {
 		$rows = [
 			$db->makeList( [
 				'ap_key' => 'user',
@@ -82,8 +81,31 @@ class ParticipantStore {
 				'ap_value' => $userGroupRow->ug_group,
 			], LIST_AND );
 		}
+		return $rows;
+	}
 
-		return $db->makeList( $rows, LIST_OR );
+	/**
+	 * @param string $group
+	 * @param IDatabase $db
+	 * @return array
+	 */
+	public function getConditionRowsForGroup( string $group, IDatabase $db ): array {
+		return [
+			$db->makeList( [
+				'ap_key' => 'group',
+				'ap_value' => $group,
+			], LIST_AND )
+		];
+	}
+
+	/**
+	 * Get condition to select appointments where the user is a participant.
+	 * @param UserIdentity $user
+	 * @param Database $db
+	 * @return string
+	 */
+	public function getParticipantCondition( UserIdentity $user, IDatabase $db ): string {
+		return $db->makeList( $this->getConditionRowsForUser( $user, $db ), LIST_OR );
 	}
 
 	/**

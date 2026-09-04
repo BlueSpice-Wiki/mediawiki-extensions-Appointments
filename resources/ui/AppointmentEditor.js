@@ -37,6 +37,15 @@ appointmentEditor.prototype.getLabel = function () {
 	}
 };
 
+appointmentEditor.prototype.getSaveLabel = function () {
+	if ( !this.appointment ) {
+		return mw.message( 'appointments-ui-action-create' ).text()
+	} else {
+		// Default - dialog will handle
+		return null;
+	}
+};
+
 appointmentEditor.prototype.focus = function () {
 	this.name.focus();
 };
@@ -118,32 +127,60 @@ appointmentEditor.prototype.init = function () {
 		placeholder: mw.message( 'appointments-ui-field-agenda-title-placeholder' ).text(),
 		$overlay: this.dialog ? this.dialog.$overlay : true,
 	} );
+
+	let isForeignAgenda = false;
 	this.agendaTitle.connect( this, { change: 'onInputChange' } );
 	if ( this.appointment && this.appointment.data && this.appointment.data.agendaPage ) {
-		this.agendaTitle.setValue( this.appointment.data.agendaPage );
+		if ( typeof this.appointment.data.agendaPage === 'string' ) {
+			this.appointment.data.agendaPage = { wiki: '', title: this.appointment.data.agendaPage };
+		}
+		this.agendaTitle.setValue( this.appointment.data.agendaPage.title );
+		if ( this.appointment.data.agendaPage.wiki && this.appointment.data.agendaPage.wiki !== mw.config.get( 'wgWikiID' ) ) {
+			this.agendaTitle.setDisabled( true );
+			isForeignAgenda = true;
+		}
 	}
+	const agendaPageLayout = new OO.ui.FieldLayout( this.agendaTitle, {
+		label: mw.message( 'appointments-ui-field-agenda-title' ).text(),
+		classes: [ 'appointments-section-start' ],
+	} );
+	if ( isForeignAgenda ) {
+		agendaPageLayout.setWarnings( [ mw.message( 'appointments-ui-field-agenda-title-foreign-warning' ).text() ] );
+	}
+
+	this.description = new OO.ui.MultilineTextInputWidget( { rows: 3, value: appointmentData.description || '' } );
+
+	this.$customControlPanel = $( '<div>' ).addClass( 'appointments-section-start' );
 
 	this.$element.append(
 		new OO.ui.FieldLayout( this.name, {
 			label: mw.message( 'appointments-ui-field-appointment-name' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.calendar, {
-			label: mw.message( 'appointments-ui-field-calendar-name' ).text()
+			label: mw.message( 'appointments-ui-field-calendar-label' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.eventType, {
 			label: mw.message( 'appointments-ui-field-event-type' ).text()
 		} ).$element,
+
 		new OO.ui.FieldLayout( this.participants, {
+			classes: [ 'appointments-section-start' ],
 			label: mw.message( 'appointments-ui-field-participants' ).text()
+		} ).$element,
+
+		new OO.ui.FieldLayout( this.time, {
+			classes: [ 'appointments-section-start' ],
+			label: mw.message( 'appointments-ui-field-time' ).text()
 		} ).$element,
 		new OO.ui.FieldLayout( this.notifyInAdvance, {
 			label: mw.message( 'appointments-ui-field-notify-in-advance' ).text()
 		} ).$element,
-		new OO.ui.FieldLayout( this.agendaTitle, {
-			label: mw.message( 'appointments-ui-field-agenda-title' ).text()
-		} ).$element,
-		new OO.ui.FieldLayout( this.time, {
-			label: mw.message( 'appointments-ui-field-time' ).text()
+
+		this.$customControlPanel,
+
+		agendaPageLayout.$element,
+		new OO.ui.FieldLayout( this.description, {
+			label: mw.message( 'appointments-ui-field-description' ).text()
 		} ).$element,
 	);
 
@@ -160,7 +197,7 @@ appointmentEditor.prototype.save = async function ( entity ) {
 
 appointmentEditor.prototype.getUpdatedEntity = function () {
 	if ( !this.appointment ) {
-		this.appointment = new Appointment(null );
+		this.appointment = new Appointment( null );
 	}
 
 	this.appointment.title = this.name.getValue();
@@ -171,7 +208,23 @@ appointmentEditor.prototype.getUpdatedEntity = function () {
 		Object.assign( data, this.eventTypeObject.getCustomFieldValues( this.eventTypeCustomPanel ) );
 	}
 	data.notifyInAdvance = this.notifyInAdvance.getValue();
-	data.agendaPage = this.agendaTitle.getMWTitle() ? this.agendaTitle.getMWTitle().getPrefixedDb() : null;
+	if ( this.appointment.data && this.appointment.data.agendaPage['wiki'] !== mw.config.get( 'wgWikiID' ) ) {
+		// Interwiki - do not modify
+		data.agendaPage = this.appointment.data.agendaPage;
+	} else {
+		const agendaTitle = this.agendaTitle.getValue() ? this.agendaTitle.getValue() : null;
+		console.log( agendaTitle );
+		if ( !agendaTitle ) {
+			data.agendaPage = null;
+		} else {
+			data.agendaPage = {
+				wiki: mw.config.get( 'wgWikiID' ),
+				title: agendaTitle
+			}
+		}
+	}
+	data.description = this.description.getValue();
+
 	this.appointment.data = data;
 
 	this.appointment.participants = this.participants.getValue()
@@ -213,7 +266,7 @@ appointmentEditor.prototype.setupCustomPanel = function ( eventType ) {
 		this.eventTypeCustomPanel.connect( this, {
 			change: 'onInputChange'
 		} );
-		this.$element.append( this.eventTypeCustomPanel.$element );
+		this.$customControlPanel.html( this.eventTypeCustomPanel.$element );
 	}
 	this.dialog.updateSize();
 };

@@ -37,43 +37,7 @@ calendarPermissionEditor.prototype.init = function () {
 	this.disclaimer.$element.css( 'margin-top', '1em' );
 
 	const calendarData = this.calendar.data || {};
-	const access = calendarData.access || { type: 'none', readers: [], editors: [], deleters: [] };
-
-	const icons = {
-		none: { icon: 'unLock' },
-		edit: { icon: 'lock' },
-		read_edit: { icon: 'lock', flags: [ 'destructive' ] },
-	};
-
-	this.accessType = new OO.ui.DropdownWidget( {
-		$overlay: this.dialog ? this.dialog.$overlay : true,
-		icon: icons[access.type].icon,
-		menu: {
-			items: [
-				new OO.ui.MenuOptionWidget( Object.assign( {
-					label: mw.msg( 'appointments-ui-calendar-permissions-nothing' ),
-					data: 'none'
-				}, icons.none ) ),
-				new OO.ui.MenuOptionWidget( Object.assign( {
-					label: mw.msg( 'appointments-ui-calendar-permissions-edit' ),
-					data: 'edit'
-				}, icons.edit ) ),
-				new OO.ui.MenuOptionWidget( Object.assign( {
-					label: mw.msg( 'appointments-ui-calendar-permissions-read-edit' ),
-					data: 'read_edit'
-				}, icons.read_edit ) ),
-			]
-		}
-	} );
-	this.accessType.menu.selectItemByData( access.type );
-	this.accessType.menu.connect( this, {
-		select: ( item ) => {
-			this.setControlVisibility( item.getData() );
-			this.accessType.setIcon( icons[item.getData()].icon );
-			this.dialog.updateSize();
-			this.dirty = true;
-		}
-	} );
+	const access = calendarData.access || { readers: [], editors: [], deleters: [] };
 
 	this.readers = new OOJSPlus.ui.widget.UserGroupMultiselectWidget( {
 		$overlay: this.dialog ? this.dialog.$overlay : true,
@@ -89,7 +53,6 @@ calendarPermissionEditor.prototype.init = function () {
 	} );
 	this.editors.connect( this, { change: ( value ) => this.onChange( this.editors, value ) } );
 	if ( access.editors ) {
-		console.log( access.editors );
 		this.editors.setValue( access.editors );
 	}
 	this.deleters = new OOJSPlus.ui.widget.UserGroupMultiselectWidget( {
@@ -115,14 +78,11 @@ calendarPermissionEditor.prototype.init = function () {
 	} );
 
 	this.$element.append(
-		this.accessType.$element,
 		this.readersLayout.$element,
 		this.editorsLayout.$element,
 		this.deletersLayout.$element,
 		this.disclaimer.$element,
 	);
-
-	this.setControlVisibility( access.type );
 };
 
 calendarPermissionEditor.prototype.isDirty = function () {
@@ -134,20 +94,14 @@ calendarPermissionEditor.prototype.save = async function ( entity ) {
 };
 
 calendarPermissionEditor.prototype.getUpdatedEntity = function () {
-	const type = this.accessType.menu.findSelectedItem().getData();
-
-	if ( type === 'none' ) {
-		this.calendar.setRestrictions( 'none', [], [], [] );
-		return this.calendar;
-	}
-
 	const readers = this.readers.getValue();
 	const editors = this.editors.getValue();
 	const deleters = this.deleters.getValue();
-
-	if ( type === 'edit' ) {
-		this.calendar.setRestrictions( 'edit', [], editors, deleters );
-		return this.calendar;
+	let type = 'edit';
+	if ( readers.length > 0 ) {
+		type = 'read_edit';
+	} else if ( editors.length === 0 && deleters.length === 0 ) {
+		type = 'none';
 	}
 	this.calendar.setRestrictions( type, readers, editors, deleters );
 
@@ -166,25 +120,6 @@ calendarPermissionEditor.prototype.onChange = function( picker, value ) {
 	}
 	this.dialog.updateSize();
 	this.dirty = true;
-};
-
-calendarPermissionEditor.prototype.setControlVisibility = function ( accessType ) {
-	if ( accessType === 'none' ) {
-		this.readersLayout.$element.hide();
-		this.editorsLayout.$element.hide();
-		this.deletersLayout.$element.hide();
-		this.disclaimer.$element.hide();
-	} else if ( accessType === 'edit' ) {
-		this.readersLayout.$element.hide();
-		this.editorsLayout.$element.show();
-		this.deletersLayout.$element.show();
-		this.disclaimer.$element.show();
-	} else {
-		this.readersLayout.$element.show();
-		this.editorsLayout.$element.show();
-		this.deletersLayout.$element.show();
-		this.disclaimer.$element.show();
-	}
 };
 
 module.exports = calendarPermissionEditor;

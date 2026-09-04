@@ -7,6 +7,7 @@ use MediaWiki\Extension\Appointments\Store\ParticipantStore;
 use MediaWiki\Extension\Appointments\UserInterface;
 use MediaWiki\Extension\Appointments\Utils\AgendaLinker;
 use MediaWiki\Extension\Appointments\Utils\AppointmentSerializer;
+use MediaWiki\Extension\Appointments\Utils\ImportedCalendarSyncer;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Extension\Appointments\Utils\UserResolver;
 use MediaWiki\Logger\LoggerFactory;
@@ -26,7 +27,8 @@ return [
 		return new CalendarStore(
 			$services->getDBLoadBalancer(),
 			$services->getUserFactory(),
-			$services->getService( 'Appointments.EventTypeStore' )
+			$services->getService( 'Appointments.EventTypeStore' ),
+			$services->getService( 'Appointments._ImportedCalendarSyncer' )
 		);
 	},
 	'Appointments.ParticipantStore' => static function ( MediaWikiServices $services ) {
@@ -73,7 +75,8 @@ return [
 	},
 	'Appointments._AgendaLinker' => static function ( MediaWikiServices $services ) {
 		return new AgendaLinker(
-			$services->getTitleFactory()
+			$services->getTitleFactory(),
+			$services->getHookContainer()
 		);
 	},
 	'Appointments._AppointmentSerializer' => static function ( MediaWikiServices $services ) {
@@ -83,4 +86,14 @@ return [
 			$services->getService( 'Appointments._UserInterface' )
 		);
 	},
+	'Appointments._ImportedCalendarSyncer' => static function ( MediaWikiServices $services ) {
+		return new ImportedCalendarSyncer(
+			$services->getHttpRequestFactory(),
+			$services->getService( 'Appointments._Logger' ),
+			$services->getDBLoadBalancer(),
+			$services->getService( 'Appointments.ParticipantStore' ),
+			$services->getUserFactory(),
+			$services->getService( 'Appointments.EventTypeStore' )
+		);
+	}
 ];

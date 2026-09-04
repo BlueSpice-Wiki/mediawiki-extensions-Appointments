@@ -8,7 +8,7 @@ const appointmentViewer = function ( config ) {
 	}, config ) );
 
 	this.appointment = config.appointment;
-	this.editable = config.editable;
+	this.editable = config.editable && !this.appointment.calendar.imported;
 	this.render();
 	this.$element.addClass( 'appointment-viewer' );
 };
@@ -24,7 +24,9 @@ appointmentViewer.prototype.render = function () {
 	const calendarAndTypeLabel = new OO.ui.HorizontalLayout( {
 		items: [
 			new OO.ui.LabelWidget( {
-				label: this.appointment.eventType.name + ' (' + this.appointment.calendar.name + ')',
+				label: this.appointment.calendar.imported ?
+					this.appointment.calendar.name :
+					this.appointment.eventType.name + ' (' + this.appointment.calendar.name + ')'
 			} )
 		],
 		classes: [ 'appointment-viewer-calendar' ]
@@ -40,12 +42,14 @@ appointmentViewer.prototype.render = function () {
 
 	const timeView = new AppointmentTimeView( this.appointment.userPeriod );
 
-
 	this.$element.append(
-		titleLabel.$element,
-		calendarAndTypeLabel.$element,
-		this.buildButtons().$element
+		new OO.ui.HorizontalLayout( {
+			classes: [ 'appointment-viewer-header' ],
+			items: [ titleLabel, this.buildButtons() ],
+		} ).$element,
+		calendarAndTypeLabel.$element
 	);
+
 	if ( customDataPanel ) {
 		this.$element.append( customDataPanel.$element );
 	}
@@ -55,12 +59,12 @@ appointmentViewer.prototype.render = function () {
 	if ( this.appointment.participants.length ) {
 		this.$element.append( new ParticipantView( this.appointment.participants ).$element );
 	}
-	if ( this.appointment.agendaLink ) {
+	if ( this.appointment.agendaLink[0] ) {
 		this.agendaLink = new OO.ui.ButtonWidget( {
 			label: mw.message( 'appointments-ui-view-agenda' ).text(),
-			href: this.appointment.agendaLink,
+			href: this.appointment.agendaLink[0],
 			framed: false,
-			flags: [ 'progressive' ]
+			flags: this.appointment.agendaLink[1] ? [ 'progressive' ] : [ 'destructive' ]
 		} );
 		this.$element.append( new OO.ui.HorizontalLayout( {
 			items: [
@@ -73,6 +77,11 @@ appointmentViewer.prototype.render = function () {
 			classes: [ 'entity-wrapper' ]
 		} ).$element );
 	}
+	if ( data.description ) {
+		this.$element
+			.append( $( '<div>' ).html( data.description ) )
+			.addClass( 'appointment-viewer-description' );
+	}
 };
 
 appointmentViewer.prototype.buildButtons = function () {
@@ -83,8 +92,9 @@ appointmentViewer.prototype.buildButtons = function () {
 
 	if ( this.appointment.canEdit() ) {
 		const editButton = new OO.ui.ButtonWidget( {
-			label: mw.message( 'appointments-ui-edit' ).text(),
+			title: mw.message( 'appointments-ui-edit' ).text(),
 			icon: 'edit',
+			framed: false,
 			flags: [ 'primary', 'progressive' ]
 		} );
 		editButton.connect( this, {
@@ -95,8 +105,9 @@ appointmentViewer.prototype.buildButtons = function () {
 
 	if ( this.appointment.canDelete() ) {
 		const deleteButton = new OO.ui.ButtonWidget( {
-			label: mw.message( 'appointments-ui-delete' ).text(),
+			title: mw.message( 'appointments-ui-delete' ).text(),
 			icon: 'trash',
+			framed: false,
 			flags: [ 'destructive', 'progressive' ]
 		} );
 		deleteButton.connect( this, {

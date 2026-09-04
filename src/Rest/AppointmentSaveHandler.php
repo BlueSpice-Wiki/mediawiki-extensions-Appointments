@@ -242,14 +242,19 @@ class AppointmentSaveHandler extends SimpleHandler {
 		Calendar $calendar, EventType $eventType, PeriodDefinition $periodDefinition,
 		string $appTitle, array &$appointmentData
 	): void {
-		if ( !empty( $appointmentData['agendaPage'] ) ) {
+		if ( is_array( $appointmentData['agendaPage'] ) ) {
+			$appointmentData['agendaPage']['wiki'] =
+				$appointmentData['agendaPage']['wiki'] ?: WikiMap::getCurrentWikiId();
 			return;
 		}
 		$title = $this->agendaLinker->getAgendaTitle( $calendar, $eventType, $periodDefinition, $appTitle );
 		if ( !$title ) {
 			$appointmentData['agendaPage'] = null;
 		}
-		$appointmentData['agendaPage'] = $title->getPrefixedDBkey();
+		$appointmentData['agendaPage'] = [
+			'wiki' => WikiMap::getCurrentWikiId(),
+			'title' => $title->getPrefixedDBkey()
+		];
 	}
 
 }

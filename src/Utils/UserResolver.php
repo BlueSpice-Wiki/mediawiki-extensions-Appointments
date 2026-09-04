@@ -6,15 +6,15 @@ use MediaWiki\Extension\Appointments\Entity\Participant;
 use MediaWiki\User\UserFactory;
 use Wikimedia\Rdbms\ILoadBalancer;
 
-readonly class UserResolver {
+class UserResolver {
 
 	/**
 	 * @param ILoadBalancer $lb
 	 * @param UserFactory $userFactory
 	 */
 	public function __construct(
-		private ILoadBalancer $lb,
-		private UserFactory $userFactory
+		readonly private ILoadBalancer $lb,
+		readonly private UserFactory $userFactory
 	) {
 	}
 

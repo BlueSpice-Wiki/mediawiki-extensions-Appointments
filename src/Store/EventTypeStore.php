@@ -111,7 +111,10 @@ class EventTypeStore {
 		foreach ( $res as $row ) {
 			$eventTypes[] = $this->makeFromRow( $row );
 		}
-		return array_merge( $this->systemTypes, $eventTypes );
+
+		$allTypes = array_merge( $this->systemTypes, $eventTypes );
+		unset( $allTypes['imported'] );
+		return $allTypes;
 	}
 
 	/**
@@ -141,14 +144,17 @@ class EventTypeStore {
 		$eventTypes = [];
 		foreach ( $systemAssignments as $assignment ) {
 			if ( isset( $this->systemTypes[$assignment->aeta_type] ) ) {
-				$eventTypes[] = $this->systemTypes[$assignment->aeta_type];
+				$eventType = $this->systemTypes[$assignment->aeta_type];
+				$eventTypes[$eventType->name] = $eventType;
 			}
 		}
 
 		foreach ( $res as $row ) {
-			$eventTypes[] = $this->makeFromRow( $row );
+			$event = $this->makeFromRow( $row );
+			$eventTypes[$event->name] = $event;
 		}
-		return $eventTypes;
+		uksort( $eventTypes, 'strcasecmp' );
+		return array_values( $eventTypes );
 	}
 
 	/**

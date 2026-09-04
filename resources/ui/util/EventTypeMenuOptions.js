@@ -28,6 +28,7 @@ const eventTypeCheckboxMenuOption = function ( eventType, canEdit, canDelete ) {
 			framed: false,
 			invisibleLabel: true,
 			menu: {
+				horizontalPosition: 'end',
 				items: actions
 			}
 		} );
@@ -62,6 +63,9 @@ const eventTypeCheckboxMenuOption = function ( eventType, canEdit, canDelete ) {
 		}
 	}
 	const icon = eventType.getIcon();
+	const color = eventType.getColor();
+	const $color = $( '<span>' ).addClass( 'option-color' ).css( 'background-color', color );
+	this.$label.prepend( $color );
 	if ( icon ) {
 		this.$label.prepend( new OO.ui.IconWidget( {
 			icon: icon,
@@ -69,19 +73,7 @@ const eventTypeCheckboxMenuOption = function ( eventType, canEdit, canDelete ) {
 		} ).$element );
 	}
 
-	const color = eventType.getColor();
-	if ( this.isSelected() ) {
-		this.checkbox.checkIcon.$element.css( 'background-color', color );
-	}
-	this.connect( this, {
-		change: ( selected ) => {
-			if ( selected ) {
-				this.checkbox.checkIcon.$element.css( 'background-color', color );
-			} else {
-				this.checkbox.checkIcon.$element.css( 'background-color', '' );
-			}
-		}
-	} );
+
 	this.$element.addClass( 'entityType-checkbox-option' );
 
 };

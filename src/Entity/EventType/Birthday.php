@@ -17,7 +17,7 @@ readonly class Birthday extends EventType {
 			User::newSystemUser( User::MAINTENANCE_SCRIPT_USER, [ 'steal' => true ] ),
 			[
 				'color' => '#4F5F78',
-				'icon' => 'calendar'
+				'icon' => 'app-birthday'
 			]
 		);
 	}

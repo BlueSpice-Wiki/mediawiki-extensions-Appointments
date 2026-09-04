@@ -32,6 +32,12 @@ editorDialog.prototype.getSetupProcess = function (data ) {
 	return editorDialog.parent.prototype.getSetupProcess.call( this, data )
 		.next( () => {
 			this.title.setLabel( this.entity.getLabel() );
+
+			if ( typeof this.entity.getSaveLabel === 'function' ) {
+				this.actions.get( { actions: [ 'save' ] } ).forEach( ( actionWidget ) => {
+					actionWidget.setLabel( this.entity.getSaveLabel() || mw.message( 'appointments-ui-save' ).text() );
+				} );
+			}
 			this.entity.focus();
 			this.entity.onReady();
 		} );
@@ -41,6 +47,11 @@ editorDialog.prototype.getActionProcess = function (action ) {
 	if ( action === 'save' ) {
 		return new OO.ui.Process( async () => {
 			const dfd = $.Deferred();
+
+			if ( typeof this.entity.isValid === 'function' && !this.entity.isValid() ) {
+				return;
+			}
+
 			this.pushPending();
 
 			const updatedEntity = this.entity.getUpdatedEntity();
