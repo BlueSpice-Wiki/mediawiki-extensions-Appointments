@@ -92,7 +92,8 @@ appointmentViewer.prototype.buildButtons = function () {
 
 	if ( this.appointment.canEdit() ) {
 		const editButton = new OO.ui.ButtonWidget( {
-			title: mw.message( 'appointments-ui-edit' ).text(),
+			label: mw.message( 'appointments-ui-edit' ).text(),
+			invisibleLabel: true,
 			icon: 'edit',
 			framed: false,
 			flags: [ 'primary', 'progressive' ]
@@ -105,7 +106,8 @@ appointmentViewer.prototype.buildButtons = function () {
 
 	if ( this.appointment.canDelete() ) {
 		const deleteButton = new OO.ui.ButtonWidget( {
-			title: mw.message( 'appointments-ui-delete' ).text(),
+			label: mw.message( 'appointments-ui-delete' ).text(),
+			invisibleLabel: true,
 			icon: 'trash',
 			framed: false,
 			flags: [ 'destructive', 'progressive' ]

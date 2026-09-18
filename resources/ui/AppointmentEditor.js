@@ -213,7 +213,6 @@ appointmentEditor.prototype.getUpdatedEntity = function () {
 		data.agendaPage = this.appointment.data.agendaPage;
 	} else {
 		const agendaTitle = this.agendaTitle.getValue() ? this.agendaTitle.getValue() : null;
-		console.log( agendaTitle );
 		if ( !agendaTitle ) {
 			data.agendaPage = null;
 		} else {

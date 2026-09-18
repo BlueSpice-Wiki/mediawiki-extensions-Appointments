@@ -88,12 +88,14 @@ final class AgendaLinker {
 		}
 		if ( !$agendaTitle->exists() && !$agendaTitle->getInterwiki() ) {
 			$preload = $this->getPreloadTemplate( $appointment );
-			if ( $preload ) {
-				return [
-					$agendaTitle->getLocalURL( [ 'action' => 'edit', 'preload' => $preload->getPrefixedText() ] ),
-					false
-				];
+			if ( !$preload->exists() ) {
+				// Fallback to the default template
+				$preload = $this->titleFactory->makeTitle( NS_TEMPLATE, 'Event_meeting_minutes_default' );
 			}
+			return [
+				$agendaTitle->getLocalURL( [ 'action' => 'edit', 'preload' => $preload->getPrefixedText() ] ),
+				false
+			];
 		}
 		return [ $agendaTitle->getFullURL(), $exists ];
 	}

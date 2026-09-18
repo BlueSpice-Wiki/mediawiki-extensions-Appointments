@@ -1,0 +1,11 @@
+{
+	"Template:PT_Meeting_minutes_Standard": {
+		"lang": "en",
+		"label": "Default meeting minutes template",
+		"description": "Create a generic meeting agenda page",
+		"target_title": "Template:Event_meeting_minutes_default",
+		"content_path": "/pages/Template/Meeting_minutes_default.wiki",
+		"sha1": "a4af3cd69fca12b010ca06b71793558085fb5167",
+		"old_sha1": []
+	}
+}

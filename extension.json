@@ -75,6 +75,13 @@
 		},
 		"VisualEditor": {
 			"PluginModules": [ "ext.appointments.timeline.tag" ]
+		},
+		"MWStakeContentProvisioner": {
+			"ContentManifests": {
+				"DefaultContentProvisioner": [
+					"extensions/Appointments/data/Content/manifest.json"
+				]
+			}
 		}
 	},
 	"callback": "mwsInitComponents",
