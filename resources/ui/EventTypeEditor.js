@@ -23,6 +23,15 @@ eventTypeEditor.prototype.onReady = function () {
 	// NOOP
 };
 
+eventTypeEditor.prototype.getSaveLabel = function () {
+	if ( !this.eventType ) {
+		return mw.message( 'appointments-ui-action-create' ).text()
+	} else {
+		// Default - dialog will handle
+		return null;
+	}
+};
+
 eventTypeEditor.prototype.getLabel = function () {
 	if ( this.calendar ) {
 		return mw.message( 'appointments-ui-edit-event-type' ).text()

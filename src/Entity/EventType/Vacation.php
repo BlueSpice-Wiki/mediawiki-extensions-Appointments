@@ -17,7 +17,7 @@ readonly class Vacation extends EventType {
 			User::newSystemUser( User::MAINTENANCE_SCRIPT_USER, [ 'steal' => true ] ),
 			[
 				'color' => '#B25F52',
-				'icon' => 'calendar'
+				'icon' => 'app-vacation'
 			]
 		);
 	}

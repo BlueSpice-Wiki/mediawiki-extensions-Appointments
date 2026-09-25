@@ -8,7 +8,7 @@ const SchedulerView = function ( config ) {
 		padded: false
 	}, config ) );
 
-	this.today = moment().format( 'YYYY-MM-DD' );
+	this.today = config.initialDate || moment().format( 'YYYY-MM-DD' );
 	this.controller = config.controller;
 	this.last = null;
 	this.activePopup = null;
@@ -101,13 +101,11 @@ SchedulerView.prototype.emitRangeChangeIfChanged = function () {
 SchedulerView.prototype.renderNavigation = function () {
 	this.nextButton = new OO.ui.ButtonWidget( {
 		icon: 'next',
-		title: mw.msg( 'appointments-next-month' ),
-		flags: [ 'progressive' ]
+		title: mw.msg( 'appointments-next-month' )
 	} );
 	this.prevButton = new OO.ui.ButtonWidget( {
 		icon: 'previous',
-		title: mw.msg( 'appointments-previous-month' ),
-		flags: [ 'progressive' ]
+		title: mw.msg( 'appointments-previous-month' )
 	} );
 	this.nextButton.connect( this, {
 		click: () => {
@@ -313,6 +311,7 @@ SchedulerView.prototype.renderEventContent = function ( arg ) {
 	titleSpan.className = 'appointments-fc-event-title';
 	titleSpan.textContent = appointment.title;
 	container.appendChild( titleSpan );
+	container.title = appointment.title;
 
 	if ( appointment.periodDefinition.getRecurrenceRule() ) {
 		const recurIcon = new OO.ui.IconWidget( {

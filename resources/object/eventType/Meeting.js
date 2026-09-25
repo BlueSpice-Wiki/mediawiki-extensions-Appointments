@@ -4,7 +4,7 @@ const PanelWithEvents = require( './../../ui/util/PanelWithEvents.js' );
 class Meeting extends EventType {
 
 	constructor( guid, name, description, data, isSystem ) {
-		super( 'meeting', name, description, data, isSystem );
+		super( guid || 'meeting', name, description, data, isSystem );
 	}
 
 	getEditPanel( data ) {
@@ -54,7 +54,8 @@ class Meeting extends EventType {
 						label: data.location,
 						classes: [ 'appointment-viewer-calendar' ]
 					} )
-				]
+				],
+				classes: [ 'entity-wrapper' ]
 			} ) );
 		}
 
@@ -79,3 +80,5 @@ class Meeting extends EventType {
 }
 
 ext.appointments.eventTypeRegistry.register( 'meeting', Meeting );
+
+module.exports = Meeting;

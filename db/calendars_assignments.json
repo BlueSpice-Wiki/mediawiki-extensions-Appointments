@@ -1,0 +1,24 @@
+[
+	{
+		"name": "calendars_assignments",
+		"columns": [
+			{
+				"name": "cala_calendar",
+				"type": "string",
+				"options": {
+					"length": 32,
+					"notnull": true
+				}
+			},
+			{
+				"name": "cala_user",
+				"type": "integer",
+				"options": {
+					"notnull": false
+				}
+			}
+		],
+		"indexes": [],
+		"pk": [ "cala_calendar" ]
+	}
+]

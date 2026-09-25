@@ -86,6 +86,15 @@ readonly class Permissions {
 	 * @param Calendar $calendar
 	 * @return bool
 	 */
+	public function canAssignCalendar( Authority $actor, Calendar $calendar ): bool {
+		return $this->canReadCalendar( $actor, $calendar );
+	}
+
+	/**
+	 * @param Authority $actor
+	 * @param Calendar $calendar
+	 * @return bool
+	 */
 	public function canDeleteCalendar( Authority $actor, Calendar $calendar ): bool {
 		return $this->canPerformCalendarOperation( $actor, $calendar, 'delete' );
 	}

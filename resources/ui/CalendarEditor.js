@@ -30,6 +30,15 @@ calendarEditor.prototype.getLabel = function () {
 	}
 };
 
+calendarEditor.prototype.getSaveLabel = function () {
+	if ( !this.calendar ) {
+		return mw.message( 'appointments-ui-action-create' ).text()
+	} else {
+		// Default - dialog will handle
+		return null;
+	}
+};
+
 calendarEditor.prototype.focus = function () {
 	this.name.focus();
 };
@@ -40,14 +49,9 @@ calendarEditor.prototype.init = function () {
 		value: this.calendar ? this.calendar.name : '',
 	} );
 	this.name.connect( this, { change: 'onInputChange' } );
-	this.description = new OO.ui.MultilineTextInputWidget( {
-		value: this.calendar ? this.calendar.description : '',
-		rows: 2
-	} );
-	this.description.connect( this, { change: 'onInputChange' } );
 
 	this.eventTypes = new EventTypeMultiselect( {
-		$overlay: this.dialog ? this.dialog.$overlay : null,
+		$overlay: this.dialog ? this.dialog.$overlay : null
 	} );
 	if ( this.calendar && this.calendar.eventTypes ) {
 		this.eventTypes.setValue( this.calendar.eventTypes );
@@ -55,16 +59,22 @@ calendarEditor.prototype.init = function () {
 	this.eventTypes.load();
 	this.eventTypes.connect( this, { change: 'onInputChange' } );
 
+	this.description = new OO.ui.MultilineTextInputWidget( {
+		value: this.calendar ? this.calendar.description : '',
+		rows: 2
+	} );
+	this.description.connect( this, { change: 'onInputChange' } );
+
 	this.$element.append(
 		new OO.ui.FieldLayout( this.name, {
 			label: mw.message( 'appointments-ui-field-calendar-name' ).text(),
 		} ).$element,
-		new OO.ui.FieldLayout( this.description, {
-			label: mw.message( 'appointments-ui-field-calendar-description' ).text(),
-		} ).$element,
 		new OO.ui.FieldLayout( this.eventTypes, {
 			label: mw.message( 'appointments-ui-field-calendar-event-types' ).text(),
 		} ).$element,
+		new OO.ui.FieldLayout( this.description, {
+			label: mw.message( 'appointments-ui-field-calendar-description' ).text(),
+		} ).$element
 	);
 };
 
@@ -82,6 +92,10 @@ calendarEditor.prototype.onInputChange = function () {
 		this.dialog.updateSize();
 	}
 }
+
+calendarEditor.prototype.isValid = function() {
+	return this.name.getValue() && this.eventTypes.getSelectedEventTypes().length > 0;
+};
 
 calendarEditor.prototype.getUpdatedEntity = function () {
 	if ( !this.calendar ) {

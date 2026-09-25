@@ -4,7 +4,7 @@ namespace MediaWiki\Extension\Appointments\Entity;
 
 use MediaWiki\User\UserIdentity;
 
-readonly class Calendar implements \JsonSerializable {
+class Calendar implements \JsonSerializable {
 
 	/**
 	 * @param string $guid

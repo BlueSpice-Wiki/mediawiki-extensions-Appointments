@@ -14,7 +14,6 @@ use MWStake\MediaWiki\Component\GenericTagHandler\ClientTagSpecification;
 use MWStake\MediaWiki\Component\GenericTagHandler\GenericTag;
 use MWStake\MediaWiki\Component\GenericTagHandler\ITagHandler;
 use MWStake\MediaWiki\Component\InputProcessor\Processor\KeywordValue;
-use MWStake\MediaWiki\Component\InputProcessor\Processor\UserValue;
 
 class AppointmentTimelineTag extends GenericTag {
 
@@ -48,8 +47,8 @@ class AppointmentTimelineTag extends GenericTag {
 	 * @inheritDoc
 	 */
 	public function getParamDefinition(): ?array {
-		$forUser = new UserValue( $this->userFactory );
-		$forUser->setRequired( false );
+		$forAssignees = new UserGroupValue( $this->userFactory );
+		$forAssignees->setRequired( false );
 
 		$calendar = new CalendarValueParam( $this->calendarStore );
 		$calendar->setRequired( false );
@@ -60,11 +59,16 @@ class AppointmentTimelineTag extends GenericTag {
 
 		$period = new KeywordValue();
 		$period->setRequired( false );
-		$period->setDefaultValue( 'week' );
-		$period->setKeywords( [ 'week', 'month', 'year' ] );
+		$period->setDefaultValue( 'this_week' );
+		$period->setKeywords( [
+			'this_week',
+			'this_month',
+			'next_week',
+			'next_month'
+		] );
 
 		return [
-			'user' => $forUser,
+			'assignees' => $forAssignees,
 			'calendar' => $calendar,
 			'eventTypes' => $eventType,
 			'period' => $period,
@@ -94,10 +98,11 @@ class AppointmentTimelineTag extends GenericTag {
 		$formSpec = new StandaloneFormSpecification();
 		$formSpec->setItems( [
 			[
-				'type' => 'user_picker',
-				'name' => 'user',
+				'type' => 'user_group_multiselect',
+				'name' => 'assignees',
 				'label' => Message::newFromKey( 'appointments-ve-attr-user' )->text(),
 				'help' => Message::newFromKey( 'appointments-ve-attr-user-help' )->text(),
+				'widget_returnJson' => true,
 			],
 			[
 				'type' => 'appointment_calendar',
@@ -105,6 +110,7 @@ class AppointmentTimelineTag extends GenericTag {
 				'label' => Message::newFromKey( 'appointments-ve-calendar' )->text(),
 				'widget_allowNone' => true,
 				'widget_returnName' => true,
+				'widget_autoLoad' => true,
 			],
 			[
 				'type' => 'appointment_event_type_multiselect',
@@ -117,14 +123,17 @@ class AppointmentTimelineTag extends GenericTag {
 				'label' => Message::newFromKey( 'appointments-ve-period' )->text(),
 				'options' => [
 					[
-						'data' => 'week',
-						'label' => Message::newFromKey( 'appointments-ve-period-week' )->text(),
+						'data' => 'this_week',
+						'label' => Message::newFromKey( 'appointments-ve-period-this-week' )->text(),
 					], [
-						'data' => 'month',
-						'label' => Message::newFromKey( 'appointments-ve-period-month' )->text(),
+						'data' => 'this_month',
+						'label' => Message::newFromKey( 'appointments-ve-period-this-month' )->text(),
 					], [
-						'data' => 'year',
-						'label' => Message::newFromKey( 'appointments-ve-period-year' )->text(),
+						'data' => 'next_week',
+						'label' => Message::newFromKey( 'appointments-ve-period-next-week' )->text(),
+					], [
+						'data' => 'next_month',
+						'label' => Message::newFromKey( 'appointments-ve-period-next-month' )->text(),
 					]
 				],
 			],

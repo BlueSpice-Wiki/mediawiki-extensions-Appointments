@@ -48,6 +48,29 @@ class AppointmentQuery {
 	}
 
 	/**
+	 * @param array $assignees
+	 * @return $this
+	 */
+	public function forAssignees( array $assignees ): self {
+		$rows = [];
+		foreach ( $assignees as $assignee ) {
+			if ( $assignee['type'] === 'user' && $assignee['key'] instanceof UserIdentity ) {
+				$rows = array_merge(
+					$rows,
+					$this->participantStore->getConditionRowsForUser( $assignee['key'], $this->db )
+				);
+			} elseif ( $assignee['type'] === 'group' ) {
+				$rows = array_merge(
+					$rows,
+					$this->participantStore->getConditionRowsForGroup( $assignee['key'], $this->db )
+				);
+			}
+		}
+		$this->conds[] = $this->db->makeList( $rows, LIST_OR );
+		return $this;
+	}
+
+	/**
 	 * @param NaivePeriod $period
 	 * @return $this
 	 */

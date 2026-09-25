@@ -7,6 +7,7 @@ use MediaWiki\Extension\Appointments\Store\CalendarStore;
 use MediaWiki\Extension\Appointments\Utils\Permissions;
 use MediaWiki\Rest\Response;
 use MediaWiki\Rest\SimpleHandler;
+use Wikimedia\ParamValidator\ParamValidator;
 
 class CalendarGetHandler extends SimpleHandler {
 
@@ -24,9 +25,11 @@ class CalendarGetHandler extends SimpleHandler {
 	 * @return Response
 	 */
 	public function execute() {
+		$params = $this->getValidatedParams();
+		$onlyAssigned = $params['assigned'] ?? false;
 		$user = RequestContext::getMain()->getUser();
 		$calendars = [];
-		foreach ( $this->calendarStore->getCalendars() as $calendar ) {
+		foreach ( $this->calendarStore->getCalendars( $onlyAssigned ) as $calendar ) {
 			if ( !$this->permissions->canReadCalendar( $user, $calendar ) ) {
 				continue;
 			}
@@ -35,8 +38,24 @@ class CalendarGetHandler extends SimpleHandler {
 				'edit' => $this->permissions->canModifyCalendar( $user, $calendar ),
 				'delete' => $this->permissions->canDeleteCalendar( $user, $calendar ),
 			];
-			$calendars[] = $calendarData;
+			$calendars[$calendar->name] = $calendarData;
 		}
-		return $this->getResponseFactory()->createJson( $calendars );
+		// Sort alphabetically
+		uksort( $calendars, 'strcasecmp' );
+		return $this->getResponseFactory()->createJson( array_values( $calendars ) );
+	}
+
+	/**
+	 * @return array[]
+	 */
+	public function getParamSettings() {
+		return [
+			'assigned' => [
+				static::PARAM_SOURCE => 'query',
+				ParamValidator::PARAM_REQUIRED => false,
+				ParamValidator::PARAM_TYPE => 'boolean',
+				ParamValidator::PARAM_DEFAULT => false,
+			]
+		];
 	}
 }
